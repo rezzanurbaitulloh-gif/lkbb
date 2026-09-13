@@ -18,6 +18,7 @@ function CheckoutInner(){
   const [peleton,setPeleton]=useState<any>(null)
   const [trx,setTrx]=useState<any>(null)
   const [polling,setPolling]=useState(false)
+  const [simulating,setSimulating]=useState(false)
   const [qrDataUrl,setQrDataUrl]=useState<string | null>(null)
   useEffect(()=>{
     const supabase = createBrowserSupabase()
@@ -120,6 +121,27 @@ function CheckoutInner(){
     setPolling(false)
   }
 
+  // Sandbox: simulate successful Xendit payment (server only allows XENDIT_MODE=test)
+  const handleSimulate = async ()=>{
+    if(!id || simulating) return
+    setSimulating(true)
+    unlockAudio()
+    try {
+      const res = await fetch("/api/payment/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId: id }),
+      })
+      const data = await res.json().catch(()=> ({}))
+      if(res.ok && (data.status === "Success" || data.ok)){
+        const peletonName = peleton?.name || "peleton"
+        playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
+        setTrx((prev:any)=> ({...prev, status: "Success"}))
+      }
+    } catch {}
+    setSimulating(false)
+  }
+
   // If redirect with ?status=success but DB still Pending, poll status (webhook still authoritative)
   useEffect(()=>{
     const qsStatus = sp.get("status")
@@ -215,16 +237,18 @@ function CheckoutInner(){
           </div>
         )}
 
-        <div className="mt-6 grid gap-2">
-          {status==="success" ? (
-            <>
-              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700">Pembayaran terverifikasi via Xendit webhook. Ballot masuk ke ledger.</div>
-              <Link href="/profile/dukungan"><Button className="w-full rounded-full h-11">Lihat Transaksi</Button></Link>
-              <Link href="/"><Button variant="outline" className="w-full rounded-full">Kembali ke Beranda</Button></Link>
-            </>
-          ) : status==="pending" ? (
-            <>
-              <Button className="w-full rounded-full h-11" onClick={handleCheckStatus} disabled={polling}>{polling ? "Memeriksa..." : "Cek Status Pembayaran"}</Button>
+          <div className="mt-6 grid gap-2">
+            {status==="success" ? (
+              <>
+                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700">Pembayaran terverifikasi via Xendit webhook. Ballot masuk ke ledger.</div>
+                <Link href="/profile/dukungan"><Button className="w-full rounded-full h-11">Lihat Transaksi</Button></Link>
+                <Link href="/"><Button variant="outline" className="w-full rounded-full">Kembali ke Beranda</Button></Link>
+              </>
+            ) : status==="pending" ? (
+              <>
+                <Button className="w-full rounded-full h-11" onClick={handleCheckStatus} disabled={polling}>{polling ? "Memeriksa..." : "Cek Status Pembayaran"}</Button>
+                <Button variant="outline" className="w-full rounded-full h-11 border-dashed" onClick={handleSimulate} disabled={simulating}>{simulating ? "Mensimulasikan..." : "Simulasi Bayar (Sandbox)"}</Button>
+                <p className="text-center text-[11px] text-muted-foreground">Tombol simulasi khusus sandbox — seolah-olah QR sudah dibayar.</p>
               <p className="text-center text-[11px] text-muted-foreground">Webhook Xendit adalah satu-satunya penentu PAID — jangan bypass via frontend.</p>
               <Link href="/peleton"><Button variant="outline" className="w-full rounded-full">Batal</Button></Link>
             </>

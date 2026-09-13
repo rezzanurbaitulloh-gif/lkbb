@@ -160,7 +160,7 @@ export default function InvoicePage(){
                     <div className="grid gap-2 text-sm">
                       <div className="flex justify-between"><span className="text-white/50">Jumlah Ballot</span><span className="font-black tabular-nums">{tx.supports} ballot</span></div>
                       <div className="flex justify-between"><span className="text-white/50">Harga per Ballot</span><span className="tabular-nums">Rp{tx.supports ? Math.round(tx.amount / tx.supports).toLocaleString("id-ID") : tx.amount?.toLocaleString("id-ID")}</span></div>
-                      <div className="flex justify-between"><span className="text-white/50">Metode</span><span className="font-bold">{tx.method || "QRIS"} • {tx.provider || "DOKU"}</span></div>
+                      <div className="flex justify-between"><span className="text-white/50">Metode</span><span className="font-bold">{tx.method || "QRIS"} • {tx.provider || "XENDIT"}</span></div>
                       <div className="flex justify-between"><span className="text-white/50">Provider Ref</span><span className="font-mono text-xs">{tx.provider_ref?.slice(0,16) || "-"}...</span></div>
                       {tx.expires_at && <div className="flex justify-between"><span className="text-white/50">Kadaluarsa</span><span className="text-xs">{new Date(tx.expires_at).toLocaleString("id-ID")}</span></div>}
                       <div className="hairline my-2 bg-white/10" />

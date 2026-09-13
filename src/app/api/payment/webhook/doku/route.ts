@@ -12,9 +12,12 @@ export async function GET() {
   })
 }
 
-// POST /api/payment/webhook/doku — verify signature, idempotency, create ledger only on PAID
-// This is the ONLY authoritative trigger for ballot creation
-export async function POST(req: Request) {
+// ===== DOKU DINONAKTIFKAN (di-comment) — pakai Xendit Sandbox: /api/payment/webhook/xendit =====
+// POST /api/payment/webhook/doku — DISABLED, see git history for original logic
+export async function POST(_req: Request) {
+  return NextResponse.json({ error: "DOKU disabled — gunakan Xendit", provider: "XENDIT" }, { status: 410 })
+}
+/* ===== original DOKU logic (disabled, kept for reference) =====
   let rawBody = ""
   try {
     rawBody = await req.text()
@@ -259,4 +262,5 @@ export async function POST(req: Request) {
 
   console.warn("[doku webhook] unknown status", { status, raw: bodyJson })
   return NextResponse.json({ ok: true, message: "Unknown status, no action" })
-}
+  } // end if(false) — DOKU disabled
+===== end disabled DOKU logic ===== */

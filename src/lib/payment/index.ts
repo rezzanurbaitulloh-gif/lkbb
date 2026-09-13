@@ -1,13 +1,16 @@
-import { createDokuProvider } from "./doku/client"
+import { createXenditProvider } from "./xendit/client"
 import type { PaymentProvider } from "./provider"
 
-// Singleton provider — DOKU is current, Xendit deprecated
+// ===== DOKU DINONAKTIFKAN (di-comment) — pakai Xendit Sandbox untuk sekarang =====
+// import { createDokuProvider } from "./doku/client"
+
+// Singleton provider — XENDIT Sandbox is current
 let cached: PaymentProvider | null = null
 
 export function getPaymentProvider(): PaymentProvider {
   if (cached) return cached
-  // In future, could switch based on env DOKU_ENV or feature flag
-  cached = createDokuProvider()
+  // DOKU disabled: cached = createDokuProvider()
+  cached = createXenditProvider()
   return cached
 }
 

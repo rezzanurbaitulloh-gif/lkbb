@@ -1,5 +1,4 @@
-// Payment provider abstraction — DOKU is current, Xendit deprecated
-// Production DOKU can replace Sandbox via env without rewriting flow
+// Payment provider abstraction — XENDIT Sandbox is current (DOKU disabled, see below)
 
 export type PaymentCreateParams = {
   transactionId: string // internal UUID
@@ -12,11 +11,11 @@ export type PaymentCreateParams = {
 }
 
 export type PaymentCreateResult = {
-  provider: "DOKU"
-  providerReference: string // partnerReferenceNo (our transactionId) or DOKU referenceNo
+  provider: "DOKU" | "XENDIT"
+  providerReference: string // partnerReferenceNo (our transactionId) or provider referenceNo
   qrContent: string // EMV QR string to render
-  qrUrl?: string // if DOKU returns URL, else use qrContent
-  referenceNo?: string // DOKU's referenceNo
+  qrUrl?: string // if provider returns URL, else use qrContent
+  referenceNo?: string // provider's referenceNo (DOKU referenceNo / Xendit QR id)
   expiresAt?: string
   rawResponse?: any
 }
@@ -24,7 +23,7 @@ export type PaymentCreateResult = {
 export type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "CANCELLED"
 
 export interface PaymentProvider {
-  readonly name: "DOKU"
+  readonly name: "DOKU" | "XENDIT"
   createPayment(params: PaymentCreateParams): Promise<PaymentCreateResult>
   getPaymentStatus?(partnerReferenceNo: string, referenceNo?: string): Promise<PaymentStatus>
   verifyWebhook?(headers: Headers, rawBody: string, bodyJson: any): Promise<{ valid: boolean; error?: string }>

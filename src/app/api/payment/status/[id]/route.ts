@@ -38,12 +38,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
 
-    // For DOKU Pending, try to query DOKU directly as fallback (in case webhook missed)
-    // Webhook remains primary, but this ensures sandbox simulator payment still updates even if notification URL not yet configured
-    if (trx.provider === "DOKU" && trx.status === "Pending") {
+    // ===== DOKU DINONAKTIFKAN (di-comment) — lihat git history untuk fallback query DOKU =====
+    // For XENDIT Pending, try to query Xendit directly as fallback (in case webhook missed)
+    // Webhook remains primary
+    if (trx.provider === "XENDIT" && trx.status === "Pending") {
       try {
-        const { queryDokuQris } = await import("@/lib/payment/doku/qris")
-        const q = await queryDokuQris(trx.id, (trx as any).doku_reference_no || trx.provider_ref)
+        const { queryXenditQr } = await import("@/lib/payment/xendit/qr")
+        const q = await queryXenditQr(trx.id)
         if (q.status === "PAID") {
           // Update transaction and create ledger (same idempotency as webhook)
           await service.from("transactions").update({ status: "Success" }).eq("id", trx.id)
@@ -68,18 +69,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 { user_id: trx.user_id, title: "Dukungan Berhasil!", body: `Selamat!! Kamu telah mendukung ${peletonName} — ${trx.supports} ballot`, peleton_id: trx.peleton_id, peleton_name: peletonName, peleton_slug: peleton?.slug||"", supporter_name: supporterName, data: { is_private:true, ballot_quantity: trx.supports, peleton_category: peleton?.category, peleton_number: peleton?.number } },
               ])
             } catch {}
-            await service.from("audit_logs").insert({ action: "transaction_paid_via_status_check", target: trx.id, details: { provider: "DOKU", via: "status_query", amount: trx.amount } })
+            await service.from("audit_logs").insert({ action: "transaction_paid_via_status_check", target: trx.id, details: { provider: "XENDIT", via: "status_query", amount: trx.amount } })
           }
-          return NextResponse.json({ status: "Success", transaction: { ...trx, status: "Success" }, doku: q.raw })
-        } else if (q.status === "failed" || q.status === "EXPIRED") {
+          return NextResponse.json({ status: "Success", transaction: { ...trx, status: "Success" }, xendit: q.raw })
+        } else if (q.status === "FAILED" || q.status === "EXPIRED") {
           await service.from("transactions").update({ status: "Expired" }).eq("id", trx.id)
-          return NextResponse.json({ status: "Expired", transaction: { ...trx, status: "Expired" }, doku: q.raw })
+          return NextResponse.json({ status: "Expired", transaction: { ...trx, status: "Expired" }, xendit: q.raw })
         } else {
-          // still pending, return pending with doku info for UX
-          return NextResponse.json({ status: trx.status, transaction: trx, doku: q.raw })
+          // still pending, return pending with xendit info for UX
+          return NextResponse.json({ status: trx.status, transaction: trx, xendit: q.raw })
         }
       } catch (e) {
-        console.error("[status] DOKU query failed", e)
+        console.error("[status] Xendit query failed", e)
         // fall through to return DB status
       }
     }

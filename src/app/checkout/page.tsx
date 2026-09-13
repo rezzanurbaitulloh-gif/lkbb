@@ -134,13 +134,14 @@ function CheckoutInner(){
   const qty = trx ? String(trx.supports) : (sp.get("qty") || "50")
   const total = trx ? String(trx.amount) : (sp.get("total") || "150000")
 
-  const isDoku = trx?.provider === "DOKU" || !trx?.provider || trx?.provider === "doku"
+  // DOKU disabled — Xendit Sandbox is current
+  const isXendit = trx?.provider === "XENDIT" || !trx?.provider
   const config = {
     success: { title:"DUKUNGAN BERHASIL", desc:`Terima kasih telah memberikan dukungan kepada ${p.name} — ballot telah masuk setelah pembayaran terverifikasi`, icon: CheckCircle2, color:"bg-emerald-500", bg:"bg-emerald-500/10 border-emerald-500/20" },
-    pending: { title:"PEMBAYARAN MENUNGGU", desc: isDoku ? "Selesaikan pembayaran QRIS via DOKU. Ballot hanya bertambah setelah pembayaran terverifikasi." : "Selesaikan pembayaran QRIS. Ballot hanya bertambah setelah pembayaran terverifikasi webhook.", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" },
+    pending: { title:"PEMBAYARAN MENUNGGU", desc: isXendit ? "Selesaikan pembayaran QRIS via Xendit. Ballot hanya bertambah setelah pembayaran terverifikasi." : "Selesaikan pembayaran QRIS. Ballot hanya bertambah setelah pembayaran terverifikasi webhook.", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" },
     failed: { title:"PEMBAYARAN TIDAK BERHASIL", desc:"Pembayaran gagal. Silakan coba lagi.", icon: XCircle, color:"bg-red-500", bg:"bg-red-500/10 border-red-500/20" },
     expired: { title:"TRANSAKSI KEDALUWARSA", desc:"Waktu pembayaran telah habis", icon: Timer, color:"bg-zinc-500", bg:"bg-zinc-500/10 border-zinc-500/20" },
-  }[status as string] || { title:"PEMBAYARAN MENUNGGU", desc: isDoku ? "Menunggu verifikasi DOKU (webhook)" : "Menunggu verifikasi", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" }
+  }[status as string] || { title:"PEMBAYARAN MENUNGGU", desc: isXendit ? "Menunggu verifikasi Xendit (webhook)" : "Menunggu verifikasi", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" }
 
   const Icon = config.icon
 
@@ -217,14 +218,14 @@ function CheckoutInner(){
         <div className="mt-6 grid gap-2">
           {status==="success" ? (
             <>
-              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700">Pembayaran terverifikasi via DOKU webhook. Ballot masuk ke ledger.</div>
+              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700">Pembayaran terverifikasi via Xendit webhook. Ballot masuk ke ledger.</div>
               <Link href="/profile/dukungan"><Button className="w-full rounded-full h-11">Lihat Transaksi</Button></Link>
               <Link href="/"><Button variant="outline" className="w-full rounded-full">Kembali ke Beranda</Button></Link>
             </>
           ) : status==="pending" ? (
             <>
               <Button className="w-full rounded-full h-11" onClick={handleCheckStatus} disabled={polling}>{polling ? "Memeriksa..." : "Cek Status Pembayaran"}</Button>
-              <p className="text-center text-[11px] text-muted-foreground">Webhook DOKU adalah satu-satunya penentu PAID — jangan bypass via frontend.</p>
+              <p className="text-center text-[11px] text-muted-foreground">Webhook Xendit adalah satu-satunya penentu PAID — jangan bypass via frontend.</p>
               <Link href="/peleton"><Button variant="outline" className="w-full rounded-full">Batal</Button></Link>
             </>
           ) : (

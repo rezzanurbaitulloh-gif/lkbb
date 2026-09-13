@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 import { createServiceSupabase, createServerSupabase } from "@/lib/supabase"
 import { getPaymentProvider } from "@/lib/payment"
 
-// POST /api/transactions — server calculates price, enforces event closure, creates transaction + DOKU QRIS
+// POST /api/transactions — server calculates price, enforces event closure, creates transaction + XENDIT Sandbox QRIS
+// (DOKU dinonaktifkan — di-comment, pakai Xendit untuk sekarang)
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -49,8 +50,9 @@ export async function POST(req: Request) {
     const onlinePrice = event.settings?.online_price ?? 3000
     const amount = quantity * onlinePrice
 
-    // 4. Create transaction as PENDING with user_id — provider DOKU, never trust client amount
-    const initialRef = `doku_${Date.now()}_${peletonId.slice(0,8)}`
+    // 4. Create transaction as PENDING with user_id — provider XENDIT Sandbox, never trust client amount
+    // DOKU disabled: const initialRef = `doku_${Date.now()}_${peletonId.slice(0,8)}`
+    const initialRef = `xnd_${Date.now()}_${peletonId.slice(0,8)}`
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
     const { data: trx, error } = await service.from("transactions").insert({
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       supports: quantity,
       method: "QRIS",
       status: "Pending",
-      provider: "DOKU",
+      provider: "XENDIT",
       provider_ref: initialRef,
       source: "online",
       expires_at: expiresAt,
@@ -68,16 +70,17 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    // 5. Create DOKU QRIS via provider (server-side only, never expose secrets to browser)
-    // Frontend must never call DOKU directly — we are the only caller
+    // 5. Create XENDIT Sandbox QRIS via provider (server-side only, never expose secrets to browser)
+    // Frontend must never call Xendit directly — we are the only caller
+    // ===== DOKU DINONAKTIFKAN (di-comment) =====
+    // const dokuReferenceNo ... (see git history for DOKU flow)
     let paymentUrl = `/checkout?id=${trx.id}&peleton=${slug}&qty=${quantity}&total=${amount}`
-    let dokuReferenceNo: string | null = null
-    let dokuQrContent: string | null = null
-    let dokuQrUrl: string | null = null
+    let xenditReferenceNo: string | null = null
+    let xenditQrContent: string | null = null
 
     try {
       const provider = getPaymentProvider()
-      const dokuRes = await provider.createPayment({
+      const xenditRes = await provider.createPayment({
         transactionId: trx.id,
         peletonId,
         peletonSlug: slug || peleton.slug,
@@ -87,44 +90,40 @@ export async function POST(req: Request) {
         email: user.email || undefined,
       })
 
-      dokuReferenceNo = dokuRes.referenceNo || dokuRes.providerReference || null
-      dokuQrContent = dokuRes.qrContent
-      dokuQrUrl = dokuRes.qrUrl || null
+      xenditReferenceNo = xenditRes.referenceNo || xenditRes.providerReference || null
+      xenditQrContent = xenditRes.qrContent
 
-      if (!dokuQrContent) throw new Error("DOKU tidak mengembalikan qrContent — cek merchantId/terminalId di Dashboard")
+      if (!xenditQrContent) throw new Error("Xendit tidak mengembalikan qr_string — cek XENDIT_SECRET_KEY sandbox di server")
 
-      // Persist DOKU references for webhook & status lookup
+      // Persist Xendit references for webhook & status lookup
+      // (kolom doku_* dipakai ulang untuk referensi provider agar tanpa migrasi DB)
       await service.from("transactions").update({
-        provider_ref: dokuReferenceNo || initialRef,
-        doku_reference_no: dokuReferenceNo,
-        qr_content: dokuQrContent,
-        doku_qr_url: dokuQrUrl,
+        provider_ref: trx.id,
+        doku_reference_no: xenditReferenceNo,
+        qr_content: xenditQrContent,
+        metadata: { xendit_id: xenditReferenceNo, mode: "sandbox" },
       } as any).eq("id", trx.id)
-    } catch (dokuErr: any) {
-      console.error("[doku] createPayment failed", dokuErr)
-      // Hapus transaksi pending yang gagal generate QR agar tidak jadi transaksi amount 0 / QR palsu yang bikin simulator 5101
+    } catch (xenditErr: any) {
+      console.error("[xendit] createPayment failed", xenditErr)
+      // Hapus transaksi pending yang gagal generate QR
       await service.from("transactions").delete().eq("id", trx.id)
-      const msg = dokuErr?.message || "Gagal generate QRIS DOKU"
-      // Sanitize: jangan expose secret, tapi beri hint upload public key
-      const isAuthError = /B2B token gagal|public\.pem|merchantId|401|500/i.test(msg)
-      const hint = isAuthError ? " — Pastikan Merchant Public Key sudah di-upload ke DOKU Dashboard Production untuk client " + (process.env.DOKU_CLIENT_ID || "BRN-0244-1788274023542") + " dan DOKU_MERCHANT_ID/TERMINAL_ID benar." : ""
-      return NextResponse.json({ error: msg + hint }, { status: 502 })
+      const msg = xenditErr?.message || "Gagal generate QRIS Xendit"
+      return NextResponse.json({ error: msg }, { status: 502 })
     }
 
     const invoiceId = `LKBB-${trx.id.slice(0,8).toUpperCase()}`
     return NextResponse.json({
       transactionId: trx.id,
       invoiceId,
-      provider: "DOKU",
-      providerRef: dokuReferenceNo || initialRef,
-      dokuReferenceNo,
+      provider: "XENDIT",
+      providerRef: trx.id,
+      xenditReferenceNo,
       amount,
       quantity,
       expiresAt,
       paymentUrl,
-      qrContent: dokuQrContent,
-      qrString: dokuQrContent,
-      qrUrl: dokuQrUrl,
+      qrContent: xenditQrContent,
+      qrString: xenditQrContent,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message || "Server error" }, { status: 500 })

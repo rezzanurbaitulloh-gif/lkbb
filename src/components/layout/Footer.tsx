@@ -80,7 +80,7 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
   }
   return (
     <footer className="mt-auto border-t border-white/10 bg-white/5 backdrop-blur overflow-hidden relative">
-      <div className="pointer-events-none absolute top-0 inset-x-0 h-[0.5px] bg-gradient-to-r from-transparent via-[#C9A86A]/16 to-transparent" />
+      <div className="pointer-events-none absolute top-0 inset-x-0 h-[0.5px] bg-gradient-to-r from-transparent via-primary/16 to-transparent" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_300px_at_80%_0%,rgba(201,168,106,0.06),transparent_70%)]" />
       <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-8 sm:py-10">
         <div className="grid gap-6 sm:gap-8 grid-cols-1 min-[360px]:grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.4fr_0.9fr_0.9fr_1fr]">
@@ -89,7 +89,7 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
               <img src={logoMain} alt={siteName} className="h-12 w-12 sm:h-14 sm:w-14 object-contain bg-transparent shrink-0" />
               <div className="min-w-0">
                 <div className="text-[13px] sm:text-sm font-extrabold tracking-tight break-words leading-tight">{siteName}</div>
-                <div className="text-[10px] sm:text-[11px] tracking-[0.12em] text-gold font-bold">{siteSubtitle}</div>
+                <div className="text-[10px] sm:text-[11px] tracking-[0.12em] text-primary font-bold">{siteSubtitle}</div>
               </div>
             </div>
             <p className="mt-3 max-w-sm text-[12px] sm:text-[13px] leading-relaxed text-muted-foreground text-pretty break-words">

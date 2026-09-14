@@ -50,7 +50,7 @@ export function Select({
               className={cn("flex w-full items-center gap-2 px-3 py-2.5 text-sm text-left hover:bg-white/5 backdrop-blur transition-colors", value===opt.value && "bg-white/5 backdrop-blur font-bold")}
             >
               <span className="flex-1">{opt.label}</span>
-              {value===opt.value && <Check className="h-4 w-4 text-[#C9A86A]" />}
+              {value===opt.value && <Check className="h-4 w-4 text-primary" />}
             </button>
           ))}
         </div>

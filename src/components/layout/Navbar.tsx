@@ -73,7 +73,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
   }
   return (
     <header className={`sticky top-0 z-50 w-full border-b border-white/10 bg-background/72 backdrop-blur-[14px] supports-[backdrop-filter]:bg-background/58 transform transition-transform duration-300 will-change-transform ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[0.5px] bg-gradient-to-r from-transparent via-[#C9A86A]/18 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[0.5px] bg-gradient-to-r from-transparent via-primary/18 to-transparent" />
       <div className="mx-auto flex h-[56px] sm:h-[58px] lg:h-[60px] max-w-[1280px] items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
         {/* Logo — dynamic from site_settings */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -83,7 +83,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
           <div className="hidden sm:block min-w-0">
             <div className="flex items-baseline gap-1.5">
               <span className="text-[14px] sm:text-[15px] font-extrabold tracking-[-0.02em] text-foreground truncate">{siteName.split(" ")[0] || "LKBB"}</span>
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] text-gold truncate">{siteSubtitle}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] text-primary truncate">{siteSubtitle}</span>
             </div>
             <div className="-mt-1 text-[9px] sm:text-[10px] font-medium tracking-[0.08em] text-muted-foreground truncate max-w-[160px]">{siteTagline}</div>
           </div>
@@ -141,7 +141,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
                     </Link>
                     {isAdmin && (
                       <Link href="/admin" onClick={()=> setProfileOpen(false)} className={cn("flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-left transition-colors", pathname.startsWith("/admin") ? "bg-primary text-black shadow-sm" : "hover:bg-white/5 backdrop-blur text-muted-foreground hover:text-foreground")}>
-                        <LayoutDashboard className="h-4 w-4 text-gold shrink-0" /> <span>Dashboard Admin</span>
+                        <LayoutDashboard className="h-4 w-4 text-primary shrink-0" /> <span>Dashboard Admin</span>
                       </Link>
                     )}
                   </div>
@@ -194,7 +194,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
                     </div>
                     <Link href="/profile" onClick={()=>setOpen(false)} className={cn("flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-left transition-colors", pathname==="/profile" ? "bg-primary text-black shadow-sm" : "text-muted-foreground hover:bg-white/5 backdrop-blur hover:text-foreground")}><User className="h-4 w-4 shrink-0"/> <span>Profile</span></Link>
                     <Link href="/profile/edit" onClick={()=>setOpen(false)} className={cn("flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-left transition-colors", pathname==="/profile/edit" ? "bg-primary text-black shadow-sm" : "text-muted-foreground hover:bg-white/5 backdrop-blur hover:text-foreground")}><Settings className="h-4 w-4 shrink-0"/> <span>Pengaturan</span></Link>
-                    {isAdmin && <Link href="/admin" onClick={()=>setOpen(false)} className={cn("flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-left transition-colors", pathname.startsWith("/admin") ? "bg-primary text-black shadow-sm" : "text-muted-foreground hover:bg-white/5 backdrop-blur hover:text-foreground")}><LayoutDashboard className="h-4 w-4 text-gold shrink-0"/> <span>Dashboard Admin</span></Link>}
+                    {isAdmin && <Link href="/admin" onClick={()=>setOpen(false)} className={cn("flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-left transition-colors", pathname.startsWith("/admin") ? "bg-primary text-black shadow-sm" : "text-muted-foreground hover:bg-white/5 backdrop-blur hover:text-foreground")}><LayoutDashboard className="h-4 w-4 text-primary shrink-0"/> <span>Dashboard Admin</span></Link>}
                     <button onClick={async ()=>{ setOpen(false); await logout(); router.push("/"); router.refresh() }} className="flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-left"><LogOut className="h-4 w-4 shrink-0"/> <span>Logout</span></button>
                   </div>
                 ) : (
@@ -218,7 +218,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
               value={mobileSearch}
               onChange={e=> setMobileSearch(e.target.value)}
               placeholder="Cari nama tim..."
-              className="h-11 w-full rounded-full border border-white/10 bg-white/5 backdrop-blur pl-9 pr-11 text-[13px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#C9A86A]"
+              className="h-11 w-full rounded-full border border-white/10 bg-white/5 backdrop-blur pl-9 pr-11 text-[13px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <button type="submit" aria-label="Cari" className="absolute right-1 h-9 w-9 grid place-items-center rounded-full bg-foreground text-background">
               <Search className="h-4 w-4" />

@@ -90,7 +90,7 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
                   </div>
                   <div className="flex-1 rounded-xl border border-white/15 bg-white/10 backdrop-blur p-3 text-center shadow-sm">
                     <div className="text-[11px] font-bold tracking-widest text-white/70">STATUS</div>
-                    <div className="text-sm font-black text-[#C9A86A]">AKTIF</div>
+                    <div className="text-sm font-black text-primary">AKTIF</div>
                   </div>
                 </div>
               </div>

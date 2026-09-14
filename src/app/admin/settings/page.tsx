@@ -461,7 +461,7 @@ export default function SettingsPage(){
           {/* Hero background — Background judul web di beranda */}
           <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur p-5 space-y-5">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-[#0B0C0F] grid place-items-center text-[#C9A86A] border"><ImgIcon className="h-4 w-4"/></div>
+              <div className="h-8 w-8 rounded-xl bg-[#0B0C0F] grid place-items-center text-primary border"><ImgIcon className="h-4 w-4"/></div>
               <div>
                 <h3 className="text-sm font-black">Background Judul Web di Beranda (Hero)</h3>
                 <p className="text-xs text-muted-foreground">Gambar latar di balik tulisan PELETON TERFAVORIT. Bisa ganti foto, atur opasitas, dan preview langsung.</p>
@@ -480,7 +480,7 @@ export default function SettingsPage(){
 
                 <div>
                   <label className="text-xs font-bold">Opasitas Overlay ({heroOverlay}%)</label>
-                  <input type="range" min={0} max={90} value={heroOverlay} onChange={e=> setHeroOverlay(parseInt(e.target.value))} className="w-full mt-1 accent-[#C9A86A]" />
+                  <input type="range" min={0} max={90} value={heroOverlay} onChange={e=> setHeroOverlay(parseInt(e.target.value))} className="w-full mt-1 accent-primary" />
                   <div className="flex justify-between text-[11px] text-muted-foreground"><span>Transparan</span><span>Pekat</span></div>
                 </div>
 
@@ -500,7 +500,7 @@ export default function SettingsPage(){
                 <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/20 via-[#09090b]/50 to-[#09090b]" />
                 {heroLogo && <img src={heroLogo} alt="" className="absolute inset-0 m-auto h-[140px] w-[140px] object-contain opacity-10 pointer-events-none" />}
                 <div className="relative px-4">
-                  <div className="text-[10px] font-bold tracking-[0.18em] text-[#C9A86A]">LKBB • JAVASOMA THE IMPRESSION</div>
+                  <div className="text-[10px] font-bold tracking-[0.18em] text-primary">LKBB • JAVASOMA THE IMPRESSION</div>
                   <div className="mt-1 text-[22px] font-black leading-none text-white" style={{fontFamily:"var(--font-cormorant)"}}>PELETON<br/><span style={{color: previewPrimary}}>TERFAVORIT</span></div>
                   <div className="mt-2 inline-flex rounded-full px-3 py-1 text-[10px] font-black text-black" style={{background: previewPrimary}}>LIHAT PESERTA</div>
                 </div>
@@ -522,7 +522,7 @@ export default function SettingsPage(){
           {/* Tim background — sama seperti hero tapi CRUD terpisah */}
           <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur p-5 space-y-5">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-[#0B0C0F] grid place-items-center text-[#D4B77A] border"><ImgIcon className="h-4 w-4"/></div>
+              <div className="h-8 w-8 rounded-xl bg-[#0B0C0F] grid place-items-center text-primary border"><ImgIcon className="h-4 w-4"/></div>
               <div>
                 <h3 className="text-sm font-black">Background Halaman Tim (Header Tim)</h3>
                 <p className="text-xs text-muted-foreground">Gambar latar di halaman /tim paling atas. Default mengikuti Hero Beranda, tapi bisa diubah terpisah. Preview realtime.</p>

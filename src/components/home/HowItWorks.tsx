@@ -21,7 +21,7 @@ export function HowItWorks(){
               <div className="h-14 w-14 rounded-full bg-background border border-white/10 grid place-items-center shadow-subtle">
                 <s.icon className="h-5 w-5 text-muted-foreground" />
               </div>
-              <div className="mt-2 text-[11px] font-black tracking-widest text-gold">{s.n}</div>
+              <div className="mt-2 text-[11px] font-black tracking-widest text-primary">{s.n}</div>
               <div className="text-[13px] font-bold leading-tight text-foreground">{s.title}</div>
               <div className="hidden md:block text-[12px] leading-relaxed text-muted-foreground mt-1 text-pretty">{s.desc}</div>
             </div>

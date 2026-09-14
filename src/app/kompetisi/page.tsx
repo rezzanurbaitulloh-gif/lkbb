@@ -37,7 +37,7 @@ export default async function KompetisiPage(){
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/85 to-transparent" />
           <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-10">
             <Badge className="bg-primary text-black border-primary">TENTANG KOMPETISI</Badge>
-            <h1 className="mt-3 text-[30px] md:text-[44px] font-black tracking-[-0.03em] leading-none">LKBB JAVASOMA<br/><span className="text-[#C9A86A]">THE IMPRESSION</span></h1>
+            <h1 className="mt-3 text-[30px] md:text-[44px] font-black tracking-[-0.03em] leading-none">LKBB JAVASOMA<br/><span className="text-primary">THE IMPRESSION</span></h1>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/tim"><Button className="rounded-full">Lihat Peserta</Button></Link>
               <Link href="/timeline"><Button variant="outline" className="rounded-full bg-white/10 border-white/15 text-white hover:bg-white/15">Lihat Timeline</Button></Link>
@@ -88,7 +88,7 @@ export default async function KompetisiPage(){
                     <div className="col-span-2 rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">Belum ada juri terdaftar — data real, menunggu admin menambah.</div>
                   )}
                 </div>
-                <Link href="/juri" className="mt-3 inline-flex text-xs font-bold text-gold hover:underline">Lihat profil juri lengkap →</Link>
+                <Link href="/juri" className="mt-3 inline-flex text-xs font-bold text-primary hover:underline">Lihat profil juri lengkap →</Link>
               </div>
 
               <div className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-6">

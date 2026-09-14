@@ -53,7 +53,7 @@ export default function LoginPage(){
             <Button type="submit" disabled={loading} className="rounded-full h-11 w-full">{loading?"Memproses…":"Masuk"}</Button>
             <div className="flex justify-between text-xs">
               <Link href="/forgot-password" className="font-semibold hover:underline">Lupa password?</Link>
-              <Link href="/register" className="font-semibold text-gold hover:underline">Daftar</Link>
+              <Link href="/register" className="font-semibold text-primary hover:underline">Daftar</Link>
             </div>
           </form>
           <div className="hairline my-6" />

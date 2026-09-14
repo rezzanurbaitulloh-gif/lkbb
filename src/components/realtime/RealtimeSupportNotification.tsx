@@ -44,7 +44,7 @@ function SupportPopup({ item, onClose }: { item: QueueItem; onClose: () => void 
       {exploding && !reduced && (
         <div className="absolute inset-0 pointer-events-none grid place-items-center bg-primary/10 animate-pulse">
           <div className="text-4xl animate-bounce">💥</div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#C9A86A30] to-transparent animate-ping" style={{ animationDuration: "0.7s" }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent animate-ping" style={{ animationDuration: "0.7s" }} />
         </div>
       )}
       <div className="relative p-6 flex gap-4">
@@ -56,7 +56,7 @@ function SupportPopup({ item, onClose }: { item: QueueItem; onClose: () => void 
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-bold tracking-[0.14em] text-[#C9A86A] flex items-center gap-1">
+          <div className="text-[11px] font-bold tracking-[0.14em] text-primary flex items-center gap-1">
             <Sparkles className="h-3 w-3" /> DUKUNGAN BARU!
           </div>
           <p className="mt-2 text-[16px] font-bold leading-snug text-white text-pretty">
@@ -73,7 +73,7 @@ function SupportPopup({ item, onClose }: { item: QueueItem; onClose: () => void 
         </button>
       </div>
       {item.peletonSlug && (
-        <Link href={`/tim/${item.peletonSlug}`} onClick={onClose} className="block border-t border-white/10 bg-white/5 px-4 py-2 text-center text-xs font-bold text-[#C9A86A] hover:text-white hover:bg-white/10">
+        <Link href={`/tim/${item.peletonSlug}`} onClick={onClose} className="block border-t border-white/10 bg-white/5 px-4 py-2 text-center text-xs font-bold text-primary hover:text-white hover:bg-white/10">
           Lihat Peleton →
         </Link>
       )}

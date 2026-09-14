@@ -22,8 +22,8 @@ export function CmsSectionRenderer({ section }: { section: Section }){
       return (
         <section className="bg-[#09090b] text-white py-10 px-4">
           <div className="mx-auto max-w-[1280px]">
-            <div className="text-[11px] tracking-[0.18em] text-[#C9A86A] font-bold">{c.eyebrow || ""}</div>
-            <h2 className="text-3xl font-black text-[#C9A86A]">{c.headingLine1 || ""} {c.headingLine2 || ""}</h2>
+            <div className="text-[11px] tracking-[0.18em] text-primary font-bold">{c.eyebrow || ""}</div>
+            <h2 className="text-3xl font-black text-primary">{c.headingLine1 || ""} {c.headingLine2 || ""}</h2>
             <p className="text-white/60 text-sm mt-2 max-w-[520px]">{c.description || ""}</p>
             <div className="mt-4 flex gap-2">
               {c.ctaPrimaryLabel && <Link href={c.ctaPrimaryLink || "/tim"}><Button className="rounded-full bg-primary text-black">{c.ctaPrimaryLabel}</Button></Link>}
@@ -42,7 +42,7 @@ export function CmsSectionRenderer({ section }: { section: Section }){
               <div className="p-4">
                 {c.heading && <div className="text-sm font-black">{c.heading}</div>}
                 {c.description && <div className="text-xs text-muted-foreground mt-1">{c.description}</div>}
-                {c.link && <Link href={c.link} className="mt-2 inline-flex text-xs font-bold text-[#C9A86A]">Lihat →</Link>}
+                {c.link && <Link href={c.link} className="mt-2 inline-flex text-xs font-bold text-primary">Lihat →</Link>}
               </div>
             )}
           </div>

@@ -110,7 +110,7 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
           <div className="mx-auto max-w-[720px] text-center flex flex-col items-center px-1">
             <div className="inline-flex max-w-full items-center justify-center gap-2 sm:gap-3 flex-wrap">
               <span className="h-px w-6 sm:w-8 bg-primary shrink-0" />
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-[#C9A86A] break-words text-center">{eyebrow}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-primary break-words text-center">{eyebrow}</span>
               <span className="h-px w-6 sm:w-8 bg-primary shrink-0" />
             </div>
             <h1 className="mt-3 text-balance font-black leading-[0.84] tracking-[-0.035em] text-center max-w-full break-words animate-[fadeIn_0.7s_ease-out] px-1">
@@ -118,8 +118,8 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
               <span className="block text-[32px] xs:text-[36px] sm:text-[42px] md:text-[56px] lg:text-[68px] xl:text-[76px] leading-[0.88] font-display text-white">{heading2}</span>
             </h1>
             <div className="mt-3 text-center max-w-full space-y-1">
-              <div className="text-[11px] sm:text-[13px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-white break-words">{subtitle} <span className="text-[#C9A86A]">•</span> {subtitle2}</div>
-              <div className="text-[10px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.14em] text-[#C9A86A] font-bold break-words">{tagline}</div>
+              <div className="text-[11px] sm:text-[13px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-white break-words">{subtitle} <span className="text-primary">•</span> {subtitle2}</div>
+              <div className="text-[10px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.14em] text-primary font-bold break-words">{tagline}</div>
               <div className="text-[11px] sm:text-[12px] font-medium tracking-wide text-white/60 break-words">Lomba Keterampilan Baris-Berbaris • PASKIBRA Satria Cengkara SMKN 1 Kertosono</div>
             </div>
             <div className="mt-5 xs:mt-6 flex flex-col xs:flex-row flex-wrap gap-2.5 sm:gap-3 justify-center items-center w-full xs:w-auto px-1 xs:px-0">

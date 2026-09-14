@@ -21,7 +21,7 @@ export function BottomNav(){
           const active = path===href || (href!=="/" && path.startsWith(href))
           return (
             <Link key={href} href={href} aria-current={active ? "page" : undefined} className={cn("flex flex-col items-center justify-center gap-0.5 sm:gap-1 py-2 sm:py-2.5 text-[9px] sm:text-[10px] font-medium min-w-0 px-1", active ? "text-foreground" : "text-muted-foreground")}>
-              <Icon className={cn("h-[18px] w-[18px] sm:h-5 sm:w-5 max-[320px]:h-4 max-[320px]:w-4 shrink-0", active && "text-gold")} strokeWidth={active?2.2:1.8} />
+              <Icon className={cn("h-[18px] w-[18px] sm:h-5 sm:w-5 max-[320px]:h-4 max-[320px]:w-4 shrink-0", active && "text-primary")} strokeWidth={active?2.2:1.8} />
               <span className={cn("tracking-wide truncate max-w-full leading-none", active && "font-bold")}>{label}</span>
             </Link>
           )

@@ -270,7 +270,7 @@ html:not(.dark) { --background: #09090b; --foreground: #F4F4F1; --surface: #1113
   }
   /* ——— Premium distinctive — not generic — */
   .gold-gradient-text {
-    background: linear-gradient(135deg, #C9A86A 0%, #FDE68A 25%, #C9A86A 50%, #8C6A2A 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, #FDE68A 25%, var(--primary) 50%, #8C6A2A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -289,7 +289,7 @@ html:not(.dark) { --background: #09090b; --foreground: #F4F4F1; --surface: #1113
   }
   .gold-hairline-premium {
     height: 0.5px;
-    background: linear-gradient(90deg, transparent, rgba(201,168,106,0.38) 20%, rgba(201,168,106,0.62) 50%, rgba(201,168,106,0.38) 80%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 38%, transparent) 20%, color-mix(in oklab, var(--primary) 62%, transparent) 50%, color-mix(in oklab, var(--primary) 38%, transparent) 80%, transparent);
   }
   .hairline-thin { height: 0.5px; background: color-mix(in oklab, var(--border) 55%, transparent); }
   .border-hairline { border-width: 0.5px; }
@@ -297,7 +297,7 @@ html:not(.dark) { --background: #09090b; --foreground: #F4F4F1; --surface: #1113
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
   }
   .font-display { font-family: var(--font-inter), system-ui, sans-serif; font-weight: 800; }
-  .text-gold-glow { text-shadow: 0 0 20px rgba(201,168,106,0.4), 0 0 40px rgba(201,168,106,0.2); }
+  .text-gold-glow { text-shadow: 0 0 20px color-mix(in oklab, var(--primary) 40%, transparent), 0 0 40px color-mix(in oklab, var(--primary) 20%, transparent); }
 }
 
 /* ——— Responsive System: dari HP paling kecil (280px) hingga desktop ——— */

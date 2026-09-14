@@ -16,21 +16,21 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
     <section className="relative bg-[#09090b] border-y border-white/10 overflow-hidden">
       {/* premium subtle gold glow behind — lebih menyatu */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(860px_420px_at_18%_-10%,rgba(201,168,106,0.08),transparent_62%)]" />
-      <div className="pointer-events-none absolute top-0 inset-x-0 h-[0.5px] bg-gradient-to-r from-transparent via-[#C9A86A]/22 to-transparent opacity-80" />
+      <div className="pointer-events-none absolute top-0 inset-x-0 h-[0.5px] bg-gradient-to-r from-transparent via-primary/22 to-transparent opacity-80" />
       <div className="pointer-events-none absolute bottom-0 inset-x-0 h-[0.5px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 md:px-6 py-10 sm:py-12 md:py-14 relative">
         {hasBadge && (
           <div className="flex justify-center mb-4 px-2">
             {showSementara && <span className="inline-flex rounded-full bg-[#FACC15] text-black px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow">HASIL SEMENTARA</span>}
-            {showFinal && <span className="inline-flex rounded-full bg-gradient-to-r from-[#C9A86A] to-[#8C6A2A] text-black px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow">HASIL FINAL</span>}
+            {showFinal && <span className="inline-flex rounded-full bg-gradient-to-r from-primary to-primary text-black px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow">HASIL FINAL</span>}
           </div>
         )}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <span className="hidden sm:block text-[11px] font-bold tracking-[0.16em] text-[#C9A86A]/70">01</span>
+              <span className="hidden sm:block text-[11px] font-bold tracking-[0.16em] text-primary/70">01</span>
               <span className="h-px w-6 bg-primary/40 hidden sm:block" />
-              <span className="text-[11px] font-bold tracking-[0.18em] text-[#C9A86A]">PESERTA</span>
+              <span className="text-[11px] font-bold tracking-[0.18em] text-primary">PESERTA</span>
             </div>
             <h2 className="mt-3 text-[22px] sm:text-[26px] md:text-[30px] font-black tracking-[-0.032em] text-white leading-[0.92] break-words font-display">DUKUNG PELETON <span className="text-white">FAVORITMU!</span></h2>
             <p className="mt-3 text-[13px] sm:text-[13.5px] text-white/60 leading-relaxed max-w-xl">Beranda urut nomor tampil (01, 02, 03…) — SMP & SMA terpisah. Peringkat disembunyikan saat voting aktif.</p>

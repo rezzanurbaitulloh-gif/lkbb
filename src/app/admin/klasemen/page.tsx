@@ -31,7 +31,7 @@ export default function AdminKlasemen(){
               <div className="text-xs text-muted-foreground truncate">{p.school} • on {Number(p.online_ballots??0).toLocaleString("id-ID")} • off {Number(p.offline_ballots??0).toLocaleString("id-ID")} • <b className="text-foreground">{Number(p.total_ballots??0).toLocaleString("id-ID")} total</b></div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-xs font-black tabular-nums text-[#C9A86A]">{Number(p.total_ballots??0).toLocaleString("id-ID")}</div>
+              <div className="text-xs font-black tabular-nums text-primary">{Number(p.total_ballots??0).toLocaleString("id-ID")}</div>
               <div className="text-[11px] tabular-nums text-muted-foreground">on {Number(p.online_ballots??0).toLocaleString("id-ID")}</div>
             </div>
           </div>

@@ -55,13 +55,13 @@ export default function AdminOverview(){
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2">
-            <span className="h-px w-6 bg-gradient-to-r from-transparent to-[#C9A86A]" />
-            <span className="text-[10px] font-black tracking-[0.18em] text-[#C9A86A]">ADMIN • CONTROL CENTER</span>
+            <span className="h-px w-6 bg-gradient-to-r from-transparent to-primary" />
+            <span className="text-[10px] font-black tracking-[0.18em] text-primary">ADMIN • CONTROL CENTER</span>
           </div>
           <h1 className="mt-1 text-[18px] sm:text-[20px] font-black tracking-[-0.02em] text-white">DASHBOARD</h1>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="rounded-full bg-gradient-to-r from-[#C9A86A] to-[#8C6A2A] px-3 py-1 text-xs font-black tracking-wide text-black shadow">{stats.state || "ACTIVE"}</span>
+          <span className="rounded-full bg-gradient-to-r from-primary to-primary px-3 py-1 text-xs font-black tracking-wide text-black shadow">{stats.state || "ACTIVE"}</span>
           <span className="hidden md:inline-flex text-xs text-white/40">20 Okt - 24 Okt 2026</span>
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function AdminOverview(){
         <div className="rounded-[12px] border border-white/10 bg-[#17191F] p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black tracking-wide">RANKING TERATAS (SMA / SEDERAJAT)</h3>
-            <Link href="/admin/klasemen" className="text-[11px] font-bold text-[#C9A86A]">Lihat Selengkapnya →</Link>
+            <Link href="/admin/klasemen" className="text-[11px] font-bold text-primary">Lihat Selengkapnya →</Link>
           </div>
           <div className="mt-3 space-y-1">
             {ranking.map((r:any,i:number)=> (
@@ -143,7 +143,7 @@ export default function AdminOverview(){
                   <div className="text-[11px] text-white/40 tabular-nums">on {Number(r.online_ballots??0).toLocaleString("id-ID")} • off {Number(r.offline_ballots??0).toLocaleString("id-ID")} • tot {Number(r.total_ballots??0).toLocaleString("id-ID")}</div>
                 </div>
                 <div className="text-right">
-                  <div className="tabular-nums font-black text-[#C9A86A] text-xs">{Number(r.total_ballots??0).toLocaleString("id-ID")}</div>
+                  <div className="tabular-nums font-black text-primary text-xs">{Number(r.total_ballots??0).toLocaleString("id-ID")}</div>
                   <div className="tabular-nums text-[10px] text-white/40">on {Number(r.online_ballots??0).toLocaleString("id-ID")}</div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function AdminOverview(){
           ) : (
             <ChartContainer
               config={{
-                online: { label: "Online", color: "#C9A86A" },
+                online: { label: "Online", color: "var(--primary)" },
                 offline: { label: "Offline", color: "#9CA3AF" },
               }}
               className="mt-3 h-[160px] w-full"
@@ -202,7 +202,7 @@ export default function AdminOverview(){
         <div className="rounded-[12px] border border-white/10 bg-[#17191F] p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black tracking-wide">TRANSAKSI TERBARU</h3>
-            <Link href="/admin/transaksi" className="text-[11px] text-[#C9A86A]">Lihat Semua →</Link>
+            <Link href="/admin/transaksi" className="text-[11px] text-primary">Lihat Semua →</Link>
           </div>
           <div className="mt-3">
             {/* Desktop table — konsisten padding, no overflow di HP */}
@@ -256,7 +256,7 @@ export default function AdminOverview(){
                 </div>
               ))}
             </div>
-            <a href="/admin/audit-log" className="mt-2 inline-flex text-[11px] font-bold text-[#C9A86A]">Lihat Audit Log →</a>
+            <a href="/admin/audit-log" className="mt-2 inline-flex text-[11px] font-bold text-primary">Lihat Audit Log →</a>
           </div>
         </div>
       </div>

@@ -83,7 +83,7 @@ export default function SubProfile(){
                   {allPeletons.filter(p=> favorites.includes(p.id)).map(p=> (
                     <div key={p.id} className="flex gap-3 rounded-xl border border-white/10 bg-white/5 backdrop-blur p-3">
                       <img src={p.image_url || p.image} alt="" className="h-14 w-14 rounded-lg object-cover"/>
-                      <div><div className="text-sm font-bold">{p.name}</div><div className="text-xs text-muted-foreground">{p.school}</div><Link href={`/peleton/${p.slug}`} className="text-xs font-bold text-gold">Lihat →</Link></div>
+                      <div><div className="text-sm font-bold">{p.name}</div><div className="text-xs text-muted-foreground">{p.school}</div><Link href={`/peleton/${p.slug}`} className="text-xs font-bold text-primary">Lihat →</Link></div>
                     </div>
                   ))}
                 </div>

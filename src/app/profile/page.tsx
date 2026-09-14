@@ -73,7 +73,7 @@ export default function ProfilePage(){
                   <div className="text-xs text-muted-foreground">Peleton Favorit</div>
                 </div>
                 <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 text-center">
-                  <div className="text-xs font-bold tracking-widest text-gold">STATUS</div>
+                  <div className="text-xs font-bold tracking-widest text-primary">STATUS</div>
                   <div className="text-sm font-black">Pendukung Aktif</div>
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function ProfilePage(){
                       <Badge className="bg-emerald-500 text-black border-emerald-500">{tx.status}</Badge>
                     </Link>
                   ))}
-                  <Link href="/profile/dukungan" className="text-center text-xs font-semibold text-gold hover:underline">Lihat semua →</Link>
+                  <Link href="/profile/dukungan" className="text-center text-xs font-semibold text-primary hover:underline">Lihat semua →</Link>
                 </div>
               )}
             </div>

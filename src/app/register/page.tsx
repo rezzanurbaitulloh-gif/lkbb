@@ -50,7 +50,7 @@ export default function RegisterPage(){
             </div>
             {err && <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-600">{err}</div>}
             <Button type="submit" disabled={loading} className="rounded-full h-11 w-full">{loading?"Mendaftar…":"Daftar"}</Button>
-            <div className="text-center text-xs">Sudah punya akun? <Link href="/login" className="font-bold text-gold hover:underline">Masuk</Link></div>
+            <div className="text-center text-xs">Sudah punya akun? <Link href="/login" className="font-bold text-primary hover:underline">Masuk</Link></div>
           </form>
         </div>
       </main>

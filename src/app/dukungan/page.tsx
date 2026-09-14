@@ -170,7 +170,7 @@ function DukunganInner(){
                   }
                 }}
                 disabled={isClosed}
-                className="flex-1 min-w-0 rounded-full border border-white/10 bg-white/5 backdrop-blur h-10 xs:h-11 text-center text-[15px] xs:text-base font-black tabular-nums focus:outline-none focus:ring-2 focus:ring-[#C9A86A] disabled:opacity-50 px-2"
+                className="flex-1 min-w-0 rounded-full border border-white/10 bg-white/5 backdrop-blur h-10 xs:h-11 text-center text-[15px] xs:text-base font-black tabular-nums focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 px-2"
               />
               <button disabled={isClosed || loading} onClick={()=>setQty(q=> Math.min(10000, (Number(q)||1)+1))} className="h-10 w-10 xs:h-11 xs:w-11 rounded-full border border-white/10 bg-white/5 backdrop-blur grid place-items-center hover:bg-white/5 backdrop-blur disabled:cursor-not-allowed disabled:opacity-50 shrink-0"><Plus className="h-3.5 w-3.5 xs:h-4 xs:w-4"/></button>
             </div>

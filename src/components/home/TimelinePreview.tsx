@@ -14,7 +14,7 @@ export function TimelinePreview(){
       <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-10">
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm font-black tracking-tight">TIMELINE KOMPETISI</h3>
-          <a href="/timeline" className="text-xs font-semibold text-gold hover:underline">Lihat Timeline →</a>
+          <a href="/timeline" className="text-xs font-semibold text-primary hover:underline">Lihat Timeline →</a>
         </div>
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {timelineStages.map(s=> (

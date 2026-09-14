@@ -23,7 +23,7 @@ function Crown({ size = 56 }: { size?: number }) {
           <linearGradient id="crownGold" x1="0" y1="0" x2="0" y2="38" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#FFF7CC" />
             <stop offset="22%" stopColor="#FFD700" />
-            <stop offset="48%" stopColor="#C9A86A" />
+            <stop offset="48%" stopColor="var(--primary)" />
             <stop offset="78%" stopColor="#8C6A2A" />
             <stop offset="100%" stopColor="#5A3A0A" />
           </linearGradient>
@@ -39,9 +39,9 @@ function Crown({ size = 56 }: { size?: number }) {
         {/* crown body 5 points */}
         <path d="M8 22 L14 8 L22 16 L32 6 L42 16 L50 8 L56 22 Z" fill="url(#crownGold)" stroke="white" strokeWidth="1.1" strokeLinejoin="round"/>
         {/* jewels on points */}
-        <circle cx="14" cy="8" r="2.8" fill="url(#crownPearl)" stroke="#C9A86A" strokeWidth="0.7"/><circle cx="14" cy="8" r="1.1" fill="#2DD4BF"/>
-        <circle cx="32" cy="6" r="3.2" fill="url(#crownPearl)" stroke="#C9A86A" strokeWidth="0.8"/><circle cx="32" cy="6" r="1.3" fill="url(#crownGem)"/>
-        <circle cx="50" cy="8" r="2.8" fill="url(#crownPearl)" stroke="#C9A86A" strokeWidth="0.7"/><circle cx="50" cy="8" r="1.1" fill="#2DD4BF"/>
+        <circle cx="14" cy="8" r="2.8" fill="url(#crownPearl)" stroke="var(--primary)" strokeWidth="0.7"/><circle cx="14" cy="8" r="1.1" fill="#2DD4BF"/>
+        <circle cx="32" cy="6" r="3.2" fill="url(#crownPearl)" stroke="var(--primary)" strokeWidth="0.8"/><circle cx="32" cy="6" r="1.3" fill="url(#crownGem)"/>
+        <circle cx="50" cy="8" r="2.8" fill="url(#crownPearl)" stroke="var(--primary)" strokeWidth="0.7"/><circle cx="50" cy="8" r="1.1" fill="#2DD4BF"/>
         <circle cx="22" cy="16" r="1.6" fill="#0EA5E9" stroke="white" strokeWidth="0.5"/><circle cx="42" cy="16" r="1.6" fill="#0EA5E9" stroke="white" strokeWidth="0.5"/>
         <circle cx="32" cy="14.5" r="2.2" fill="url(#crownGem)" stroke="white" strokeWidth="0.6"/><circle cx="32" cy="14.5" r="0.9" fill="white" opacity="0.9"/>
         {/* base band with pearls */}
@@ -75,14 +75,14 @@ function ShieldPodiumCard({ team, rank, delay = 0 }: { team: Team; rank: number;
   const isSecond = rank === 2
   const cfg = isFirst
     ? {
-        borderGrad: "from-[#C9A86A]/70 via-[#C9A86A] to-[#8C6A2A]/70",
+        borderGrad: "from-primary/70 via-primary to-primary/70",
         bg: "from-[#111318] via-[#0F1115] to-[#0A0C10]",
         glow: "shadow-[0_10px_28px_rgba(0,0,0,0.38),0_0_18px_rgba(201,168,106,0.10)]",
         medalBg: "from-[#FFE9A86A] via-[#FFD700] to-[#B45309]",
         medalText: "text-[#5B3A00]",
-        medalRing: "ring-[#C9A86A]/60",
-        laurel: "#C9A86A",
-        juaraBar: "from-[#8C6A2A] via-[#C9A86A] to-[#8C6A2A]",
+        medalRing: "ring-primary/60",
+        laurel: "var(--primary)",
+        juaraBar: "from-[#8C6A2A] via-primary to-primary",
         juaraText: "text-[#1A1400]",
         foot: "bg-white/5 backdrop-blur border-white/10",
         height: "h-[276px] xs:h-[304px] sm:h-[340px] md:h-[372px] lg:h-[400px] xl:h-[436px]",
@@ -146,7 +146,7 @@ function ShieldPodiumCard({ team, rank, delay = 0 }: { team: Team; rank: number;
             <div className="mt-1.5 xs:mt-2 inline-flex items-center gap-1 xs:gap-1.5 rounded-full bg-black/28 backdrop-blur border border-white/10 px-2 xs:px-2.5 py-1 text-[9px] xs:text-[10px] sm:text-[11px] font-black text-white shadow-[0_1px_6px_rgba(0,0,0,0.25)]">
               <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />#{team.number}
             </div>
-            {Number(team.online_ballots ?? 0) > 0 && <div className="mt-1 xs:mt-1.5 text-[9px] xs:text-[10px] sm:text-[11px] font-bold tabular-nums tracking-wide text-[#C9A86A]">{Number(team.online_ballots ?? 0).toLocaleString("id-ID")} online</div>}
+            {Number(team.online_ballots ?? 0) > 0 && <div className="mt-1 xs:mt-1.5 text-[9px] xs:text-[10px] sm:text-[11px] font-bold tabular-nums tracking-wide text-primary">{Number(team.online_ballots ?? 0).toLocaleString("id-ID")} online</div>}
           </div>
           <div className="absolute bottom-[10px] xs:bottom-3 left-2 right-2 xs:left-3 xs:right-3">
             <div className={`relative h-[26px] xs:h-[28px] sm:h-8 flex items-center justify-center bg-gradient-to-r ${cfg.juaraBar} shadow-[0_2px_8px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.18)] overflow-hidden`} style={{ clipPath: "polygon(9px 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 9px 100%, 0 50%)" }}>
@@ -226,8 +226,8 @@ export function PodiumSection({ smp, sma, isPublished, variant = "final" }: { sm
         <div className="absolute inset-0 bg-[radial-gradient(860px_380px_at_50%_-20px,rgba(201,168,106,0.06),transparent_68%)]" />
         <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `linear-gradient(rgba(201,168,106,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,106,0.5) 1px, transparent 1px)`, backgroundSize: "56px 56px" }} />
         <svg className="absolute bottom-0 inset-x-0 h-[70px] sm:h-[80px] w-full opacity-[0.07] sm:opacity-[0.09]" viewBox="0 0 1440 90" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 52 C 220 92 420 18 720 52 C 980 78 1120 28 1440 58" stroke="#C9A86A" strokeWidth="0.7" fill="none" />
-          <path d="M0 66 C 240 98 440 32 720 66 C 1040 92 1200 42 1440 72" stroke="#C9A86A" strokeWidth="0.5" opacity="0.5" fill="none" />
+          <path d="M0 52 C 220 92 420 18 720 52 C 980 78 1120 28 1440 58" stroke="var(--primary)" strokeWidth="0.7" fill="none" />
+          <path d="M0 66 C 240 98 440 32 720 66 C 1040 92 1200 42 1440 72" stroke="var(--primary)" strokeWidth="0.5" opacity="0.5" fill="none" />
         </svg>
       </div>
 
@@ -235,15 +235,15 @@ export function PodiumSection({ smp, sma, isPublished, variant = "final" }: { sm
         <div className="text-center max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2.5">
             <span className="hidden sm:block h-px w-8 bg-white/10" />
-            <span className={`text-[11px] font-bold tracking-[0.18em] ${isFinal ? "text-[#C9A86A]" : "text-white/60"}`}>{isFinal ? "HASIL FINAL" : "HASIL SEMENTARA"}</span>
+            <span className={`text-[11px] font-bold tracking-[0.18em] ${isFinal ? "text-primary" : "text-white/60"}`}>{isFinal ? "HASIL FINAL" : "HASIL SEMENTARA"}</span>
             <span className="hidden sm:block h-px w-8 bg-white/10" />
           </div>
           <div className="mt-3 flex items-center justify-center gap-3">
-            <span className="hidden sm:block h-px w-8 bg-gradient-to-r from-transparent to-[#C9A86A]/20" />
+            <span className="hidden sm:block h-px w-8 bg-gradient-to-r from-transparent to-primary/20" />
             <h2 className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[32px] font-black tracking-[-0.03em] text-white leading-[0.92] font-display">
               PODIUM PELETON <span className={isFinal ? "gold-gradient-text" : "text-white"}>TERFAVORIT</span>
             </h2>
-            <span className="hidden sm:block h-px w-8 bg-gradient-to-l from-transparent to-[#C9A86A]/20" />
+            <span className="hidden sm:block h-px w-8 bg-gradient-to-l from-transparent to-primary/20" />
           </div>
           <div className="mt-2.5 flex items-center justify-center gap-2.5">
             <span className="h-px flex-1 max-w-[140px] bg-gradient-to-r from-transparent to-white/10" />

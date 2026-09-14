@@ -56,7 +56,7 @@ export function Story({ sponsors, event }: { sponsors?: any[] | null; event?: an
               ))}
             </div>
           </div>
-          <Link href="/sponsor" className="text-sm font-semibold text-gold hover:underline">Lihat semua sponsor →</Link>
+          <Link href="/sponsor" className="text-sm font-semibold text-primary hover:underline">Lihat semua sponsor →</Link>
         </div>
       )}
     </section>

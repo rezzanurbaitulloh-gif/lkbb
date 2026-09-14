@@ -41,7 +41,7 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
         {/* SMP */}
         <div className="mt-8 xs:mt-10">
           <div className="flex flex-wrap items-center gap-3 mb-4 xs:mb-5">
-            <span className="inline-flex rounded-full bg-primary text-black border border-primary px-3 xs:px-4 py-1 xs:py-1.5 text-[11px] xs:text-xs font-black tracking-wide">SMP / SEDERAJAT</span>
+            <span className="inline-flex rounded-full bg-black/40 backdrop-blur border border-white/15 text-white px-3 xs:px-4 py-1 xs:py-1.5 text-[11px] xs:text-xs font-black tracking-wide">SMP / SEDERAJAT</span>
             <span className="text-[11px] xs:text-xs font-medium text-white/50 bg-white/5 px-2.5 py-1 rounded-full">{smp.length} tim</span>
           </div>
           {smp.length===0 ? <p className="text-sm text-white/40 py-6 text-center border border-dashed border-white/10 rounded-xl">Belum ada peleton SMP.</p> : (
@@ -54,7 +54,7 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
         {/* SMA */}
         <div className="mt-8 xs:mt-10">
           <div className="flex flex-wrap items-center gap-3 mb-4 xs:mb-5">
-            <span className="inline-flex rounded-full bg-primary text-black border border-primary px-3 xs:px-4 py-1 xs:py-1.5 text-[11px] xs:text-xs font-black tracking-wide">SMA / SEDERAJAT</span>
+            <span className="inline-flex rounded-full bg-black/40 backdrop-blur border border-white/15 text-white px-3 xs:px-4 py-1 xs:py-1.5 text-[11px] xs:text-xs font-black tracking-wide">SMA / SEDERAJAT</span>
             <span className="text-[11px] xs:text-xs font-medium text-white/50 bg-white/5 px-2.5 py-1 rounded-full">{sma.length} tim</span>
           </div>
           {sma.length===0 ? <p className="text-sm text-white/40 py-6 text-center border border-dashed border-white/10 rounded-xl">Belum ada peleton SMA.</p> : (

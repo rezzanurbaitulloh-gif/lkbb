@@ -82,7 +82,7 @@ export function PeletonCard({ peleton, eager = false }: { peleton: any; eager?: 
           <button onClick={(e)=>{ e.preventDefault(); e.stopPropagation(); handleFav(); }} aria-label={fav ? "Hapus dari favorit" : "Tambah ke favorit"} aria-pressed={fav} className={cn("absolute right-2 xs:right-3 top-2 xs:top-3 h-11 w-11 grid place-items-center rounded-full backdrop-blur border transition-colors", fav ? "bg-[#A51D2D] border-[#A51D2D] text-white" : "bg-black/40 border-white/15 text-white hover:bg-black/60")}>
             <Heart className={cn("h-[18px] w-[18px]", fav && "fill-white")} />
           </button>
-          <div className="absolute bottom-2 xs:bottom-3 right-2 xs:right-3 rounded-full bg-primary border border-primary px-1.5 xs:px-2.5 py-0.5 text-[9px] xs:text-[10px] font-bold tracking-widest text-black max-w-[42%] xs:max-w-[45%] truncate">
+          <div className="absolute bottom-2 xs:bottom-3 right-2 xs:right-3 rounded-full bg-black/40 backdrop-blur border border-white/15 px-1.5 xs:px-2.5 py-0.5 text-[9px] xs:text-[10px] font-bold tracking-widest text-white max-w-[42%] xs:max-w-[45%] truncate">
             {category}
           </div>
         </div>

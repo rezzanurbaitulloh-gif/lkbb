@@ -131,6 +131,7 @@ export async function POST(req: Request) {
 }
 
 // GET /api/transactions?userId=... — for history (requires auth)
+// FIX: riwayat transaksi per-admin di-isolasi — tiap admin lihat hanya miliknya, tidak gabung
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const peletonId = searchParams.get("peletonId")
@@ -142,15 +143,25 @@ export async function GET(req: Request) {
   const isAdmin = profile?.role === "ADMIN"
   if (id) {
     let q = supabase.from("transactions").select("*").eq("id", id).single()
-    // RLS will enforce; but also check ownership if not admin
+    // RLS will enforce; but also check ownership — untuk isolasi, admin juga hanya boleh lihat miliknya kecuali ada flag all
+    const all = searchParams.get("all") === "true"
     const { data, error } = await q
     if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-    if (!isAdmin && data.user_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    if (!all && data.user_id !== user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    // jika admin minta all=true, tetap boleh lihat semua (untuk audit), tapi default per-user
+    if (all && !isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     return NextResponse.json(data)
   }
   let query = supabase.from("transactions").select("*, peletons(name,number)").order("created_at", { ascending: false }).limit(50)
   if (peletonId) query = query.eq("peleton_id", peletonId)
-  if (!isAdmin) query = query.eq("user_id", user.id)
+  // Isolasi: tiap user (termasuk admin) hanya lihat miliknya, kecuali admin eksplisit ?all=true
+  const all = searchParams.get("all") === "true"
+  if (all) {
+    if (!isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    // admin all=true -> lihat semua (untuk dashboard audit)
+  } else {
+    query = query.eq("user_id", user.id)
+  }
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)

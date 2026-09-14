@@ -81,7 +81,11 @@ export async function GET(req: Request) {
   const service = createServiceSupabase()
   const url = new URL(req.url)
   const limit = Math.min(100, parseInt(url.searchParams.get("limit")||"50")||50)
-  const { data, error } = await service.from("supports").select("*, peletons(number,name, category)").eq("source", "offline").order("created_at", { ascending: false }).limit(limit)
+  const all = url.searchParams.get("all") === "true"
+  // Isolasi: tiap admin lihat hanya offline miliknya, tidak gabung; ?all=true untuk audit semua
+  let query = service.from("supports").select("*, peletons(number,name, category)").eq("source", "offline").order("created_at", { ascending: false }).limit(limit)
+  if (!all) query = query.eq("admin_id", user.id)
+  const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
@@ -98,8 +102,12 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Supports must be integer -10000..10000 and !=0" }, { status: 400 })
     }
     const service = createServiceSupabase()
-    const { data: existing } = await service.from("supports").select("id, peleton_id, supports, note, amount, source").eq("id", id).eq("source", "offline").single()
+    const { data: existing } = await service.from("supports").select("id, peleton_id, supports, note, amount, source, admin_id").eq("id", id).eq("source", "offline").single()
     if (!existing) return NextResponse.json({ error: "Offline record not found" }, { status: 404 })
+    // Isolasi per-admin: hanya pemilik yang boleh ubah
+    if ((existing as any).admin_id && (existing as any).admin_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden: bukan milik Anda" }, { status: 403 })
+    }
     const { data: event } = await service.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1).single()
     const offlinePrice = event?.settings?.offline_price ?? 5000
     const amount = Math.abs(supports) * offlinePrice
@@ -138,10 +146,13 @@ export async function DELETE(req: Request) {
     }
     if (ids.length===0) return NextResponse.json({ error: "Missing id(s)" }, { status: 400 })
     const service = createServiceSupabase()
-    // Fetch for audit before delete
-    const { data: rows } = await service.from("supports").select("id, peleton_id, supports, note").in("id", ids).eq("source","offline")
+    // Fetch for audit before delete — isolasi per-admin
+    const { data: rows } = await service.from("supports").select("id, peleton_id, supports, note, admin_id").in("id", ids).eq("source","offline")
     if (!rows || rows.length===0) return NextResponse.json({ error: "No offline records found" }, { status: 404 })
-    const { error } = await service.from("supports").delete().in("id", ids).eq("source","offline")
+    // Hanya boleh hapus milik sendiri
+    const notOwned = rows.filter((r: any) => r.admin_id && r.admin_id !== user.id)
+    if (notOwned.length > 0) return NextResponse.json({ error: "Forbidden: ada data bukan milik Anda" }, { status: 403 })
+    const { error } = await service.from("supports").delete().in("id", ids).eq("source","offline").eq("admin_id", user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     for (const r of rows) {
       await service.from("audit_logs").insert({

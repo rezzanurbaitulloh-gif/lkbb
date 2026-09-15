@@ -9,7 +9,8 @@ import { Trash2, Pencil } from "lucide-react"
 function statusBadge(status: string){
   if(status==="Success") return "bg-emerald-500 text-black"
   if(status==="Pending") return "bg-amber-500 text-black"
-  return "bg-red-500 text-black"
+  if(status==="Failed") return "bg-red-500 text-black"
+  return "bg-zinc-500 text-white" // Expired & lainnya — selaras dengan dashboard
 }
 
 export default function Transaksi(){

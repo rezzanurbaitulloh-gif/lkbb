@@ -6,6 +6,22 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import { Podium } from "@/components/competition/Podium"
 import { createBrowserSupabase } from "@/lib/supabase"
 
+// Label & warna status — HARUS 1:1 dengan halaman /admin/transaksi
+// (Success=Berhasil, Pending=Menunggu, Failed=Gagal, Expired=Kadaluarsa)
+function txStatusLabel(s: string){
+  if(s==="Success") return "Berhasil"
+  if(s==="Pending") return "Menunggu"
+  if(s==="Failed") return "Gagal"
+  if(s==="Expired") return "Kadaluarsa"
+  return s || "-"
+}
+function txStatusColor(s: string){
+  if(s==="Success") return "bg-emerald-500 text-black"
+  if(s==="Pending") return "bg-amber-500 text-black"
+  if(s==="Failed") return "bg-red-500 text-black"
+  return "bg-zinc-500 text-white" // Expired & lainnya
+}
+
 export default function AdminOverview(){
   const [stats, setStats] = useState<any>({})
   const [ranking, setRanking] = useState<any[]>([])
@@ -233,7 +249,7 @@ export default function AdminOverview(){
                   <Link href={href} className="truncate hover:text-primary transition-colors">{team}</Link>
                   <Link href={href} className="tabular-nums hover:text-primary transition-colors">{t.supports}</Link>
                   <Link href={href} className="tabular-nums hover:text-primary transition-colors">Rp{Number(t.amount)?.toLocaleString("id-ID")}</Link>
-                  <Link href={href}><span className={`rounded-full px-2 py-0.5 text-[10px] font-bold hover:opacity-80 ${t.status==="Success" ? "bg-emerald-500 text-black" : t.status==="Failed" ? "bg-red-500 text-black" : "bg-amber-500 text-black"}`}>{t.status==="Success"?"Berhasil":t.status==="Failed"?"Gagal":"Menunggu"}</span></Link>
+                  <Link href={href}><span className={`rounded-full px-2 py-0.5 text-[10px] font-bold hover:opacity-80 ${txStatusColor(t.status)}`}>{txStatusLabel(t.status)}</span></Link>
                 </div>
               )})}
             </div>
@@ -247,7 +263,7 @@ export default function AdminOverview(){
                 <div key={t.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 flex flex-col gap-1.5 hover:bg-white/[0.02] transition-colors">
                   <div className="flex justify-between items-center gap-2">
                     <Link href={href} className="font-mono text-[11px] text-white/60 hover:text-primary transition-colors">{String(t.id).slice(0,8)}</Link>
-                    <Link href={href}><span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${t.status==="Success" ? "bg-emerald-500 text-black" : t.status==="Failed" ? "bg-red-500 text-black" : "bg-amber-500 text-black"}`}>{t.status==="Success"?"Berhasil":t.status==="Failed"?"Gagal":"Menunggu"}</span></Link>
+                    <Link href={href}><span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${txStatusColor(t.status)}`}>{txStatusLabel(t.status)}</span></Link>
                   </div>
                   <Link href={href} className="text-sm font-bold truncate hover:text-primary transition-colors">{payer}</Link>
                   <Link href={href} className="text-xs text-white/60 truncate hover:text-primary transition-colors">Tim: {team}</Link>

@@ -74,18 +74,7 @@ export async function PATCH(req: Request){
   const { table, id, data } = body
   if(!ALLOWED_TABLES.includes(table) || !id) return NextResponse.json({ error:"Invalid" }, { status:400 })
   const service = createServiceSupabase()
-  // Isolasi per-admin untuk transaksi & supports
-  if(table === "transactions"){
-    const { data: trx } = await service.from("transactions").select("user_id").eq("id", id).maybeSingle()
-    if(trx && trx.user_id !== auth.user.id) return NextResponse.json({ error:"Forbidden: bukan milik Anda" }, { status:403 })
-  }
-  if(table === "supports"){
-    const { data: sup } = await service.from("supports").select("admin_id, user_id").eq("id", id).maybeSingle()
-    if(sup){
-      const owner = (sup as any).admin_id || (sup as any).user_id
-      if(owner && owner !== auth.user.id) return NextResponse.json({ error:"Forbidden: bukan milik Anda" }, { status:403 })
-    }
-  }
+  // Admin boleh kelola SELURUH transaksi & supports milik siapa pun (tidak ada isolasi per-admin)
   // Duplicate prevention on update for peletons per kategori
   if(table==="peletons" && (data.number || data.name)){
     const cat = String(data.category || "").trim()
@@ -125,19 +114,10 @@ export async function DELETE(req: Request){
   const id = searchParams.get("id")
   if(!table || !id || !ALLOWED_TABLES.includes(table)) return NextResponse.json({ error:"Invalid" }, { status:400 })
   const service = createServiceSupabase()
-  // Isolasi per-admin untuk transaksi & offline: hanya pemilik yang boleh hapus
+  // Admin boleh hapus SELURUH transaksi milik siapa pun (tidak ada isolasi per-admin)
   if(table === "transactions"){
-    const { data: trx } = await service.from("transactions").select("user_id").eq("id", id).maybeSingle()
-    if(trx && trx.user_id !== auth.user.id) return NextResponse.json({ error:"Forbidden: bukan milik Anda" }, { status:403 })
     // also delete supports linked to this transaction
     await service.from("supports").delete().eq("transaction_id", id)
-  }
-  if(table === "supports"){
-    const { data: sup } = await service.from("supports").select("admin_id, user_id, source").eq("id", id).maybeSingle()
-    if(sup){
-      const owner = (sup as any).admin_id || (sup as any).user_id
-      if(owner && owner !== auth.user.id) return NextResponse.json({ error:"Forbidden: bukan milik Anda" }, { status:403 })
-    }
   }
   // Handle FK: peleton has FK from transactions & supports. Delete children first.
   if(table === "peletons"){

@@ -48,7 +48,7 @@ function CheckoutInner(){
     if(!id || !trx || trx.status === "Success") return
     const interval = setInterval(async ()=>{
       try {
-        const res = await fetch(`/api/payment/status/${id}`)
+        const statusUrl = '/api/payment/status/' + id; const res = await fetch(statusUrl)
         if(res.ok){
           const data = await res.json()
           const newStatus = data.status || data.transaction?.status
@@ -84,7 +84,7 @@ function CheckoutInner(){
     setPolling(true)
     unlockAudio()
     try {
-      const res = await fetch(`/api/payment/status/${id}`)
+      const statusUrl = '/api/payment/status/' + id; const res = await fetch(statusUrl)
       if(res.ok){
         const data = await res.json()
         // API returns {status, transaction}

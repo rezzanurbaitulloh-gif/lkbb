@@ -36,7 +36,7 @@ export async function GET() {
     service.from("transactions").select("*", { count: "exact", head: true }),
     service.from("supports").select("supports,source"),
     service.from("team_ranking").select("*").order("total_ballots", { ascending: false }).limit(5),
-    service.from("transactions").select("*, peletons(name,number)").order("created_at", { ascending: false }).limit(5),
+    service.from("transactions").select("*, peletons(name,number,school,category), profiles(public_name,email,role)").order("created_at", { ascending: false }).limit(8),
     service.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single(),
     service.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(5),
     service.from("supports").select("supports,source,created_at").order("created_at", { ascending: true }),

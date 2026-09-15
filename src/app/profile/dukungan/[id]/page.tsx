@@ -69,7 +69,7 @@ export default function InvoicePage(){
     if(!tx || tx.status !== "Pending" || !id) return
     const interval = setInterval(async ()=>{
       try{
-        const res = await fetch(`/api/payment/status/${id}`)
+        const statusUrl = '/api/payment/status/' + id; const res = await fetch(statusUrl)
         if(res.ok){
           const data = await res.json()
           const newStatus = data.status || data.transaction?.status
@@ -81,6 +81,16 @@ export default function InvoicePage(){
     }, 3000)
     return ()=> clearInterval(interval)
   },[tx?.status, id])
+
+  const isSuccess = tx?.status === "Success"
+  const invoiceNo = tx ? `LKBB-${String(tx.id).slice(0,8).toUpperCase()}` : "-"
+  const txDate = tx ? new Date(tx.created_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) : "-"
+  const unitPrice = tx ? (tx.supports ? Math.round(Number(tx.amount) / Number(tx.supports)) : Number(tx.amount)) : 0
+
+  const handlePrint = ()=>{
+    if(!isSuccess) return
+    window.print()
+  }
 
   if(!currentUser){
     return (
@@ -100,6 +110,63 @@ export default function InvoicePage(){
 
   return (
     <div className="min-h-screen flex flex-col bg-[#09090b] text-white">
+      <style>{`
+        @media print {
+          body { background: #fff !important; }
+          body * { visibility: hidden !important; }
+          #invoice-print, #invoice-print * { visibility: visible !important; }
+          #invoice-print {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 24px !important;
+            background: #fff !important;
+            color: #000 !important;
+            display: block !important;
+          }
+          .no-print { display: none !important; }
+        }
+        #invoice-print { display: none; }
+        @media print {
+          #invoice-print { display: block !important; }
+        }
+      `}</style>
+      {/* ===== PRINT-ONLY: invoice teks polos, hanya info penting ===== */}
+      {tx && (
+        <div id="invoice-print">
+          <div style={{ fontFamily: "monospace, monospace", fontSize: 12, lineHeight: 1.6, color: "#000" }}>
+            <div style={{ textAlign: "center", fontWeight: 700 }}>LKBB JAVASOMA — INVOICE PEMBAYARAN</div>
+            <div style={{ textAlign: "center" }}>Astra Dharma Hayuning Budaya</div>
+            <div>----------------------------------------</div>
+            <div>No. Invoice&nbsp;&nbsp;&nbsp;: {invoiceNo}</div>
+            <div>ID Transaksi : {tx.id}</div>
+            <div>Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {txDate}</div>
+            <div>Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: LUNAS / SUCCESS</div>
+            <div>----------------------------------------</div>
+            <div>PEMBAYAR</div>
+            <div>Nama&nbsp;&nbsp;: {currentUser.name}</div>
+            <div>Email : {currentUser.email}</div>
+            <div>User ID: {currentUser.id}</div>
+            <div>----------------------------------------</div>
+            <div>PEMBELIAN</div>
+            <div>Peleton&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {peleton?.name || tx.peletons?.name || "-"}</div>
+            <div>Sekolah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {peleton?.school || "-"}</div>
+            <div>Kategori/No : {(peleton?.category || "-") + " / #" + (peleton?.number || "-")}</div>
+            <div>Jumlah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.supports} ballot</div>
+            <div>Harga satuan : Rp{Number(unitPrice).toLocaleString("id-ID")}</div>
+            <div>Metode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.method || "QRIS"}</div>
+            <div>Provider&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.provider || "XENDIT"}</div>
+            <div>Ref Provider : {tx.provider_ref || tx.doku_reference_no || "-"}</div>
+            <div>----------------------------------------</div>
+            <div style={{ fontWeight: 700 }}>TOTAL BAYAR : Rp{Number(tx.amount).toLocaleString("id-ID")}</div>
+            <div>----------------------------------------</div>
+            <div style={{ textAlign: "center" }}>Invoice sah sebagai bukti transaksi digital.</div>
+          </div>
+        </div>
+      )}
+      <div className="no-print contents">
       <Navbar />
       <main className="flex-1 pb-[72px] md:pb-0 bg-[#09090b]">
         <div className="mx-auto max-w-[720px] px-3 sm:px-4 md:px-6 py-6">
@@ -199,7 +266,13 @@ export default function InvoicePage(){
                   )}
 
                   <div className="mt-6 flex flex-wrap gap-2">
-                    <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={()=> window.print()}>Cetak Invoice</Button>
+                    {isSuccess ? (
+                      <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handlePrint}>Cetak Invoice</Button>
+                    ) : (
+                      <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-200">
+                        Invoice hanya dapat dicetak setelah pembayaran <b>Success</b>. Status saat ini: <b>{tx.status}</b>.
+                      </div>
+                    )}
                     <Link href="/profile/dukungan"><Button variant="outline" className="rounded-full">Kembali</Button></Link>
                   </div>
 
@@ -217,6 +290,7 @@ export default function InvoicePage(){
       </main>
       <Footer />
       <BottomNav />
+      </div>
     </div>
   )
 }

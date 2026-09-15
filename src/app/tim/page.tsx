@@ -54,26 +54,31 @@ export default async function TimPage(){
   }
 
   const renderGrid = (teams: any[]) => {
+    // Jumlah ballot hanya tampil saat voting ditutup sementara (online saja).
+    // Saat aktif / belum mulai / final: disembunyikan.
+    const showCount = isVotingClosed
     return (
       <div className="flex flex-col gap-2">
         {teams.map((p:any)=> {
           const logo = p.logo_url || p.image_url || "/assets/brand/lkbb-logo.jpg"
           const number = String(p.number || "").padStart(2,"0")
-          const total = Number(p.total_ballots ?? p.online_ballots ?? 0)
+          const closedCount = Number(p.online_ballots ?? 0)
           return (
             <Link key={p.id} href={`/tim/${p.slug}`} className="group flex items-center justify-between gap-2.5 xs:gap-3 rounded-[12px] xs:rounded-xl border border-white/10 bg-white/5 backdrop-blur px-2.5 xs:px-3 sm:px-4 py-2.5 xs:py-3 hover:border-primary/20 hover:bg-white/5 backdrop-blur/20 transition-colors min-w-0">
               <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-1">
                 <span className="shrink-0 rounded-full bg-primary px-2 xs:px-2.5 py-1 text-[10px] xs:text-[11px] font-black tracking-widest text-black">#{number}</span>
                 <div className="min-w-0 flex-1">
                   <div className="text-[13px] xs:text-sm sm:text-[15px] font-black tracking-tight truncate">{p.name}</div>
-                  <div className="text-[10px] xs:text-[11px] font-bold tracking-wide text-white/50 tabular-nums">{total.toLocaleString("id-ID")} ballot</div>
+                  {showCount && <div className="text-[10px] xs:text-[11px] font-bold tracking-wide text-white/50 tabular-nums">{closedCount.toLocaleString("id-ID")} ballot sementara</div>}
                 </div>
               </div>
               <div className="flex items-center gap-2 xs:gap-3 shrink-0">
+                {showCount && (
                 <div className="text-right hidden xs:block">
-                  <div className="text-[11px] xs:text-xs font-black tabular-nums text-white">{total.toLocaleString("id-ID")}</div>
-                  <div className="text-[9px] xs:text-[10px] font-bold tracking-widest text-white/40">TOTAL</div>
+                  <div className="text-[11px] xs:text-xs font-black tabular-nums text-white">{closedCount.toLocaleString("id-ID")}</div>
+                  <div className="text-[9px] xs:text-[10px] font-bold tracking-widest text-white/40">SEMENTARA</div>
                 </div>
+                )}
                 <div className="h-8 w-8 xs:h-9 xs:w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 bg-transparent shrink-0 grid place-items-center">
                   <img src={logo} alt={p.name} className="h-full w-full object-contain bg-transparent" loading="lazy" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))" }} />
                 </div>
@@ -117,7 +122,7 @@ export default async function TimPage(){
           <div className="flex flex-wrap items-center gap-2 xs:gap-2.5 mb-3 xs:mb-4">
             <span className="inline-flex rounded-full border border-white/12 bg-white/5 backdrop-blur px-2.5 xs:px-3 py-1 text-[11px] xs:text-xs font-bold tracking-wide text-white">SMP / SEDERAJAT</span>
             {isVotingClosed && <span className="inline-flex rounded-full border border-white/10 bg-white/5 backdrop-blur px-2 xs:px-2.5 py-1 text-[10px] font-bold tracking-wide text-white">ONLINE SAJA</span>}
-            {isPublished && <span className="inline-flex rounded-full border border-primary bg-primary px-2 xs:px-2.5 py-1 text-[10px] font-black tracking-wide text-black">FINAL</span>}
+            {isPublished && <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-2 xs:px-2.5 py-1 text-[10px] font-black tracking-wide"><span className="text-white">FINAL</span></span>}
             <span className="text-[11px] xs:text-xs text-muted-foreground tabular-nums border border-white/10 bg-white/5 backdrop-blur px-2 py-1 rounded-full text-white">{smp.length} tim</span>
           </div>
           {smp.length===0 ? <div className="rounded-xl border border-dashed border-white/10 p-6 xs:p-8 text-center text-[13px] xs:text-sm text-muted-foreground">Belum ada peleton SMP.</div> : renderGrid(smp)}
@@ -128,7 +133,7 @@ export default async function TimPage(){
           <div className="flex flex-wrap items-center gap-2 xs:gap-2.5 mb-3 xs:mb-4">
             <span className="inline-flex rounded-full border border-white/12 bg-white/5 backdrop-blur px-2.5 xs:px-3 py-1 text-[11px] xs:text-xs font-bold tracking-wide text-white">SMA / SEDERAJAT</span>
             {isVotingClosed && <span className="inline-flex rounded-full border border-white/10 bg-white/5 backdrop-blur px-2 xs:px-2.5 py-1 text-[10px] font-bold tracking-wide text-white">ONLINE SAJA</span>}
-            {isPublished && <span className="inline-flex rounded-full border border-primary bg-primary px-2 xs:px-2.5 py-1 text-[10px] font-black tracking-wide text-black">FINAL</span>}
+            {isPublished && <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-2 xs:px-2.5 py-1 text-[10px] font-black tracking-wide"><span className="text-white">FINAL</span></span>}
             <span className="text-[11px] xs:text-xs text-muted-foreground tabular-nums border border-white/10 bg-white/5 backdrop-blur px-2 py-1 rounded-full text-white">{sma.length} tim</span>
           </div>
           {sma.length===0 ? <div className="rounded-xl border border-dashed border-white/10 p-6 xs:p-8 text-center text-[13px] xs:text-sm text-muted-foreground">Belum ada peleton SMA.</div> : renderGrid(sma)}

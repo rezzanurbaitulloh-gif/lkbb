@@ -85,12 +85,14 @@ export default async function TimPage(){
     )
   }
 
+  // Skema warna status end-user: aktif & final = hijau glassmorph teks putih,
+  // voting ditutup = kuning glassmorph teks putih. (teks di span dalam agar tak kena override global)
   const getHeaderBadge = () => {
-    if (isNotStarted) return { label: "Belum Dimulai", color: "bg-primary text-black border border-primary shadow-sm" }
-    if (isActive) return { label: "Aktif — Dukungan Dibuka", color: "bg-primary text-black border border-primary shadow-sm" }
-    if (isVotingClosed) return { label: "Voting Ditutup", color: "bg-[#FACC15] text-black border border-[#FACC15] shadow-sm" }
-    if (isPublished) return { label: "Hasil Dipublikasikan", color: "bg-primary text-black border border-primary shadow-sm" }
-    return { label: state, color: "bg-primary text-black border border-primary" }
+    if (isNotStarted) return { label: "Belum Dimulai", box: "bg-primary border-primary shadow-sm", text: "text-black" }
+    if (isActive) return { label: "Aktif — Dukungan Dibuka", box: "bg-emerald-500/10 border-emerald-500/20 backdrop-blur shadow-sm", text: "text-white" }
+    if (isVotingClosed) return { label: "Voting Ditutup", box: "bg-amber-500/10 border-amber-500/20 backdrop-blur shadow-sm", text: "text-white" }
+    if (isPublished) return { label: "Hasil Dipublikasikan", box: "bg-emerald-500/10 border-emerald-500/20 backdrop-blur shadow-sm", text: "text-white" }
+    return { label: state, box: "bg-primary border-primary", text: "text-black" }
   }
   const headerBadge = getHeaderBadge()
 
@@ -103,7 +105,7 @@ export default async function TimPage(){
           <div className="absolute inset-0 opacity-[0.18]"><img src={bgImage} alt="" className="h-full w-full object-cover" /></div>
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/85 to-transparent" />
           <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-6 xs:py-7 sm:py-8">
-            <div className={`inline-flex rounded-full px-2.5 xs:px-3 py-1 text-[11px] xs:text-xs font-black tracking-wide ${headerBadge.color}`}>{headerBadge.label}</div>
+            <div className={`inline-flex rounded-full px-2.5 xs:px-3 py-1 text-[11px] xs:text-xs font-black tracking-wide border ${headerBadge.box}`}><span className={headerBadge.text}>{headerBadge.label}</span></div>
             <h1 className="mt-2.5 xs:mt-3 text-[22px] xs:text-[26px] sm:text-[28px] md:text-[34px] lg:text-[36px] font-black tracking-[-0.03em] leading-[0.92] break-words">{isPublished ? "TANGGA JUARA" : isVotingClosed ? "PERINGKAT SEMENTARA" : "DAFTAR TIM"}</h1>
           </div>
         </div>

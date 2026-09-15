@@ -136,7 +136,7 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
                 )}
                 <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-3 text-center flex flex-col gap-1">
                   <div className="text-[11px] font-bold tracking-widest text-white/60">Status Kompetisi</div>
-                  <div className="inline-flex self-center rounded-full px-3 py-1 text-xs font-bold border backdrop-blur" style={{background: isActive ? "rgba(34,197,94,0.10)" : "rgba(255,255,255,0.04)", color: isActive ? "rgb(134,239,172)" : "rgba(255,255,255,0.85)", borderColor: isActive ? "rgba(34,197,94,0.22)" : "rgba(255,255,255,0.08)"}}>
+                  <div className="inline-flex self-center rounded-full px-3 py-1 text-xs font-bold border backdrop-blur" style={isActive || isPublished ? {background: "rgba(16,185,129,0.10)", color: "#ffffff", borderColor: "rgba(16,185,129,0.22)"} : isVotingClosed ? {background: "rgba(245,158,11,0.10)", color: "#ffffff", borderColor: "rgba(245,158,11,0.22)"} : {background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.85)", borderColor: "rgba(255,255,255,0.08)"}}>
                     {isNotStarted ? "Belum Dimulai" : isActive ? "Aktif" : isVotingClosed ? "Voting Ditutup" : isPublished ? "Hasil Dipublikasikan" : state}
                   </div>
                   {isVotingClosed && <div className="inline-flex self-center rounded-full bg-[#FACC15] text-black px-2.5 py-1 text-[10px] font-black">Peringkat Online Saja</div>}

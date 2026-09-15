@@ -235,7 +235,11 @@ export function PodiumSection({ smp, sma, isPublished, variant = "final", showBa
         <div className="text-center max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2.5">
             <span className="hidden sm:block h-px w-8 bg-white/10" />
-            <span className={`text-[11px] font-bold tracking-[0.18em] ${isFinal ? "text-primary" : "text-white/60"}`}>{isFinal ? "HASIL FINAL" : "HASIL SEMENTARA"}</span>
+            {isFinal ? (
+              <span className="text-[11px] font-bold tracking-[0.18em] text-primary">HASIL FINAL</span>
+            ) : (
+              <span className="inline-flex rounded-full bg-[#FACC15] px-3 py-1 text-[11px] font-black tracking-[0.18em] text-black shadow">HASIL SEMENTARA</span>
+            )}
             <span className="hidden sm:block h-px w-8 bg-white/10" />
           </div>
           <div className="mt-3 flex items-center justify-center gap-3">

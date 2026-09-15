@@ -70,8 +70,8 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
                   <div>
                     <h1 className="text-[28px] md:text-[36px] font-black tracking-[-0.03em] leading-none text-balance">{peleton.name}</h1>
                     <p className="mt-1 text-sm font-medium text-white/70">{peleton.school}</p>
-                    {showSementara && <span className="mt-2 inline-flex rounded-full bg-[#FACC15] text-black px-2.5 py-1 text-[10px] font-black">HASIL SEMENTARA</span>}
-                    {showFinal && <span className="mt-2 inline-flex rounded-full bg-primary text-black px-2.5 py-1 text-[10px] font-black">HASIL FINAL</span>}
+                    {showSementara && <span className="mt-2 inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 backdrop-blur px-2.5 py-1 text-[10px] font-black"><span className="text-white">HASIL SEMENTARA</span></span>}
+                    {showFinal && <span className="mt-2 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-2.5 py-1 text-[10px] font-black"><span className="text-white">HASIL FINAL</span></span>}
                   </div>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-white/60 text-pretty max-w-2xl">{peleton.description}</p>

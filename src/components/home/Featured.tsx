@@ -21,8 +21,8 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 md:px-6 py-10 sm:py-12 md:py-14 relative">
         {hasBadge && (
           <div className="flex justify-center mb-4 px-2">
-            {showSementara && <span className="inline-flex rounded-full bg-[#FACC15] text-black px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow">HASIL SEMENTARA</span>}
-            {showFinal && <span className="inline-flex rounded-full bg-gradient-to-r from-primary to-primary text-black px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow">HASIL FINAL</span>}
+            {showSementara && <span className="inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 backdrop-blur px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow"><span className="text-white">HASIL SEMENTARA</span></span>}
+            {showFinal && <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-3 py-1 text-[11px] sm:text-xs font-black tracking-wide text-center max-w-full shadow"><span className="text-white">HASIL FINAL</span></span>}
           </div>
         )}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6">

@@ -152,9 +152,9 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
                 <div className="mt-2 text-[11px] text-white/50 tabular-nums">{cd.days} hari lagi • {canonicalTarget ? new Date(canonicalTarget as string).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric",timeZone:"Asia/Jakarta"}) : ""}</div>
               </>
             ) : isClosed ? (
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                <span className="text-[11px] font-black tracking-wide text-amber-200">VOTING DITUTUP — MENUNGGU REKAP OFFLINE</span>
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#FACC15] px-4 py-2 shadow">
+                <span className="h-2 w-2 rounded-full bg-amber-600 animate-pulse" />
+                <span className="text-[11px] font-black tracking-wide text-black">VOTING DITUTUP — MENUNGGU REKAP OFFLINE</span>
               </div>
             ) : isPublished ? (
               <div className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-center shadow">

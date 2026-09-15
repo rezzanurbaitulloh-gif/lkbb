@@ -3,7 +3,6 @@ import { createServerSupabase } from "@/lib/supabase"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
-import { PodiumSection } from "@/components/competition/Podium"
 
 export const revalidate = 0
 
@@ -30,7 +29,7 @@ export default async function TimPage(){
   const isVotingClosed = state === "VOTING_CLOSED"
   const isPublished = state === "RESULT_PUBLISHED"
   const showRanking = isVotingClosed || isPublished
-  const showPodium = isPublished
+  // Podium end-user disembunyikan saat hasil final (sudah gabung rekap offline)
 
   // Ambil data — urutan berdasar poin tertinggi (bukan nomor urut)
   // Selalu pakai team_ranking order by total_ballots desc (atau online_ballots saat voting closed)
@@ -109,9 +108,7 @@ export default async function TimPage(){
           </div>
         </div>
 
-        {showPodium && (
-          <PodiumSection smp={smp} sma={sma} isPublished={isPublished} />
-        )}
+        {/* Podium disembunyikan di halaman end-user saat hasil final */}
 
         {/* SMP */}
         <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-6 xs:py-7 sm:py-8">

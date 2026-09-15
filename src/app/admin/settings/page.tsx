@@ -13,7 +13,7 @@ const STATE_OPTIONS = [
   { value:"NOT_STARTED", label:"Belum Dimulai — belum bisa dukung" },
   { value:"ACTIVE", label:"Aktif — masa dukungan dibuka" },
   { value:"VOTING_CLOSED", label:"Voting Ditutup — transaksi dihentikan, tampil peringkat online saja" },
-  { value:"RESULT_PUBLISHED", label:"Hasil Dipublikasikan — tampil peringkat akhir + podium juara" },
+  { value:"RESULT_PUBLISHED", label:"Hasil Dipublikasikan — peringkat akhir, podium end-user disembunyikan" },
 ]
 
 type Tab = "general"|"branding"|"contact"|"social"|"appearance"|"event"|"sound"
@@ -605,7 +605,7 @@ export default function SettingsPage(){
             <div><label className="text-xs font-bold">Sub-judul</label><Input defaultValue={event.subtitle} id="subtitle" /></div>
             <div><label className="text-xs font-bold">Tagline</label><Input defaultValue={event.tagline} id="tagline" /></div>
             <div className="relative z-30 overflow-visible"><label className="text-xs font-bold">Status Event Saat Ini</label><Select value={stateVal} onValueChange={setStateVal} options={STATE_OPTIONS} /></div>
-            <div className="text-xs text-muted-foreground">Hanya <b>Aktif</b> yang mengizinkan transaksi. <b>Belum Dimulai</b>: belum bisa dukung. <b>Voting Ditutup</b>: transaksi dihentikan, tampil peringkat <b>online saja</b>. <b>Hasil Dipublikasikan</b>: peringkat akhir + podium.</div>
+            <div className="text-xs text-muted-foreground">Hanya <b>Aktif</b> yang mengizinkan transaksi. <b>Belum Dimulai</b>: belum bisa dukung. <b>Voting Ditutup</b>: transaksi dihentikan, tampil peringkat <b>online saja</b> ([total] ballot). <b>Hasil Dipublikasikan</b>: peringkat akhir, jumlah ballot di podium disembunyikan & podium end-user disembunyikan.</div>
             <Button disabled={saving} className="rounded-full" onClick={()=>{
               const name=(document.getElementById("name") as HTMLInputElement).value
               const subtitle=(document.getElementById("subtitle") as HTMLInputElement).value

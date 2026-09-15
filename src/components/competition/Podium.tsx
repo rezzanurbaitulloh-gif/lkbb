@@ -70,7 +70,7 @@ function Laurel({ side, color }: { side: "left" | "right"; color: string }) {
   )
 }
 
-function ShieldPodiumCard({ team, rank, delay = 0 }: { team: Team; rank: number; delay?: number }) {
+function ShieldPodiumCard({ team, rank, delay = 0, showCount = true }: { team: Team; rank: number; delay?: number; showCount?: boolean }) {
   const isFirst = rank === 1
   const isSecond = rank === 2
   const cfg = isFirst
@@ -146,7 +146,7 @@ function ShieldPodiumCard({ team, rank, delay = 0 }: { team: Team; rank: number;
             <div className="mt-1.5 xs:mt-2 inline-flex items-center gap-1 xs:gap-1.5 rounded-full bg-black/28 backdrop-blur border border-white/10 px-2 xs:px-2.5 py-1 text-[9px] xs:text-[10px] sm:text-[11px] font-black text-white shadow-[0_1px_6px_rgba(0,0,0,0.25)]">
               <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />#{team.number}
             </div>
-            {Number(team.online_ballots ?? 0) > 0 && <div className="mt-1 xs:mt-1.5 text-[9px] xs:text-[10px] sm:text-[11px] font-bold tabular-nums tracking-wide text-primary">{Number(team.online_ballots ?? 0).toLocaleString("id-ID")} online</div>}
+            {showCount && Number(team.online_ballots ?? 0) > 0 && <div className="mt-1 xs:mt-1.5 text-[9px] xs:text-[10px] sm:text-[11px] font-bold tabular-nums tracking-wide text-primary">{Number(team.online_ballots ?? 0).toLocaleString("id-ID")} ballot</div>}
           </div>
           <div className="absolute bottom-[10px] xs:bottom-3 left-2 right-2 xs:left-3 xs:right-3">
             <div className={`relative h-[26px] xs:h-[28px] sm:h-8 flex items-center justify-center bg-gradient-to-r ${cfg.juaraBar} shadow-[0_2px_8px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.18)] overflow-hidden`} style={{ clipPath: "polygon(9px 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 9px 100%, 0 50%)" }}>
@@ -164,7 +164,7 @@ function ShieldPodiumCard({ team, rank, delay = 0 }: { team: Team; rank: number;
   )
 }
 
-export function Podium({ teams, category, showPoints = true }: { teams: Team[]; category?: string; showPoints?: boolean }) {
+export function Podium({ teams, category, showPoints = true, showCounts = true }: { teams: Team[]; category?: string; showPoints?: boolean; showCounts?: boolean }) {
   if (!teams || teams.length === 0) return null
 
   const sorted = [...teams].sort((a, b) => {
@@ -192,14 +192,14 @@ export function Podium({ teams, category, showPoints = true }: { teams: Team[]; 
       {/* 1 card per kategori, 3 shields side-by-side — jarak bawah kategori diperlebar agar mahkota tidak menutupi */}
       <div className="grid grid-cols-3 items-end gap-1 xs:gap-1.5 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-4 max-w-[560px] lg:max-w-none mx-auto w-full px-0 pt-2 sm:pt-3">
         {ordered.map(({ team, rank, delay }) => (
-          <ShieldPodiumCard key={team.id} team={team} rank={rank} delay={delay} />
+          <ShieldPodiumCard key={team.id} team={team} rank={rank} delay={delay} showCount={showCounts} />
         ))}
       </div>
     </div>
   )
 }
 
-export function PodiumSection({ smp, sma, isPublished, variant = "final" }: { smp: Team[]; sma: Team[]; isPublished: boolean; variant?: "final" | "provisional" }) {
+export function PodiumSection({ smp, sma, isPublished, variant = "final", showBallotCount = true }: { smp: Team[]; sma: Team[]; isPublished: boolean; variant?: "final" | "provisional"; showBallotCount?: boolean }) {
   const [festive, setFestive] = useState(false)
   const isFinal = variant === "final" && isPublished
   const isProvisional = variant === "provisional" && !isPublished && (smp.length>0 || sma.length>0)
@@ -263,12 +263,12 @@ export function PodiumSection({ smp, sma, isPublished, variant = "final" }: { sm
         <div className={`mt-7 sm:mt-8 md:mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-7 lg:gap-6 xl:gap-8 ${festive ? "animate-[fadeIn_0.5s_ease-out]" : ""}`}>
           {sma.length > 0 && (
             <div className="relative overflow-visible">
-              <Podium teams={sma} category="SMA / SEDERAJAT" />
+              <Podium teams={sma} category="SMA / SEDERAJAT" showCounts={showBallotCount} />
             </div>
           )}
           {smp.length > 0 && (
             <div className="relative overflow-visible">
-              <Podium teams={smp} category="SMP / SEDERAJAT" />
+              <Podium teams={smp} category="SMP / SEDERAJAT" showCounts={showBallotCount} />
             </div>
           )}
         </div>

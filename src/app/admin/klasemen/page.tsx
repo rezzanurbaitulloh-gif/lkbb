@@ -5,6 +5,7 @@ import { Podium } from "@/components/competition/Podium"
 export default function AdminKlasemen(){
   const [smp,setSmp]=useState<any[]>([])
   const [sma,setSma]=useState<any[]>([])
+  const [isFinal,setIsFinal]=useState(false)
   const load = async ()=>{
     const s=createBrowserSupabase()
     // list ranking pakai total (online+offline), podium preview online saja
@@ -12,6 +13,10 @@ export default function AdminKlasemen(){
     const { data: smaData } = await s.from("team_ranking").select("*").eq("category","SMA").order("total_ballots",{ascending:false}).order("online_ballots",{ascending:false})
     if(smpData) setSmp(smpData)
     if(smaData) setSma(smaData)
+    // status final (sudah gabung rekap offline): jumlah di podium disembunyikan
+    const { data: ev } = await s.from("competitions").select("state").order("created_at",{ascending:false}).limit(1).single()
+    const st = (ev as any)?.state as string
+    setIsFinal(st === "RESULT_PUBLISHED" || st === "COMPLETED")
   }
   useEffect(()=>{ load(); const i=setInterval(load,4000); const sup=createBrowserSupabase(); const ch=sup.channel("klasemen-podium").on("postgres_changes",{event:"*",schema:"public",table:"supports"},()=> load()).subscribe(); return ()=>{ clearInterval(i); sup.removeChannel(ch) } },[])
   const Section = ({title, list}:{title:string, list:any[]})=> (
@@ -57,7 +62,7 @@ export default function AdminKlasemen(){
             <span className="text-[10px] text-muted-foreground">Online preview</span>
           </div>
           <div className="mt-3">
-            {smp.length===0 ? <div className="h-[200px] grid place-items-center text-sm text-muted-foreground">Belum ada data</div> : <div className="scale-[0.9] origin-top"><Podium teams={smp.slice(0,3)} /></div>}
+            {smp.length===0 ? <div className="h-[200px] grid place-items-center text-sm text-muted-foreground">Belum ada data</div> : <div className="scale-[0.9] origin-top"><Podium teams={smp.slice(0,3)} showCounts={!isFinal} /></div>}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground text-center">Podium preview online saja</p>
         </div>
@@ -67,7 +72,7 @@ export default function AdminKlasemen(){
             <span className="text-[10px] text-muted-foreground">Online preview</span>
           </div>
           <div className="mt-3">
-            {sma.length===0 ? <div className="h-[200px] grid place-items-center text-sm text-muted-foreground">Belum ada data</div> : <div className="scale-[0.9] origin-top"><Podium teams={sma.slice(0,3)} /></div>}
+            {sma.length===0 ? <div className="h-[200px] grid place-items-center text-sm text-muted-foreground">Belum ada data</div> : <div className="scale-[0.9] origin-top"><Podium teams={sma.slice(0,3)} showCounts={!isFinal} /></div>}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground text-center">Podium preview online saja</p>
         </div>

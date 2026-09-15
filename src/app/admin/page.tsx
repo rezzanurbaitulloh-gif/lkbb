@@ -29,6 +29,8 @@ export default function AdminOverview(){
   const [auditLogs, setAuditLogs] = useState<any[]>([])
   const [podiumSmp, setPodiumSmp] = useState<any[]>([])
   const [podiumSma, setPodiumSma] = useState<any[]>([])
+  // Saat status final (sudah gabung rekap offline): jumlah ballot di podium disembunyikan
+  const isEventFinal = stats.state === "RESULT_PUBLISHED" || stats.state === "COMPLETED"
   const fetchPodium = async ()=>{
     const supabase = createBrowserSupabase()
     // podium preview hanya online (website)
@@ -134,7 +136,7 @@ export default function AdminOverview(){
           <div className="mt-3 overflow-hidden">
             {podiumSmp.length===0 ? <div className="h-[180px] grid place-items-center text-xs text-white/30">Belum ada data online (0)</div> : (
               <div className="scale-[0.68] min-[360px]:scale-[0.75] sm:scale-[0.85] origin-top -mx-2 sm:mx-0">
-                <Podium teams={podiumSmp} />
+                <Podium teams={podiumSmp} showCounts={!isEventFinal} />
               </div>
             )}
           </div>
@@ -148,7 +150,7 @@ export default function AdminOverview(){
           <div className="mt-3 overflow-hidden">
             {podiumSma.length===0 ? <div className="h-[180px] grid place-items-center text-xs text-white/30">Belum ada data online (0)</div> : (
               <div className="scale-[0.68] min-[360px]:scale-[0.75] sm:scale-[0.85] origin-top -mx-2 sm:mx-0">
-                <Podium teams={podiumSma} />
+                <Podium teams={podiumSma} showCounts={!isEventFinal} />
               </div>
             )}
           </div>

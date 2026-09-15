@@ -21,8 +21,12 @@ export default function AdminOverview(){
     if(smp) setPodiumSmp(smp)
     if(sma) setPodiumSma(sma)
   }
-  useEffect(()=>{
-    fetch("/api/admin/stats").then(r=> r.json()).then(data=>{
+  // Stats + transaksi terbaru: sumber sama dengan halaman /admin/transaksi
+  // (service role, order created_at desc) — harus selalu sinkron dengan halaman transaksi
+  const fetchStats = async ()=>{
+    try{
+      const r = await fetch("/api/admin/stats")
+      const data = await r.json()
       if(data.error) return
       setStats({
         totalTeams: data.totalTeams,
@@ -41,13 +45,21 @@ export default function AdminOverview(){
       setRanking(data.ranking || [])
       setRecentTx(data.recentTransactions || [])
       setAuditLogs(data.auditLogs || [])
-    }).catch(()=>{})
+    }catch{}
+  }
+  useEffect(()=>{
+    fetchStats()
     fetchPodium()
-    const interval = setInterval(fetchPodium, 4000)
-    // Realtime via supports
+    const podiumInterval = setInterval(fetchPodium, 4000)
+    // Polling stats tiap 5 detik agar status transaksi di dashboard selalu sama dengan halaman transaksi
+    const statsInterval = setInterval(fetchStats, 5000)
+    // Realtime: perubahan apa pun di transactions/support langsung refresh (best-effort, polling di atas sebagai fallback)
     const supabase = createBrowserSupabase()
-    const channel = supabase.channel("admin-podium").on("postgres_changes", { event:"*", schema:"public", table:"supports" }, ()=> fetchPodium()).subscribe()
-    return ()=>{ clearInterval(interval); supabase.removeChannel(channel) }
+    const channel = supabase.channel("admin-dashboard")
+      .on("postgres_changes", { event:"*", schema:"public", table:"supports" }, ()=> { fetchPodium(); fetchStats() })
+      .on("postgres_changes", { event:"*", schema:"public", table:"transactions" }, ()=> fetchStats())
+      .subscribe()
+    return ()=>{ clearInterval(podiumInterval); clearInterval(statsInterval); supabase.removeChannel(channel) }
   },[])
   return (
     <div className="min-h-screen bg-[#0B0C0F] text-white p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 md:space-y-6">

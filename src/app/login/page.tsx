@@ -29,38 +29,51 @@ export default function LoginPage(){
     router.refresh()
   }
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Navbar />
-      <main className="flex-1 pb-[72px] md:pb-0 grid place-items-center p-4 bg-white/5 backdrop-blur/20">
-        <div className="w-full max-w-[420px] rounded-[20px] border border-white/10 bg-white/5 backdrop-blur p-6 md:p-8 shadow-soft">
-          <div className="text-center">
-            <img src="/assets/brand/lkbb-logo.jpg" alt="LKBB" className="mx-auto h-16 w-16 sm:h-20 sm:w-20 object-contain bg-transparent" />
-            <h1 className="mt-3 text-[20px] font-black tracking-tight">Masuk ke Akun</h1>
-            <p className="text-sm text-muted-foreground">Lanjutkan perjalanan dukunganmu</p>
+      <main className="flex-1 pb-[72px] md:pb-0">
+        <div className="container-editorial grid lg:grid-cols-[0.9fr_1.1fr] gap-12 py-12 lg:py-16">
+          <div>
+            <div className="meta-label">Account — LKBB 2026</div>
+            <h1 className="mt-2 font-display font-bold text-[36px] lg:text-[48px] leading-[0.9] tracking-[-0.03em]">
+              MASUK<br />KE AKUN.
+            </h1>
+            <p className="mt-4 max-w-[420px] text-sm leading-relaxed text-muted-foreground">
+              Lanjutkan perjalanan dukunganmu. Satu akun untuk semua event.
+            </p>
+            <div className="mt-8 hidden lg:block hairline" />
+            <div className="mt-6 hidden lg:block text-xs leading-relaxed text-muted-foreground max-w-[320px]">
+              Admin: SACENGMIN / Saceng1! — Demo: jap / 121212 — User baru daftar dengan Nama unik + Password.
+            </div>
           </div>
-          <form onSubmit={onSubmit} className="mt-6 grid gap-3">
-            <div><label className="text-xs font-bold">Nama</label><Input value={name} onChange={e=>setName(e.target.value)} placeholder="Nama akun kamu (unik)" autoComplete="username" /></div>
-            <div>
-              <label className="text-xs font-bold">Password</label>
-              <div className="relative">
-                <Input value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" type={showPass ? "text" : "password"} className="pr-10" autoComplete="current-password" />
-                <button type="button" onClick={()=> setShowPass(!showPass)} aria-label={showPass ? "Sembunyikan password" : "Lihat password"} className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 grid place-items-center rounded-full hover:bg-white/5 backdrop-blur text-muted-foreground">
-                  {showPass ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
-                </button>
+
+          <div className="border border-border p-6 lg:p-8">
+            <form onSubmit={onSubmit} className="grid gap-4">
+              <div>
+                <label className="meta-label">Nama</label>
+                <Input value={name} onChange={e=>setName(e.target.value)} placeholder="Nama akun kamu (unik)" autoComplete="username" className="mt-2 h-11 rounded-none border-border bg-transparent" />
               </div>
+              <div>
+                <label className="meta-label">Password</label>
+                <div className="relative mt-2">
+                  <Input value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" type={showPass ? "text" : "password"} className="pr-10 h-11 rounded-none border-border bg-transparent" autoComplete="current-password" />
+                  <button type="button" onClick={()=> setShowPass(!showPass)} aria-label={showPass ? "Sembunyikan password" : "Lihat password"} className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center hover:bg-muted">
+                    {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              {err && <div className="border border-destructive bg-destructive/10 p-3 text-xs text-destructive">{err}</div>}
+              <Button type="submit" disabled={loading} className="h-11 rounded-none w-full font-bold tracking-wide">{loading?"Memproses…":"Masuk →"}</Button>
+              <div className="flex justify-between text-xs">
+                <Link href="/forgot-password" className="font-semibold hover:underline">Lupa password?</Link>
+                <Link href="/register" className="font-semibold text-primary hover:underline">Daftar →</Link>
+              </div>
+            </form>
+            <div className="hairline my-6" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" className="rounded-none border-border" type="button" onClick={()=>{setName("SACENGMIN"); setPassword("Saceng1!")}}>Isi Admin</Button>
+              <Button variant="outline" className="rounded-none border-border" type="button" onClick={()=>{setName("jap"); setPassword("121212")}}>Isi Demo</Button>
             </div>
-            {err && <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-600">{err}</div>}
-            <Button type="submit" disabled={loading} className="rounded-full h-11 w-full">{loading?"Memproses…":"Masuk"}</Button>
-            <div className="flex justify-between text-xs">
-              <Link href="/forgot-password" className="font-semibold hover:underline">Lupa password?</Link>
-              <Link href="/register" className="font-semibold text-primary hover:underline">Daftar</Link>
-            </div>
-          </form>
-          <div className="hairline my-6" />
-          <div className="text-center text-xs text-muted-foreground">Admin: SACENGMIN / Saceng1! — Demo: jap / 121212 — User baru daftar dengan Nama unik + Password.</div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Button variant="outline" className="rounded-full" type="button" onClick={()=>{setName("SACENGMIN"); setPassword("Saceng1!")}}>Isi Admin</Button>
-            <Button variant="outline" className="rounded-full" type="button" onClick={()=>{setName("jap"); setPassword("121212")}}>Isi Demo</Button>
           </div>
         </div>
       </main>

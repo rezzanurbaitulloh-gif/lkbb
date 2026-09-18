@@ -31,6 +31,19 @@ export async function POST(req: Request){
   const { table, data } = body
   if(!ALLOWED_TABLES.includes(table)) return NextResponse.json({ error:"Table not allowed" }, { status:400 })
   const service = createServiceSupabase()
+  // Resolve event from host for event-scoped tables
+  const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
+  let eventId: string | null = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    eventId = r.eventId
+  } catch {}
+  // Auto-set event_id for event-scoped tables if not provided
+  const eventScopedTables = ["peletons","sponsors","judges","news","announcements","timeline_stages","faqs","competitions","transactions","supports"]
+  if (eventId && eventScopedTables.includes(table) && !data.event_id) {
+    data.event_id = eventId
+  }
   // For peletons, force verified + duplicate prevention per kategori (SMP/SMA terpisah)
   if(table==="peletons"){
     data.verified = true

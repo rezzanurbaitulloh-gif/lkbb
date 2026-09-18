@@ -23,6 +23,18 @@ function txStatusColor(s: string){
 }
 
 export default function AdminOverview(){
+  const getEventIdParam = () => {
+    if (typeof window === "undefined") return null
+    return new URLSearchParams(window.location.search).get("event_id")
+  }
+  const [eventIdParam, setEventIdParam] = useState<string | null>(() => getEventIdParam())
+  useEffect(() => {
+    const handler = () => setEventIdParam(getEventIdParam())
+    window.addEventListener("popstate", handler)
+    // Also poll for search change via interval (for router.push)
+    const iv = setInterval(handler, 500)
+    return () => { window.removeEventListener("popstate", handler); clearInterval(iv) }
+  }, [])
   const [stats, setStats] = useState<any>({})
   const [ranking, setRanking] = useState<any[]>([])
   const [recentTx, setRecentTx] = useState<any[]>([])
@@ -33,9 +45,15 @@ export default function AdminOverview(){
   const isEventFinal = stats.state === "RESULT_PUBLISHED" || stats.state === "COMPLETED"
   const fetchPodium = async ()=>{
     const supabase = createBrowserSupabase()
-    // podium preview hanya online (website)
-    const { data: smp } = await supabase.from("team_ranking").select("*").eq("category","SMP").order("online_ballots",{ascending:false}).order("total_ballots",{ascending:false}).limit(3)
-    const { data: sma } = await supabase.from("team_ranking").select("*").eq("category","SMA").order("online_ballots",{ascending:false}).order("total_ballots",{ascending:false}).limit(3)
+    // podium preview hanya online (website) — event-aware if event_id present
+    let qSmp: any = supabase.from("team_ranking").select("*").eq("category","SMP").order("online_ballots",{ascending:false}).order("total_ballots",{ascending:false}).limit(3)
+    let qSma: any = supabase.from("team_ranking").select("*").eq("category","SMA").order("online_ballots",{ascending:false}).order("total_ballots",{ascending:false}).limit(3)
+    if (eventIdParam && eventIdParam !== "all") {
+      qSmp = qSmp.eq("event_id", eventIdParam)
+      qSma = qSma.eq("event_id", eventIdParam)
+    }
+    const { data: smp } = await qSmp
+    const { data: sma } = await qSma
     if(smp) setPodiumSmp(smp)
     if(sma) setPodiumSma(sma)
   }
@@ -43,7 +61,8 @@ export default function AdminOverview(){
   // (service role, order created_at desc) — harus selalu sinkron dengan halaman transaksi
   const fetchStats = async ()=>{
     try{
-      const r = await fetch("/api/admin/stats")
+      const qs = eventIdParam ? `?event_id=${encodeURIComponent(eventIdParam)}` : ""
+      const r = await fetch(`/api/admin/stats${qs}`)
       const data = await r.json()
       if(data.error) return
       setStats({
@@ -78,7 +97,7 @@ export default function AdminOverview(){
       .on("postgres_changes", { event:"*", schema:"public", table:"transactions" }, ()=> fetchStats())
       .subscribe()
     return ()=>{ clearInterval(podiumInterval); clearInterval(statsInterval); supabase.removeChannel(channel) }
-  },[])
+  },[eventIdParam])
   return (
     <div className="min-h-screen bg-[#0B0C0F] text-white p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 md:space-y-6">
       {/* Header — premium, not generic */}

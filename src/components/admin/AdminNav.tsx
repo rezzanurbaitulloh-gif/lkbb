@@ -5,6 +5,7 @@ import { useState } from "react"
 import { LayoutDashboard, Users, CreditCard, Trophy, Megaphone, Calendar, Star, Handshake, Settings, ScrollText, UserCog, Menu, FileText, Shield, Layers } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { EventSwitcher } from "./EventSwitcher"
 
 const nav = [
   { href:"/admin", label:"Dashboard", icon: LayoutDashboard },
@@ -44,6 +45,9 @@ export function AdminNav({ children }: { children: React.ReactNode }){
             <div className="text-sm font-black leading-none text-center">LKBB ADMIN</div>
             <div className="text-[11px] tracking-widest text-muted-foreground text-center">JAVASOMA 2026</div>
           </div>
+        </div>
+        <div className="px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+          <EventSwitcher />
         </div>
         <nav className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-1">
           <div className="px-2 py-1 text-[10px] font-bold tracking-widest text-muted-foreground">CMS DINAMIS</div>

@@ -52,9 +52,8 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
 
   const showCountdown = cd.isValid && !cd.expired && !isClosed && !isPublished
 
-  // Use real peleton photo from DB if available, fallback to Unsplash peleton formation
-  const heroImage = "https://images.unsplash.com/photo-1595590424283-b8f17842773f?w=1200&auto=format&fit=crop&q=70"
-  // Try to get first peleton photo from siteSettings or CMS, but use heroImage as primary
+  // Use real peleton photo from DB — fallback to Unsplash peleton formation (bukan pistol)
+  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&auto=format&fit=crop&q=70&ixlib=rb-4.0.3"
 
   if (cms && cms.is_visible === false) return null
 

@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation"
 import { Home, Users, Trophy, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// 4 MENU UTAMA — konsisten dengan Navbar
+// 4 MENU UTAMA — plek PNG mobile: HOME / PARTICIPANTS / EVENT / PROFILE
 const items = [
-  { href: "/", label: "Beranda", icon: Home },
-  { href: "/tim", label: "Tim", icon: Users },
-  { href: "/kompetisi", label: "Kompetisi", icon: Trophy },
-  { href: "/profile", label: "Profil", icon: User },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/tim", label: "Participants", icon: Users },
+  { href: "/kompetisi", label: "Event", icon: Trophy },
+  { href: "/profile", label: "Profile", icon: User },
 ]
 
 export function BottomNav(){

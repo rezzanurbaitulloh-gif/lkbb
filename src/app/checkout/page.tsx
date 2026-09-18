@@ -5,9 +5,7 @@ import Link from "next/link"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
-import { Button } from "@/components/ui/button"
 import { createBrowserSupabase } from "@/lib/supabase"
-import { CheckCircle2, Clock3, XCircle, Timer } from "lucide-react"
 import { unlockAudio, playNotificationSequenceForce } from "@/lib/sound"
 import QRCode from "qrcode"
 
@@ -20,35 +18,28 @@ function CheckoutInner(){
   const [polling,setPolling]=useState(false)
   const [simulating,setSimulating]=useState(false)
   const [qrDataUrl,setQrDataUrl]=useState<string | null>(null)
+  const [method, setMethod]=useState("va")
   useEffect(()=>{
     const supabase = createBrowserSupabase()
     if(slug) supabase.from("peletons").select("*").eq("slug", slug).single().then(({data})=> setPeleton(data))
-    else supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("category", {ascending:true}).order("number", {ascending:true}).limit(1).single().then(({data})=> setPeleton(data))
-    if(id) {
-      // Fetch transaction from DB (via anon but RLS will filter to own)
-      supabase.from("transactions").select("*").eq("id", id).single().then(({data})=> setTrx(data))
-    }
+    else supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("number",{ascending:true}).limit(1).single().then(({data})=> setPeleton(data))
+    if(id) supabase.from("transactions").select("*").eq("id", id).single().then(({data})=> setTrx(data))
   },[slug, id])
 
-  // Generate QR data URL when trx has qr_content (DOKU)
   useEffect(()=>{
     const content = trx?.qr_content || trx?.qrContent
     if(content && trx?.status === "Pending"){
       QRCode.toDataURL(content, { width: 400, margin: 1, color: { dark: "#000000", light: "#FFFFFF" } }).then(url=> setQrDataUrl(url)).catch(()=> setQrDataUrl(null))
-    } else {
-      setQrDataUrl(null)
-    }
+    } else setQrDataUrl(null)
   },[trx?.qr_content, trx?.qrContent, trx?.status])
 
-  // Ensure audio unlocked on mount (user gesture may have happened on dukungan page)
   useEffect(()=>{ unlockAudio() },[])
 
-  // Poll transaction status every 3s when pending — webhook is authoritative, polling is UX only
   useEffect(()=>{
     if(!id || !trx || trx.status === "Success") return
     const interval = setInterval(async ()=>{
       try {
-        const statusUrl = '/api/payment/status/' + id; const res = await fetch(statusUrl)
+        const res = await fetch('/api/payment/status/' + id)
         if(res.ok){
           const data = await res.json()
           const newStatus = data.status || data.transaction?.status
@@ -56,213 +47,121 @@ function CheckoutInner(){
             setTrx((prev:any)=> ({...prev, status: newStatus, ...(data.transaction || {})}))
             if(newStatus === "Success" || newStatus === "PAID"){
               clearInterval(interval)
-              const peletonName = peleton?.name || "peleton"
-              playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil — ${trx?.supports || ""} ballot`).catch(()=>{})
-            }
-          } else if(data.transaction?.qr_content && !trx.qr_content){
-            setTrx((prev:any)=> ({...prev, qr_content: data.transaction.qr_content}))
-          }
-        } else {
-          const supabase = createBrowserSupabase()
-          const { data } = await supabase.from("transactions").select("status, qr_content").eq("id", id).single()
-          if(data && data.status !== trx.status){
-            setTrx((prev:any)=> ({...prev, status: data.status, qr_content: (data as any).qr_content}))
-            if(data.status === "Success") {
-              clearInterval(interval)
-              const peletonName = peleton?.name || "peleton"
-              playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
+              playNotificationSequenceForce(`Selamat! Dukungan berhasil`).catch(()=>{})
             }
           }
         }
       } catch {}
     }, 3000)
     return ()=> clearInterval(interval)
-  },[id, trx, peleton?.name])
+  },[id, trx])
 
   const handleCheckStatus = async ()=>{
     if(!id) return
-    setPolling(true)
-    unlockAudio()
+    setPolling(true); unlockAudio()
     try {
-      const statusUrl = '/api/payment/status/' + id; const res = await fetch(statusUrl)
+      const res = await fetch('/api/payment/status/' + id)
       if(res.ok){
         const data = await res.json()
-        // API returns {status, transaction}
-        const newStatus = data.status || data.transaction?.status
-        if(newStatus === "Success" || newStatus === "PAID"){
-          const peletonName = peleton?.name || "peleton"
-          playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
-        }
         if(data.transaction) setTrx(data.transaction)
         else if(data.status) setTrx((prev:any)=> ({...prev, status: data.status}))
-        else {
-          const supabase = createBrowserSupabase()
-          const { data } = await supabase.from("transactions").select("*").eq("id", id).single()
-          if(data) {
-            if(data.status === "Success"){
-              const peletonName = peleton?.name || "peleton"
-              playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
-            }
-            setTrx(data)
-          }
-        }
-      } else {
-        const supabase = createBrowserSupabase()
-        const { data } = await supabase.from("transactions").select("*").eq("id", id).single()
-        if(data) {
-          if(data.status === "Success"){
-            const peletonName = peleton?.name || "peleton"
-            playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
-          }
-          setTrx(data)
-        }
+        if(data.status==="Success") playNotificationSequenceForce(`Selamat! Dukungan berhasil`).catch(()=>{})
       }
     } catch {}
     setPolling(false)
   }
-
-  // Sandbox: simulate successful Xendit payment (server only allows XENDIT_MODE=test)
   const handleSimulate = async ()=>{
     if(!id || simulating) return
-    setSimulating(true)
-    unlockAudio()
+    setSimulating(true); unlockAudio()
     try {
-      const res = await fetch("/api/payment/simulate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactionId: id }),
-      })
+      const res = await fetch("/api/payment/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transactionId: id }) })
       const data = await res.json().catch(()=> ({}))
-      if(res.ok && (data.status === "Success" || data.ok)){
-        const peletonName = peleton?.name || "peleton"
-        playNotificationSequenceForce(`Selamat! Dukungan untuk ${peletonName} berhasil`).catch(()=>{})
-        setTrx((prev:any)=> ({...prev, status: "Success"}))
-      }
+      if(res.ok && (data.status === "Success" || data.ok)) setTrx((prev:any)=> ({...prev, status: "Success"}))
     } catch {}
     setSimulating(false)
   }
 
-  // If redirect with ?status=success but DB still Pending, poll status (webhook still authoritative)
-  useEffect(()=>{
-    const qsStatus = sp.get("status")
-    if(qsStatus === "success" && trx && trx.status !== "Success"){
-      handleCheckStatus()
-    }
-  },[trx?.id])
-
-  if(!peleton) return <div className="mx-auto max-w-[560px] px-4 py-12 text-center text-sm text-muted-foreground">Memuat peleton...</div>
+  if(!peleton) return <div className="mx-auto max-w-[560px] px-4 py-12 text-center text-sm text-[#92918C]">Memuat peleton...</div>
   const p: any = peleton
-  const status = (trx?.status?.toLowerCase() === "success" ? "success" : trx?.status?.toLowerCase() === "failed" ? "failed" : trx?.status?.toLowerCase() === "expired" ? "expired" : "pending") as string
-  const qty = trx ? String(trx.supports) : (sp.get("qty") || "50")
-  const total = trx ? String(trx.amount) : (sp.get("total") || "150000")
+  const status = (trx?.status?.toLowerCase() === "success" ? "success" : "pending")
+  const qty = trx ? String(trx.supports) : (sp.get("qty") || "75")
+  const total = trx ? Number(trx.amount) : 225000
 
-  // DOKU disabled — Xendit Sandbox is current
-  const isXendit = trx?.provider === "XENDIT" || !trx?.provider
-  const config = {
-    success: { title:"DUKUNGAN BERHASIL", desc:`Terima kasih telah memberikan dukungan kepada ${p.name} — ballot telah masuk setelah pembayaran terverifikasi`, icon: CheckCircle2, color:"bg-emerald-500", bg:"bg-emerald-500/10 border-emerald-500/20" },
-    pending: { title:"PEMBAYARAN MENUNGGU", desc: isXendit ? "Selesaikan pembayaran QRIS via Xendit. Ballot hanya bertambah setelah pembayaran terverifikasi." : "Selesaikan pembayaran QRIS. Ballot hanya bertambah setelah pembayaran terverifikasi webhook.", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" },
-    failed: { title:"PEMBAYARAN TIDAK BERHASIL", desc:"Pembayaran gagal. Silakan coba lagi.", icon: XCircle, color:"bg-red-500", bg:"bg-red-500/10 border-red-500/20" },
-    expired: { title:"TRANSAKSI KEDALUWARSA", desc:"Waktu pembayaran telah habis", icon: Timer, color:"bg-zinc-500", bg:"bg-zinc-500/10 border-zinc-500/20" },
-  }[status as string] || { title:"PEMBAYARAN MENUNGGU", desc: isXendit ? "Menunggu verifikasi Xendit (webhook)" : "Menunggu verifikasi", icon: Clock3, color:"bg-amber-500", bg:"bg-amber-500/10 border-amber-500/20" }
-
-  const Icon = config.icon
-
-  return (
-    <div className="mx-auto max-w-[560px] px-3 sm:px-4 md:px-6 py-8">
-      <div className={`rounded-[20px] border p-6 md:p-8 text-center ${config.bg}`}>
-        <div className={`mx-auto h-20 w-20 rounded-full ${config.color} grid place-items-center text-white shadow-lg`}>
-          <Icon className="h-10 w-10" />
-        </div>
-        <h1 className="mt-5 text-[20px] font-black tracking-tight">{config.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground text-pretty">{config.desc}</p>
-
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 text-left">
-          <div className="flex gap-3">
-            <img src={p.image_url || p.image} alt="" className="h-14 w-14 rounded-xl object-cover border border-white/10" />
-            <div>
-              <div className="text-sm font-black">{p.name}</div>
-              <div className="text-xs text-muted-foreground">{p.school}</div>
-              <div className="text-xs font-bold tabular-nums">{qty} BALLOT • Rp{Number(total).toLocaleString("id-ID")}</div>
+  // SUCCESS — plek PNG: SUPPORT RECEIVED
+  if(status==="success"){
+    return (
+      <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6">
+        <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+          <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-white/[0.08]">
+            <img src={p.image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="relative flex h-full min-h-[420px] flex-col items-center justify-center p-8 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-full border border-[#D9FF3F] text-[22px] text-[#D9FF3F]">✓</div>
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-[0.95]">SUPPORT<br /><span className="text-[#D9FF3F]">RECEIVED.</span></h2>
+              <p className="mt-2 text-[12px] text-white/70">Your voice has been counted.</p>
+              <Link href="/tim" className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-[11px] font-bold tracking-wide hover:bg-white/10">BACK TO EVENT →</Link>
             </div>
           </div>
-          <div className="hairline my-3" />
-          <div className="grid gap-1.5 text-xs">
-            <div className="flex justify-between"><span className="text-muted-foreground">ID Invoice</span><span className="font-mono font-bold">LKBB-{id.slice(0,8).toUpperCase()}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">ID Transaksi</span><span className="font-mono font-bold text-[10px]">{id.slice(0,12)}...</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Metode</span><span className="font-bold">QRIS</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="inline-flex rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-bold text-black">{status.toUpperCase()}</span></div>
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
+            <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PAYMENT</div>
+            <div className="mt-2 text-[13px] font-bold">{qty} BALLOTS • Rp{Number(total).toLocaleString("id-ID")}</div>
+            <div className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">Pembayaran terverifikasi. Ballot masuk.</div>
+            <Link href="/profile/dukungan" className="mt-4 grid h-11 place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold text-black">LIHAT TRANSAKSI</Link>
           </div>
-        </div>
-
-        {status==="pending" && (
-          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4">
-            <div className="text-xs font-bold tracking-widest">BAYAR VIA QRIS</div>
-            <div className="tabular-nums text-[24px] font-black text-amber-600">Menunggu</div>
-            <div className="mx-auto mt-3 h-[220px] w-[220px] rounded-xl border border-white/10 bg-white grid place-items-center p-2 overflow-hidden">
-              {qrDataUrl ? (
-                <img id="qris-image" src={qrDataUrl} alt="QRIS" className="h-full w-full object-contain" />
-              ) : trx?.qr_content ? (
-                <div className="text-[11px] leading-tight text-center text-muted-foreground break-all p-2">
-                  QRIS<br/><span className="font-mono text-[10px] break-all">{String(trx.qr_content).slice(0,60)}...</span><br/>
-                  <span className="text-[10px]">Gagal render QR, gunakan String di atas</span>
-                </div>
-              ) : (
-                <div className="text-[11px] leading-tight text-center text-muted-foreground">
-                  QRIS<br/><span className="font-bold text-foreground">Menyiapkan QR...</span><br/>
-                  <span className="text-[10px]">Jika QR tidak muncul, klik Cek Status atau refresh</span>
-                </div>
-              )}
-            </div>
-            {qrDataUrl && (
-              <Button
-                variant="outline"
-                className="mt-3 w-full rounded-full gap-2"
-                onClick={()=>{
-                  if(!qrDataUrl) return
-                  const a = document.createElement('a')
-                  a.href = qrDataUrl
-                  a.download = `qris-${id || 'lkbb'}.png`
-                  document.body.appendChild(a)
-                  a.click()
-                  document.body.removeChild(a)
-                }}
-              >
-                ⬇ Download QR
-              </Button>
-            )}
-            {trx?.doku_reference_no && <div className="mt-2 text-[11px] font-mono text-muted-foreground">Ref: {trx.doku_reference_no.slice(0,16)}...</div>}
-            <p className="mt-2 text-xs text-muted-foreground">Ballot <b>tidak</b> langsung bertambah. Menunggu pembayaran terverifikasi. Scan QR dengan e-wallet / m-banking, selesaikan dalam 15 menit.</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">Jika sudah bayar, klik Cek Status. Polling tiap 3 detik (hanya UX).</p>
-            {trx?.expires_at && <p className="mt-1 text-[11px] text-muted-foreground">Kadaluarsa: {new Date(trx.expires_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</p>}
-          </div>
-        )}
-
-          <div className="mt-6 grid gap-2">
-            {status==="success" ? (
-              <>
-                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-700">Pembayaran terverifikasi via Xendit webhook. Ballot masuk ke ledger.</div>
-                <Link href="/profile/dukungan"><Button className="w-full rounded-full h-11">Lihat Transaksi</Button></Link>
-                <Link href="/"><Button variant="outline" className="w-full rounded-full">Kembali ke Beranda</Button></Link>
-              </>
-            ) : status==="pending" ? (
-              <>
-                <Button className="w-full rounded-full h-11" onClick={handleCheckStatus} disabled={polling}>{polling ? "Memeriksa..." : "Cek Status Pembayaran"}</Button>
-                <Button variant="outline" className="w-full rounded-full h-11 border-dashed" onClick={handleSimulate} disabled={simulating}>{simulating ? "Mensimulasikan..." : "Simulasi Bayar (Sandbox)"}</Button>
-                <p className="text-center text-[11px] text-muted-foreground">Tombol simulasi khusus sandbox — seolah-olah QR sudah dibayar.</p>
-              <p className="text-center text-[11px] text-muted-foreground">Webhook Xendit adalah satu-satunya penentu PAID — jangan bypass via frontend.</p>
-              <Link href="/peleton"><Button variant="outline" className="w-full rounded-full">Batal</Button></Link>
-            </>
-          ) : (
-            <>
-              <Link href={`/dukungan?peleton=${slug}`}><Button className="w-full rounded-full h-11">Coba Lagi</Button></Link>
-              <Link href="/"><Button variant="outline" className="w-full rounded-full">Kembali</Button></Link>
-            </>
-          )}
         </div>
       </div>
+    )
+  }
 
-      <div className="mt-4 text-center text-xs text-muted-foreground">
-        Butuh bantuan? <a href="/kontak" className="font-semibold text-foreground hover:underline">Hubungi Panitia</a>
+  // PAYMENT — plek PNG: Complete Your Payment
+  return (
+    <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6">
+      <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08]">
+          <img src={p.image_url} alt="" className="aspect-[16/10] w-full object-cover opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute bottom-4 left-4">
+            <div className="font-display text-[15px] font-bold text-white">{p.name}</div>
+            <div className="text-[10px] tracking-[0.14em] text-white/60">{qty} BALLOTS • Rp{Number(total).toLocaleString("id-ID")}</div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
+          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PAYMENT</div>
+          <h2 className="mt-2 font-display text-[18px] font-bold">Complete Your Payment</h2>
+          <div className="mt-4 flex items-center justify-between rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3">
+            <span className="text-[11px] text-[#92918C]">Total Amount</span>
+            <span className="text-[13px] font-bold tabular-nums">Rp{Number(total).toLocaleString("id-ID")}</span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {[
+              { k:"va", t:"Virtual Account", s:"BCA • BRI • BNI" },
+              { k:"qris", t:"QRIS", s:"QR" },
+              { k:"ew", t:"E-Wallet", s:"OVO • GoPay • DANA" },
+              { k:"cc", t:"Credit / Debit Card", s:"VISA" },
+            ].map(o=> (
+              <button key={o.k} onClick={()=> setMethod(o.k)} className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${method===o.k ? "border-[#D9FF3F]/50 bg-[#D9FF3F]/[0.05]" : "border-white/[0.08] hover:border-white/20"}`}>
+                <span className="flex items-center gap-3">
+                  <span className={`grid h-5 w-5 place-items-center rounded-full border ${method===o.k ? "border-[#D9FF3F]" : "border-white/20"}`}>{method===o.k && <span className="h-2 w-2 rounded-full bg-[#D9FF3F]" />}</span>
+                  <span><span className="block text-[12px] font-bold">{o.t}</span><span className="block text-[10px] text-[#92918C]">{o.s}</span></span>
+                </span>
+                <span className="text-[#92918C]">›</span>
+              </button>
+            ))}
+          </div>
+          {qrDataUrl ? (
+            <div className="mt-3 rounded-xl border border-white/[0.08] bg-white p-3">
+              <img src={qrDataUrl} alt="QRIS" className="mx-auto h-[180px] w-[180px] object-contain" />
+            </div>
+          ) : (
+            <p className="mt-3 text-center text-[11px] text-[#92918C]">QR / VA muncul setelah metode dipilih{ id ? "" : " — buat transaksi dulu via Dukungan" }.</p>
+          )}
+          <button onClick={handleCheckStatus} disabled={polling || !id} className="mt-4 grid h-11 w-full place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold text-black hover:brightness-105 disabled:opacity-50">
+            {polling ? "Memeriksa..." : "PAY NOW"}
+          </button>
+          {!id && <Link href={`/dukungan?peleton=${slug||""}`} className="mt-2 grid h-11 w-full place-items-center rounded-full border border-white/15 text-[11px] font-bold">BUAT TRANSAKSI DULU</Link>}
+          {id && <button onClick={handleSimulate} disabled={simulating} className="mt-2 h-9 w-full rounded-full border border-dashed border-white/15 text-[11px] font-bold text-[#92918C]">{simulating ? "Mensimulasikan..." : "Simulasi Bayar (Sandbox)"}</button>}
+          <button onClick={()=> history.back()} className="mt-3 w-full text-center text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">→ BACK</button>
+        </div>
       </div>
     </div>
   )
@@ -270,9 +169,9 @@ function CheckoutInner(){
 
 export default function CheckoutPage(){
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#0A0A09] text-[#F2F0E9]">
       <Navbar />
-      <main className="flex-1 bg-white/5 backdrop-blur/20 pb-[72px] md:pb-0">
+      <main className="flex-1 pb-[72px] md:pb-0">
         <Suspense fallback={<div className="p-8 text-center">Memuat…</div>}>
           <CheckoutInner />
         </Suspense>

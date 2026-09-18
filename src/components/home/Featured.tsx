@@ -62,9 +62,9 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
       <div className="container-editorial">
         <div className="flex flex-wrap items-end justify-between gap-4 py-8 border-b border-border">
           <div>
-            <div className="meta-label">01 — Peserta</div>
+            <div className="meta-label">PARTICIPANTS</div>
             <h2 className="mt-2 font-display font-bold text-[32px] lg:text-[44px] leading-[0.9] tracking-[-0.03em] text-foreground">
-              DUKUNG PELETON<br />FAVORITMU!
+              WHO WILL<br />THE CROWD <span className="text-primary">CHOOSE?</span>
             </h2>
             <p className="mt-3 max-w-[480px] text-sm leading-relaxed text-muted-foreground">
               Beranda urut nomor tampil (01, 02, 03…) — SMP & SMA terpisah. Peringkat disembunyikan saat voting aktif.

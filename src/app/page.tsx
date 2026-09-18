@@ -5,6 +5,7 @@ import { Hero } from "@/components/home/Hero"
 import { Featured } from "@/components/home/Featured"
 import { PodiumSection } from "@/components/competition/Podium"
 import { CmsSections } from "@/components/cms/CmsSectionRenderer"
+import { ParticipantsMini, ResultsTeaser } from "@/components/home/HomeExtras"
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
 import { createServerSupabase } from "@/lib/supabase"
 import { headers } from "next/headers"
@@ -137,6 +138,8 @@ export default async function HomePage(){
           <PodiumSection smp={teams.filter(p=>p.category==='SMP')} sma={teams.filter(p=>p.category==='SMA')} isPublished={false} variant="provisional" />
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
+        <ParticipantsMini teams={teams} />
+        <ResultsTeaser />
         {extraSections.filter((s:any)=> {
           const featOrder = cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 0
           return s.sort_order > featOrder

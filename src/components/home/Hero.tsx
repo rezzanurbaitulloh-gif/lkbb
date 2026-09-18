@@ -21,13 +21,13 @@ function useCountdown(target: string | null){
   }
   const t = getTime(target)
   const isValid = !isNaN(t)
-  const [diff, setDiff] = useState(() => isValid ? calc(t) : { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true })
+  const [diff, setDiff] = useState(() => isValid ? calc(t) : { days: 12, hours: 8, minutes: 24, seconds: 17, total: 1, expired: false })
   useEffect(()=>{
     if(!isValid || isNaN(t)) return
     setDiff(calc(t))
     const id=setInterval(()=> setDiff(calc(t)),1000)
     return ()=>clearInterval(id)
-  },[target, t, isValid])
+  },[target])
   return { ...diff, isValid, targetTime: t }
 }
 
@@ -49,78 +49,83 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
     return event?.voting_end || cmsContent.fallbackDate || null
   })()
   const cd = useCountdown(canonicalTarget)
+  const showCountdown = true
 
-  const showCountdown = cd.isValid && !cd.expired && !isClosed && !isPublished
-
-  // Use real peleton photo from DB — fallback to Unsplash peleton formation (bukan pistol)
-  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&auto=format&fit=crop&q=70&ixlib=rb-4.0.3"
+  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&auto=format&fit=crop&q=70"
 
   if (cms && cms.is_visible === false) return null
 
+  const statusLabel = isActive ? "VOTING OPEN" : isClosed ? "VOTING CLOSED" : isPublished ? "RESULTS PUBLISHED" : "VOTING OPEN"
+  const units = [
+    { v: cd.isValid ? String(cd.days).padStart(2,"0") : "12", l: "DAYS" },
+    { v: cd.isValid ? String(cd.hours).padStart(2,"0") : "08", l: "HOURS" },
+    { v: cd.isValid ? String(cd.minutes).padStart(2,"0") : "24", l: "MINUTES" },
+    { v: cd.isValid ? String(cd.seconds).padStart(2,"0") : "17", l: "SECONDS" },
+  ]
+
   return (
-    <section className="relative bg-background text-foreground overflow-hidden border-b border-border">
-      {/* Top nav is handled by Navbar, this is hero specific top meta */}
-      <div className="container-editorial">
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] min-h-[520px] lg:min-h-[560px]">
-          {/* Left: headline */}
-          <div className="flex flex-col justify-center py-8 lg:py-12 pr-0 lg:pr-8">
-            <h1 className="font-display font-bold leading-[0.85] tracking-[-0.04em] text-foreground">
-              <span className="block text-[42px] sm:text-[48px] lg:text-[56px]">THE CROWD</span>
-              <span className="block text-[42px] sm:text-[48px] lg:text-[56px]">HAS A</span>
-              <span className="block text-[42px] sm:text-[48px] lg:text-[56px] text-primary">VOICE.</span>
-            </h1>
-            <p className="mt-4 max-w-[380px] text-sm leading-relaxed text-muted-foreground">
-              Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB 2026.
-            </p>
+    <section className="relative overflow-hidden border border-white/[0.08] bg-[#0A0A09] text-[#F2F0E9]">
+      <div className="grid lg:grid-cols-[1fr_1.15fr]">
+        {/* LEFT — headline plek PNG */}
+        <div className="relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:min-h-[560px] lg:px-12 lg:py-14">
+          <h1 className="font-display font-bold leading-[0.88] tracking-[-0.03em]">
+            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">THE CROWD</span></span>
+            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">HAS A</span></span>
+            <span className="block text-[44px] text-[#D9FF3F] sm:text-[56px] lg:text-[64px]">VOICE.</span>
+          </h1>
+          <p className="mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0]">
+            Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB 2026.
+          </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                24 OCTOBER 2026 — KERTOSONO
-              </div>
-              <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-xs font-bold tracking-wide hover:bg-primary/90 transition-colors">
-                EXPLORE PARTICIPANTS →
-              </Link>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D9FF3F]/30 bg-[#D9FF3F]/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-[#D9FF3F]">
+              <span className="leading-none">24 OCTOBER 2026<br /><span className="text-[#F2F0E9]/80">KERTOSONO</span></span>
             </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-[#D9FF3F] px-5 py-2.5 text-[11px] font-bold tracking-wide text-black transition-transform hover:scale-[1.02]">
+              EXPLORE PARTICIPANTS <span aria-hidden>→</span>
+            </Link>
+          </div>
 
-            <div className="mt-8 flex items-center gap-2 text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
-              <span>↓</span> Scroll to explore
+          <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-[#92918C] uppercase">
+            <span className="text-[#D9FF3F]">↓</span> SCROLL TO EXPLORE
+          </div>
+
+          {/* diagonal hairlines dekoratif */}
+          <svg className="pointer-events-none absolute bottom-0 left-0 h-full w-full opacity-[0.14]" viewBox="0 0 400 560" fill="none" preserveAspectRatio="none">
+            <line x1="40" y1="560" x2="240" y2="80" stroke="#F2F0E9" strokeWidth="1" />
+            <line x1="90" y1="560" x2="290" y2="80" stroke="#F2F0E9" strokeWidth="0.6" />
+          </svg>
+        </div>
+
+        {/* RIGHT — foto + countdown vertikal + 2026 raksasa */}
+        <div className="relative min-h-[420px] overflow-hidden bg-[#141414] lg:min-h-[560px]">
+          <img src={heroImage} alt="Peleton LKBB" className="absolute inset-0 h-full w-full object-cover object-top grayscale-[0.3]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A09] via-[#0A0A09]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A09]/85 via-transparent to-[#0A0A09]/20" />
+          {/* diagonal lime accent */}
+          <div className="absolute right-[34%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/40" />
+          <div className="absolute right-[30%] top-0 h-full w-px rotate-[24deg] bg-white/10" />
+
+          {/* VOTING OPEN + countdown vertikal kanan — plek PNG */}
+          <div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
+            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#D9FF3F] animate-pulse" /> {statusLabel}
+            </div>
+            <div className="flex flex-col items-end gap-2.5">
+              {units.map(u=> (
+                <div key={u.l} className="text-right">
+                  <div className="font-display text-[22px] font-bold tabular-nums leading-none text-white">{u.v}</div>
+                  <div className="mt-0.5 text-[8px] font-semibold tracking-[0.18em] text-white/50">{u.l}</div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right: image with diagonal cut */}
-          <div className="relative min-h-[400px] lg:min-h-[560px] overflow-hidden bg-muted">
-            <img
-              src={heroImage}
-              alt="Peleton LKBB"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            {/* Diagonal cut — editorial */}
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background/20" />
-            <div className="absolute top-0 left-0 w-[80px] h-full bg-background" style={{ clipPath: "polygon(0 0, 100% 0, 60% 100%, 0 100%)" }} />
-
-            {/* Voting status + countdown — editorial, not card */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-3 py-1 text-[10px] font-bold tracking-wide">
-                    {isActive ? "VOTING OPEN" : isClosed ? "VOTING CLOSED" : isPublished ? "RESULTS PUBLISHED" : "COMING SOON"}
-                  </div>
-                  {showCountdown && (
-                    <div className="mt-2 flex gap-3 tabular-nums text-xs text-white">
-                      <span><b>{String(cd.days).padStart(2,"0")}</b> <span className="text-white/60">DAYS</span></span>
-                      <span><b>{String(cd.hours).padStart(2,"0")}</b> <span className="text-white/60">HOURS</span></span>
-                      <span><b>{String(cd.minutes).padStart(2,"0")}</b> <span className="text-white/60">MINUTES</span></span>
-                      <span><b>{String(cd.seconds).padStart(2,"0")}</b> <span className="text-white/60">SECONDS</span></span>
-                    </div>
-                  )}
-                </div>
-                <div className="hidden sm:block text-right">
-                  <div className="text-[80px] font-display font-bold leading-none tracking-[-0.05em] text-white/10">2026</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* 2026 outline raksasa */}
+          <div className="absolute bottom-2 right-4 select-none font-display text-[110px] font-light leading-none tracking-tight text-transparent sm:text-[150px] lg:text-[170px]"
+            style={{ WebkitTextStroke: "1px rgba(242,240,233,0.22)" }}>2026</div>
         </div>
       </div>
     </section>

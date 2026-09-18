@@ -79,17 +79,20 @@ export default function ProfilePage(){
               </div>
 
               <div className="mt-6 space-y-2">
-                <Link href="/profile/edit" className="flex items-center justify-between border border-border p-3 text-sm hover:bg-muted transition-colors">
-                  <span>Account Information</span><span>→</span>
+                <Link href="/profile/edit" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Account Information</span><span>›</span>
                 </Link>
-                <Link href="/profile/dukungan" className="flex items-center justify-between border border-border p-3 text-sm hover:bg-muted transition-colors">
-                  <span>Voting History</span><span>{transactions.length}</span>
+                <Link href="/profile/dukungan" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Voting History</span><span>{transactions.length}</span>
                 </Link>
-                <Link href="/profile/dukungan" className="flex items-center justify-between border border-border p-3 text-sm hover:bg-muted transition-colors">
-                  <span>Payment History</span><span>→</span>
+                <Link href="/profile/dukungan" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Payment History</span><span>→</span>
                 </Link>
-                <button onClick={()=>{logout(); router.push("/")}} className="flex w-full items-center justify-between border border-border p-3 text-sm hover:bg-muted transition-colors">
-                  <span>Log Out</span><span>→</span>
+                <Link href="/profile/edit" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Change Password</span><span>→</span>
+                </Link>
+                <button onClick={()=>{logout(); router.push("/")}} className="flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Log Out</span><span>→</span>
                 </button>
               </div>
             </div>

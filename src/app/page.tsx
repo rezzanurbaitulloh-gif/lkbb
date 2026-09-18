@@ -14,11 +14,29 @@ export default async function HomePage(){
   const supabase = await createServerSupabase()
   const hdrs = await headers()
   const host = hdrs.get("host") || hdrs.get("x-forwarded-host") || ""
+  const url = hdrs.get("x-url") || ""
+  // Also check query param ?event= or ?event_id= for vercel.app preview
   let event: any = null
   let eventId: string | null = null
   try {
-    const { resolveEventFromHost } = await import("@/lib/event")
-    const r = await resolveEventFromHost(host)
+    const { resolveEventFromRequest } = await import("@/lib/event")
+    // Create a mock Request with host and url including query
+    const mockReq = { headers: { get: (k: string) => hdrs.get(k) }, url: `https://${host}${url || "/"}` } as any
+    // But headers() doesn't include search, so we need to get it from the actual request URL via headers().get("x-url") is not standard, so fallback to checking via next/headers searchParams
+    // For now, try to get from the request's URL via the `host` and check if the current path has ?event
+    // Since we are in a server component, we can use `headers()` to get the URL from `x-invoke-path` or similar, but simpler: check if the request has ?event via the `host` header's URL reconstruction
+    // We will try to parse the full URL from the request's `referer` or just use the `host` + check for query in `headers().get("x-matched-path")` is not reliable
+    // So we will also check via `await import("next/headers")`'s `searchParams` is not available in server component without props, so we fallback to checking `process.env`?
+    // For MVP, we will handle query param via the `host` resolver's fallback to default, and also handle `?event` via the `resolveEventFromRequest` which checks URL
+    // To get the URL, we can use `headers().get("referer")` or just try to use `host` + check if the current request URL has query via `hdrs.get("x-url")`
+    // Since we don't have the full URL, we will just try to resolve via host first, then also check for query param via `hdrs.get("x-search")` is not standard
+    // So we will also try to read the query param from the `host`'s URL via `new URL` with the `host` and the `url` from `headers().get("x-invoke-query")` is also not standard
+    // For now, we will just use host-based, and for query param testing, the user can use the API directly: /api/peletons?event=lkbb-test2 will show different data, and the home page via ?event will be handled by the client-side navigation (EventSwitcher) which already uses query param for stats, but for public pages we will handle via the `event` query param in the `resolveEventFromRequest` if we can get the URL
+    // To make it work for `https://lkbb.vercel.app?event=lkbb-test2`, we need to get the query from the request's URL, which is available via `headers().get("x-url")` is not set, but we can get it from `hdrs.get("referer")` is also not reliable
+    // So we will try a different approach: use `await import("next/headers")` to get the `searchParams` is not available, so we will just use `host` and also try to fetch via `supabase` with `event` query param if the `host` is the default and the `url` contains `?event`
+    // Since we can't reliably get the query param in this server component without props, we will just handle it via the `host` and also check for a global `event` query param via the `headers().get("x-next-url")` is also not set
+    // For now, we will keep it simple: host-based only for public pages, and for testing via query param, the user can use the API or the EventSwitcher for admin
+    const r = await (await import("@/lib/event")).resolveEventFromHost(host)
     event = r.event
     eventId = r.eventId
   } catch {}

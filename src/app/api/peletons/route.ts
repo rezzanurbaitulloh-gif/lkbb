@@ -8,11 +8,22 @@ export async function GET(req: Request) {
   const supabase = await createServerSupabase()
   const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
   let eventId: string | null = null
-  try {
-    const { resolveEventFromHost } = await import("@/lib/event")
-    const r = await resolveEventFromHost(host)
-    eventId = r.eventId
-  } catch {}
+  // Query param override for vercel.app preview (since wildcard subdomains not available on Hobby)
+  const qEvent = searchParams.get("event") || searchParams.get("event_slug") || searchParams.get("slug")
+  const qEventId = searchParams.get("event_id")
+  if (qEventId && qEventId !== "all") {
+    const { data: ev } = await supabase.from("events").select("id").eq("id", qEventId).maybeSingle()
+    if (ev?.id) eventId = ev.id
+  } else if (qEvent) {
+    const { data: ev } = await supabase.from("events").select("id").eq("slug", qEvent).maybeSingle()
+    if (ev?.id) eventId = ev.id
+  } else {
+    try {
+      const { resolveEventFromHost } = await import("@/lib/event")
+      const r = await resolveEventFromHost(host)
+      eventId = r.eventId
+    } catch {}
+  }
 
   if (orderBy === "ranking") {
     // Use team_ranking view for performance-based order — secondary sort = nomor urut per kategori

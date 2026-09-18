@@ -1,7 +1,8 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 // Event resolution & authz helpers — server-side only
-// Hostname is source of truth for event, not ?event_id or localStorage
+// Hostname is primary source of truth for event, fallback to path /e/[slug] or ?event_id for vercel.app preview
+// Not ?event_id or localStorage as primary, but we support it for MVP on vercel.app where wildcard subdomains aren't available on Hobby
 
 const DEFAULT_SLUG = "lkbbvote"
 
@@ -44,7 +45,8 @@ export async function resolveEventFromHost(host: string | null): Promise<{ event
     }
   }
   // 2) subdomain: xxx.lkbb.vercel.app -> slug xxx
-  // also handle lkbbvote.lkbb.vercel.app
+  // NOTE: Vercel Hobby tidak support wildcard *.vercel.app (akan ERR_CONNECTION_CLOSED)
+  // Untuk preview di vercel.app, gunakan path /e/[slug] atau ?event_id= — subdomain hanya untuk custom domain
   const m = h.match(/^([a-z0-9-]+)\.lkbb\.vercel\.app$/)
   if (m) {
     const slug = m[1]
@@ -57,6 +59,36 @@ export async function resolveEventFromHost(host: string | null): Promise<{ event
   // 3) custom domain like event-a.example.com — already handled by exact match above
   // 4) fallback
   return fallbackDefault(h)
+}
+
+export async function resolveEventFromRequest(req: Request | { headers: any; url?: string }): Promise<{ event: any | null; eventId: string | null; slug: string | null }> {
+  const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
+  const urlStr = (req as any).url || ""
+  // 1) Query param ?event_id= or ?event=slug (MVP for vercel.app)
+  try {
+    const u = new URL(urlStr, `https://${host || "lkbb.vercel.app"}`)
+    const qId = u.searchParams.get("event_id")
+    const qSlug = u.searchParams.get("event") || u.searchParams.get("event_slug")
+    const service = getServiceClient()
+    if (qId && qId !== "all") {
+      const { data: ev } = await service.from("events").select("*").eq("id", qId).maybeSingle()
+      if (ev) return { event: ev, eventId: ev.id, slug: ev.slug }
+    }
+    if (qSlug) {
+      const { data: ev } = await service.from("events").select("*").eq("slug", qSlug).maybeSingle()
+      if (ev) return { event: ev, eventId: ev.id, slug: ev.slug }
+    }
+    // 2) Path /e/[slug]
+    const path = u.pathname || ""
+    const m = path.match(/^\/e\/([a-z0-9-]+)(?:\/|$)/)
+    if (m) {
+      const slug = m[1]
+      const { data: ev } = await service.from("events").select("*").eq("slug", slug).maybeSingle()
+      if (ev) return { event: ev, eventId: ev.id, slug: ev.slug }
+    }
+  } catch {}
+  // 3) Host-based
+  return resolveEventFromHost(host)
 }
 
 async function fallbackDefault(hostForCache?: string) {

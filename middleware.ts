@@ -9,19 +9,41 @@ function getServiceClient() {
   return createSupabaseClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
 }
 
-async function resolveEventIdFromHost(host: string | null): Promise<string | null> {
-  if (!host) return null
-  const h = host.split(":")[0].toLowerCase().trim()
+async function resolveEventIdFromRequest(request: NextRequest): Promise<string | null> {
   const service = getServiceClient()
   if (!service) return null
-  // exact domain
-  const { data: dom } = await service.from("event_domains").select("event_id").eq("domain", h).maybeSingle()
-  if (dom?.event_id) return dom.event_id
-  const m = h.match(/^([a-z0-9-]+)\.lkbb\.vercel\.app$/)
-  if (m) {
-    const slug = m[1]
+  const url = request.nextUrl
+  // 1) Query param ?event_id= or ?event=slug (MVP for vercel.app preview)
+  const qId = url.searchParams.get("event_id")
+  const qSlug = url.searchParams.get("event") || url.searchParams.get("event_slug")
+  if (qId && qId !== "all") {
+    const { data: ev } = await service.from("events").select("id").eq("id", qId).maybeSingle()
+    if (ev?.id) return ev.id
+  }
+  if (qSlug) {
+    const { data: ev } = await service.from("events").select("id").eq("slug", qSlug).maybeSingle()
+    if (ev?.id) return ev.id
+  }
+  // 2) Path /e/[slug]
+  const path = url.pathname
+  const mPath = path.match(/^\/e\/([a-z0-9-]+)(?:\/|$)/)
+  if (mPath) {
+    const slug = mPath[1]
     const { data: ev } = await service.from("events").select("id").eq("slug", slug).maybeSingle()
     if (ev?.id) return ev.id
+  }
+  // 3) Host-based
+  const host = request.headers.get("host") || request.headers.get("x-forwarded-host") || ""
+  const h = host.split(":")[0].toLowerCase().trim()
+  if (h) {
+    const { data: dom } = await service.from("event_domains").select("event_id").eq("domain", h).maybeSingle()
+    if (dom?.event_id) return dom.event_id
+    const m = h.match(/^([a-z0-9-]+)\.lkbb\.vercel\.app$/)
+    if (m) {
+      const slug = m[1]
+      const { data: ev } = await service.from("events").select("id").eq("slug", slug).maybeSingle()
+      if (ev?.id) return ev.id
+    }
   }
   // fallback
   const { data: ev2 } = await service.from("events").select("id").eq("slug", "lkbbvote").maybeSingle()
@@ -44,10 +66,9 @@ async function isEventAdmin(eventId: string, userId: string): Promise<boolean> {
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
-  const host = request.headers.get("host") || request.headers.get("x-forwarded-host") || ""
-  // Resolve event per-request (cache inside function is per-instance, but we do simple DB lookup)
+  // Resolve event per-request (host → path → query)
   let eventId: string | null = null
-  try { eventId = await resolveEventIdFromHost(host) } catch {}
+  try { eventId = await resolveEventIdFromRequest(request) } catch {}
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

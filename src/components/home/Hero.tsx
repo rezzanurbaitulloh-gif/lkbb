@@ -67,7 +67,18 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
 
   return (
     <section className="relative overflow-hidden border border-white/[0.08] bg-[#0A0A09] text-[#F2F0E9]">
-      <div className="grid lg:grid-cols-[1fr_1.15fr]">
+      {/* BACKGROUND — logo LKBB full-bleed plek PNG (menyatu, bukan kotak mentah) */}
+      <div className="absolute inset-0" aria-hidden>
+        <img src={heroImage} alt="" className="h-full w-full object-cover object-center opacity-40" />
+        <div className="absolute inset-0 bg-[#0A0A09]/55" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A09] via-[#0A0A09]/45 to-[#0A0A09]/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A09]/90 via-transparent to-[#0A0A09]/30" />
+      </div>
+      {/* diagonal accents */}
+      <div className="absolute right-[38%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/25" aria-hidden />
+      <div className="absolute right-[34%] top-0 h-full w-px rotate-[24deg] bg-white/10" aria-hidden />
+
+      <div className="relative grid lg:grid-cols-[1fr_auto] lg:gap-8">
         {/* LEFT — headline plek PNG */}
         <div className="relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:min-h-[560px] lg:px-12 lg:py-14">
           <h1 className="font-display font-bold leading-[0.88] tracking-[-0.03em]">
@@ -101,23 +112,15 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
           </svg>
         </div>
 
-        {/* RIGHT — logo LKBB + countdown vertikal + 2026 raksasa */}
-        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden bg-[#0A0A09] p-10 lg:min-h-[560px]">
-          {/* glow lime di belakang logo */}
-          <div className="absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D9FF3F]/[0.07] blur-[100px] lg:h-[480px] lg:w-[480px]" />
-          <img src={heroImage} alt="Logo LKBB" className="relative h-[260px] w-[260px] object-contain drop-shadow-[0_0_60px_rgba(217,255,63,0.15)] sm:h-[320px] sm:w-[320px] lg:h-[420px] lg:w-[420px]" />
-          {/* diagonal lime accent */}
-          <div className="absolute right-[30%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/25" />
-          <div className="absolute right-[26%] top-0 h-full w-px rotate-[24deg] bg-white/[0.07]" />
-          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0A0A09] to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A0A09] to-transparent" />
+        {/* RIGHT — countdown + 2026 raksasa (di atas background) */}
+        <div className="relative flex flex-col items-start justify-center gap-6 px-5 pb-10 sm:px-8 lg:min-h-[560px] lg:w-[280px] lg:items-end lg:px-0 lg:py-14 lg:pr-12">
 
           {/* VOTING OPEN + countdown vertikal kanan — plek PNG */}
-          <div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
+          <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-3">
             <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#D9FF3F] animate-pulse" /> {statusLabel}
             </div>
-            <div className="flex flex-col items-end gap-2.5">
+            <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-2.5">
               {units.map(u=> (
                 <div key={u.l} className="text-right">
                   <div className="font-display text-[22px] font-bold tabular-nums leading-none text-white">{u.v}</div>
@@ -128,7 +131,7 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
           </div>
 
           {/* 2026 outline raksasa */}
-          <div className="absolute bottom-2 right-4 select-none font-display text-[110px] font-light leading-none tracking-tight text-transparent sm:text-[150px] lg:text-[170px]"
+          <div className="select-none font-display text-[90px] font-light leading-none tracking-tight text-transparent sm:text-[120px] lg:text-[150px]"
             style={{ WebkitTextStroke: "1px rgba(242,240,233,0.22)" }}>2026</div>
         </div>
       </div>

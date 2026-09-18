@@ -33,6 +33,34 @@ export async function settlePaidTransaction(
     return { ok: false, message: "Invalid supports quantity", status: 400 }
   }
 
+  // Event-aware: resolve event_id (from transaction, fallback to peleton)
+  let eventId = (trx as any).event_id
+  if (!eventId) {
+    const { data: p } = await service.from("peletons").select("event_id").eq("id", trx.peleton_id).maybeSingle()
+    eventId = (p as any)?.event_id || null
+  }
+  if (!eventId) {
+    const { data: ev } = await service.from("events").select("id").eq("slug", "lkbbvote").maybeSingle()
+    eventId = (ev as any)?.id || null
+  }
+
+  // Ballot wallet: credit atomically (upsert) — PAYMENT -> WALLET -> SUPPORT
+  let walletId: string | null = null
+  if (eventId) {
+    try {
+      const { data: existingWallet } = await service.from("ballot_wallets").select("id, balance").eq("event_id", eventId).eq("user_id", trx.user_id).maybeSingle()
+      if (existingWallet) {
+        walletId = (existingWallet as any).id
+        await service.from("ballot_wallets").update({ balance: (existingWallet as any).balance + supportsQty, updated_at: new Date().toISOString() }).eq("id", walletId)
+        await service.from("ballot_transactions").insert({ event_id: eventId, user_id: trx.user_id, wallet_id: walletId, type: "credit", amount: supportsQty, order_id: trx.id, peleton_id: trx.peleton_id } as any)
+      } else {
+        const { data: w } = await service.from("ballot_wallets").insert({ event_id: eventId, user_id: trx.user_id, balance: supportsQty } as any).select("id").single()
+        walletId = (w as any).id
+        await service.from("ballot_transactions").insert({ event_id: eventId, user_id: trx.user_id, wallet_id: walletId, type: "credit", amount: supportsQty, order_id: trx.id, peleton_id: trx.peleton_id } as any)
+      }
+    } catch {}
+  }
+
   const { error: supErr } = await service.from("supports").insert({
     peleton_id: trx.peleton_id,
     user_id: trx.user_id,
@@ -40,7 +68,8 @@ export async function settlePaidTransaction(
     amount,
     supports: supportsQty,
     source: "online",
-  })
+    event_id: eventId,
+  } as any)
 
   if (supErr) {
     const { data: dup } = await service.from("supports").select("id").eq("transaction_id", trx.id).maybeSingle()
@@ -69,6 +98,7 @@ export async function settlePaidTransaction(
         peleton_slug: peletonSlug,
         supporter_name: supporterName,
         supporter_avatar: supporterAvatar,
+        event_id: eventId,
         data: { is_private: false, is_public: true, peleton_category: peletonCategory, peleton_number: peleton?.number, supporter_avatar: supporterAvatar, ballot_quantity: supportsQty },
       },
       {
@@ -80,9 +110,10 @@ export async function settlePaidTransaction(
         peleton_slug: peletonSlug,
         supporter_name: supporterName,
         supporter_avatar: supporterAvatar,
+        event_id: eventId,
         data: { is_private: true, ballot_quantity: supportsQty, peleton_category: peletonCategory, peleton_number: peleton?.number, supporter_avatar: supporterAvatar },
       },
-    ])
+    ] as any)
   } catch {}
 
   try {
@@ -90,7 +121,8 @@ export async function settlePaidTransaction(
       action: "transaction_paid",
       target: trx.id,
       details: { provider, provider_ref: providerRef, amount, supports: supportsQty, peleton_id: trx.peleton_id },
-    })
+      event_id: eventId,
+    } as any)
   } catch {}
 
   return { ok: true, shouldRecordSupport: true }

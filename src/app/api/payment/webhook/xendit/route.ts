@@ -3,6 +3,7 @@ import { createServiceSupabase } from "@/lib/supabase"
 import { getPaymentProvider } from "@/lib/payment"
 import { parseXenditQrCallback } from "@/lib/payment/xendit/webhook"
 import { settlePaidTransaction } from "@/lib/payment/settle"
+import crypto from "crypto"
 
 export async function GET() {
   return NextResponse.json({
@@ -61,8 +62,22 @@ export async function POST(req: Request) {
   const status = normalized!.status // PAID, PENDING, FAILED, EXPIRED
   const amountValue = normalized!.amount
 
-  // Find internal transaction: external_id IS our transaction.id
+  // Webhook idempotency: payload_hash unique (PRD §30)
+  const payloadHash = crypto.createHash("sha256").update(rawBody).digest("hex")
   const service = createServiceSupabase()
+  // Try to insert webhook event first; if duplicate, return idempotent
+  try {
+    const { error: whErr } = await (service as any).from("payment_webhook_events").insert({
+      provider: "XENDIT",
+      provider_event_id: xenditId || externalId,
+      order_id: externalId,
+      payload_hash: payloadHash,
+      processed: false,
+    } as any)
+    if (whErr && whErr.message?.includes("duplicate") || (whErr as any)?.code === "23505") {
+      return NextResponse.json({ ok: true, message: "Duplicate webhook (idempotent)" })
+    }
+  } catch {}
   let trx: any = null
 
   if (externalId) {
@@ -82,6 +97,10 @@ export async function POST(req: Request) {
     console.warn("[xendit webhook] transaction not found", { externalId, xenditId })
     return NextResponse.json({ error: "Transaction not found" }, { status: 404 })
   }
+  // Link webhook event to transaction's event_id
+  try {
+    await (service as any).from("payment_webhook_events").update({ event_id: (trx as any).event_id, order_id: trx.id, processed: status === "PAID" }).eq("payload_hash", payloadHash)
+  } catch {}
 
   // Only process XENDIT transactions here (DOKU dinonaktifkan)
   if (trx.provider && trx.provider !== "XENDIT") {

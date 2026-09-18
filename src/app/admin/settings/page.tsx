@@ -69,12 +69,53 @@ export default function SettingsPage(){
 
   const loadEvent = async ()=>{
     const s=createBrowserSupabase()
-    const { data } = await s.from("competitions").select("*").order("created_at",{ascending:false}).limit(1).single()
-    setEvent(data)
-    if(data){
-      setStateVal(data.state)
-      setProv(!!data.show_provisional_result)
-      setFin(!!data.show_final_result)
+    // Try to resolve current event from host/query (for multi-event), fallback to competitions
+    let ev: any = null
+    try {
+      const host = typeof window !== "undefined" ? window.location.host : ""
+      const url = typeof window !== "undefined" ? new URL(window.location.href) : null
+      const qId = url?.searchParams.get("event_id")
+      const qSlug = url?.searchParams.get("event")
+      if (qId && qId !== "all") {
+        const { data } = await s.from("events").select("*").eq("id", qId).maybeSingle()
+        if (data) ev = data
+      } else if (qSlug) {
+        const { data } = await s.from("events").select("*").eq("slug", qSlug).maybeSingle()
+        if (data) ev = data
+      } else if (host) {
+        // Try event_domains exact match
+        const h = host.split(":")[0].toLowerCase()
+        const { data: dom } = await s.from("event_domains").select("event_id").eq("domain", h).maybeSingle()
+        if (dom?.event_id) {
+          const { data } = await s.from("events").select("*").eq("id", dom.event_id).maybeSingle()
+          if (data) ev = data
+        }
+      }
+    } catch {}
+    if (!ev) {
+      // Fallback to competitions (legacy) and also try events default
+      const { data: comp } = await s.from("competitions").select("*").order("created_at",{ascending:false}).limit(1).single()
+      if (comp) {
+        // Try to find corresponding event
+        const { data: ev2 } = await s.from("events").select("*").eq("slug", "lkbbvote").maybeSingle()
+        ev = ev2 || comp
+        // Merge state/status for compatibility
+        if (comp && ev2) {
+          ev = { ...ev2, state: (ev2 as any).status || (comp as any).state, settings: { ...((comp as any).settings || {}), ...((ev2 as any).settings || {}) } }
+        } else if (comp) {
+          ev = comp
+        }
+      } else {
+        const { data: ev2 } = await s.from("events").select("*").eq("slug", "lkbbvote").maybeSingle()
+        ev = ev2
+      }
+    }
+    setEvent(ev)
+    if(ev){
+      const st = (ev as any).state || (ev as any).status
+      setStateVal(st)
+      setProv(!!(ev as any).show_provisional_result)
+      setFin(!!(ev as any).show_final_result)
     }
   }
   const loadSettings = async ()=>{

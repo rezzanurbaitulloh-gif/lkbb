@@ -5,16 +5,34 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const category = searchParams.get("category")
   const supabase = await createServerSupabase()
-  const { data: event } = await supabase.from("competitions").select("state, show_provisional_result, show_final_result").order("created_at", { ascending: false }).limit(1).single()
-  const state = event?.state as string
+  // Resolve event from host
+  const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
+  let eventId: string | null = null
+  let event: any = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    eventId = r.eventId
+    event = r.event
+    // Fallback to competitions for state if events not yet has state
+    if (!event) {
+      const { data: comp } = await supabase.from("competitions").select("state, show_provisional_result, show_final_result").order("created_at", { ascending: false }).limit(1).single()
+      event = comp
+    }
+  } catch {
+    const { data: comp } = await supabase.from("competitions").select("state, show_provisional_result, show_final_result").order("created_at", { ascending: false }).limit(1).single()
+    event = comp
+  }
+  const state = (event?.status || event?.state) as string
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
   const isVotingClosed = state === "VOTING_CLOSED"
   const isPublished = state === "RESULT_PUBLISHED"
   const showRanking = isVotingClosed || isPublished
   // BELUM DIMULAI & AKTIF: ranking tidak tampil — return urut nomor per kategori (nomor urut = urutan tampil)
   if (!showRanking) {
-    let q = supabase.from("peletons").select("id,slug,number,name,school,category,image_url,logo_url,display_order").eq("active", true).eq("verified", true).order("category", { ascending: true }).order("number", { ascending: true })
+    let q = supabase.from("peletons").select("id,slug,number,name,school,category,image_url,logo_url,display_order,event_id").eq("active", true).eq("verified", true).order("category", { ascending: true }).order("number", { ascending: true })
     if (category) q = q.eq("category", category)
+    if (eventId) q = q.eq("event_id", eventId)
     const { data, error } = await q
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     const sorted = (data||[]).sort((a:any,b:any)=>{
@@ -30,6 +48,7 @@ export async function GET(req: Request) {
   const orderField = isPublished ? "total_ballots" : "online_ballots"
   let query = supabase.from("team_ranking").select("*").order(orderField as any, { ascending: false }).order("number", { ascending: true })
   if (category) query = query.eq("category", category)
+  if (eventId) query = query.eq("event_id", eventId)
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   // fallback numeric sort for text number

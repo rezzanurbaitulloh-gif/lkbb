@@ -24,23 +24,50 @@ async function requireAdmin() {
   return { ok: true as const, user, supabase }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const auth = await requireAdmin()
   if (!auth.ok) return NextResponse.json({ error: auth.status === 401 ? "Unauthorized" : "Forbidden" }, { status: auth.status })
   const service = createServiceSupabase()
-  const [peletons, peletonsSMP, peletonsSMA, users, transactions, supports, ranking, recentTx, competitions, auditLogs, chartSupports] = await Promise.all([
-    service.from("peletons").select("*", { count: "exact", head: true }).eq("active", true),
-    service.from("peletons").select("*", { count: "exact", head: true }).eq("category", "SMP").eq("active", true),
-    service.from("peletons").select("*", { count: "exact", head: true }).eq("category", "SMA").eq("active", true),
+  // Resolve event from host (subdomain) — fallback to default lkbbvote
+  const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
+  let eventId: string | null = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    eventId = r.eventId
+  } catch {}
+  // Query param override: ?event_id=all -> SUPER_ADMIN global, ?event_id=<uuid> -> specific
+  const url = new URL(req.url)
+  const qEventId = url.searchParams.get("event_id")
+  const isSuper = auth.user ? await (await import("@/lib/event")).isSuperAdmin(auth.user.id) : false
+  let filterEventId: string | null = eventId
+  if (qEventId === "all" && isSuper) filterEventId = null // global
+  else if (qEventId && qEventId !== "all") filterEventId = qEventId
+
+  // Helper to add event filter
+  const addEventFilter = (q: any) => filterEventId ? q.eq("event_id", filterEventId) : q
+
+  const [peletons, peletonsSMP, peletonsSMA, users, transactions, supports, ranking, recentTx, eventRow, auditLogs, chartSupports] = await Promise.all([
+    addEventFilter(service.from("peletons").select("*", { count: "exact", head: true }).eq("active", true)),
+    addEventFilter(service.from("peletons").select("*", { count: "exact", head: true }).eq("category", "SMP").eq("active", true)),
+    addEventFilter(service.from("peletons").select("*", { count: "exact", head: true }).eq("category", "SMA").eq("active", true)),
     service.from("profiles").select("*", { count: "exact", head: true }),
-    service.from("transactions").select("*", { count: "exact", head: true }),
-    service.from("supports").select("supports,source"),
-    service.from("team_ranking").select("*").order("total_ballots", { ascending: false }).limit(5),
-    service.from("transactions").select("*, peletons(name,number,school,category), profiles(public_name,email,role)").order("created_at", { ascending: false }).limit(8),
-    service.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single(),
-    service.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(5),
-    service.from("supports").select("supports,source,created_at").order("created_at", { ascending: true }),
+    addEventFilter(service.from("transactions").select("*", { count: "exact", head: true })),
+    addEventFilter(service.from("supports").select("supports,source")),
+    addEventFilter(service.from("team_ranking").select("*").order("total_ballots", { ascending: false }).limit(5)),
+    addEventFilter(service.from("transactions").select("*, peletons(name,number,school,category), profiles(public_name,email,role)").order("created_at", { ascending: false }).limit(8)),
+    (filterEventId ? service.from("events").select("*").eq("id", filterEventId).maybeSingle() : service.from("events").select("*").eq("slug", "lkbbvote").maybeSingle()),
+    addEventFilter(service.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(5)),
+    addEventFilter(service.from("supports").select("supports,source,created_at").order("created_at", { ascending: true })),
   ])
+  // Fallback to competitions if events empty (migration period)
+  let eventData: any = (eventRow as any)?.data || null
+  if (!eventData) {
+    const { data: comp } = await service.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single()
+    eventData = comp || null
+    // Map competitions.state to events.status for frontend
+    if (eventData) eventData.state = eventData.state || eventData.status
+  }
 
   const total = (supports.data || []).reduce((a: any, b: any) => a + (b.supports || 0), 0)
   const online = (supports.data || []).filter((x: any) => x.source === "online").reduce((a: any, b: any) => a + b.supports, 0)
@@ -80,7 +107,7 @@ export async function GET() {
     offlineBallots: offline,
     ranking: ranking.data || [],
     recentTransactions: recentTx.data || [],
-    event: competitions.data || null,
+    event: eventData || null,
     auditLogs: auditLogs.data || [],
     chartData,
     chartMax: maxVal,

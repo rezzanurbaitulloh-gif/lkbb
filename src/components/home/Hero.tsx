@@ -31,7 +31,7 @@ function useCountdown(target: string | null){
   return { ...diff, isValid, targetTime: t }
 }
 
-export function Hero({ event, cms, siteSettings, heroImage: heroImageProp }: { event: any; cms?: any; siteSettings?: Record<string, any>; heroImage?: string | null }){
+export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; siteSettings?: Record<string, any> }){
   const cmsContent = cms?.content || {}
   const state = (event?.state as string) || "NOT_STARTED"
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
@@ -51,8 +51,9 @@ export function Hero({ event, cms, siteSettings, heroImage: heroImageProp }: { e
   const cd = useCountdown(canonicalTarget)
   const showCountdown = true
 
-  // Foto: hanya dari aset resmi — setting admin → CMS → foto peleton asli DB → poster resmi lokal. Tanpa stock/Unsplash.
-  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || heroImageProp || "/assets/poster/lkbb-poster.jpg"
+  // Visual hero: logo resmi LKBB (bukan foto peleton, bukan stock).
+  // Admin tetap bisa override via setting hero.logo_image / CMS.
+  const heroImage = (siteSettings?.["hero.logo_image"] as string) || cmsContent.heroLogoImage || "/assets/brand/lkbb-logo.jpg"
 
   if (cms && cms.is_visible === false) return null
 
@@ -100,14 +101,16 @@ export function Hero({ event, cms, siteSettings, heroImage: heroImageProp }: { e
           </svg>
         </div>
 
-        {/* RIGHT — foto + countdown vertikal + 2026 raksasa */}
-        <div className="relative min-h-[420px] overflow-hidden bg-[#141414] lg:min-h-[560px]">
-          <img src={heroImage} alt="Peleton LKBB" className="absolute inset-0 h-full w-full object-cover object-top grayscale-[0.3]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A09] via-[#0A0A09]/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A09]/85 via-transparent to-[#0A0A09]/20" />
+        {/* RIGHT — logo LKBB + countdown vertikal + 2026 raksasa */}
+        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden bg-[#0A0A09] p-10 lg:min-h-[560px]">
+          {/* glow lime di belakang logo */}
+          <div className="absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#D9FF3F]/[0.07] blur-[100px] lg:h-[480px] lg:w-[480px]" />
+          <img src={heroImage} alt="Logo LKBB" className="relative h-[260px] w-[260px] object-contain drop-shadow-[0_0_60px_rgba(217,255,63,0.15)] sm:h-[320px] sm:w-[320px] lg:h-[420px] lg:w-[420px]" />
           {/* diagonal lime accent */}
-          <div className="absolute right-[34%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/40" />
-          <div className="absolute right-[30%] top-0 h-full w-px rotate-[24deg] bg-white/10" />
+          <div className="absolute right-[30%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/25" />
+          <div className="absolute right-[26%] top-0 h-full w-px rotate-[24deg] bg-white/[0.07]" />
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0A0A09] to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0A0A09] to-transparent" />
 
           {/* VOTING OPEN + countdown vertikal kanan — plek PNG */}
           <div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">

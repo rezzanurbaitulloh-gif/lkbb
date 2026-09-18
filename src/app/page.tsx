@@ -117,9 +117,9 @@ export default async function HomePage(){
   const showSementara = isVotingClosed
   const showFinal = isPublished
 
-  // Foto hero: pakai foto peleton asli dari DB (bukan stock). Tolak URL Unsplash/stock.
+  // Foto teaser: pakai foto peleton asli dari DB (bukan stock). Tolak URL Unsplash/stock.
   const isRealPhoto = (u: any)=> typeof u === "string" && u.length>0 && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(u)
-  const heroDbImage = teams.map((t:any)=> t.image_url || t.image).find(isRealPhoto) || null
+  const teaserImage = teams.map((t:any)=> t.image_url || t.image).find(isRealPhoto) || null
 
   // Featured & podium dapat di-hide via CMS visibility
   const showFeatured = !cmsSections.find((s:any)=> s.key==="featured") || cmsSections.find((s:any)=> s.key==="featured")?.is_visible !== false
@@ -131,7 +131,7 @@ export default async function HomePage(){
     <div className="min-h-screen flex flex-col">
       <Navbar siteSettings={siteSettings} />
       <main className="flex-1 pb-[72px] md:pb-0">
-        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} heroImage={heroDbImage} />
+        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} />
         {/* Extra CMS sections after hero (banner, stats, etc.) — order controlled by sort_order */}
         {extraSections.filter((s:any)=> s.sort_order < (cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 999)).map((s:any)=> (
           <CmsSections key={s.id} sections={[s]} />
@@ -143,7 +143,7 @@ export default async function HomePage(){
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
         <ParticipantsMini teams={teams} />
-        <ResultsTeaser image={heroDbImage} />
+        <ResultsTeaser image={teaserImage} />
         {extraSections.filter((s:any)=> {
           const featOrder = cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 0
           return s.sort_order > featOrder

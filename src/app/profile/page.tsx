@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { useApp } from "@/lib/store"
+import { useCanAdmin } from "@/hooks/useCanAdmin"
 import { useEffect, useState } from "react"
 import { createBrowserSupabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ import { useRouter } from "next/navigation"
 
 export default function ProfilePage(){
   const { currentUser, logout, favorites } = useApp()
+  const canAdmin = useCanAdmin()
   const [transactions,setTransactions]=useState<any[]>([])
   useEffect(()=>{ if(currentUser) fetch("/api/transactions").then(r=>r.json()).then(d=> setTransactions(Array.isArray(d)? d : [])) },[currentUser])
   const router=useRouter()
@@ -79,6 +81,11 @@ export default function ProfilePage(){
               </div>
 
               <div className="mt-6 space-y-2">
+                {canAdmin && (
+                  <Link href="/admin" className="flex items-center justify-between rounded-xl border border-[#D9FF3F]/40 bg-[#D9FF3F]/[0.06] p-3 text-[13px] font-bold text-[#D9FF3F] hover:bg-[#D9FF3F]/[0.12] transition-colors">
+                    <span className="flex items-center gap-2"><span>◈</span> Admin Dashboard</span><span>→</span>
+                  </Link>
+                )}
                 <Link href="/profile/edit" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
                   <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Account Information</span><span>›</span>
                 </Link>

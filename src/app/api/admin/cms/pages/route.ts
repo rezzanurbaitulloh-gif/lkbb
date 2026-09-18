@@ -2,12 +2,27 @@ import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
 import { requireAdmin } from "@/lib/auth"
 
-export async function GET() {
+export async function GET(req: Request) {
   const auth = await requireAdmin()
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status })
   const service = createServiceSupabase()
-
-  const { data: pages, error } = await service.from("cms_pages").select("*").order("sort_order", { ascending: true })
+  // Event-aware: super admin sees all, event admin sees own event
+  const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
+  let eventId: string | null = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    eventId = r.eventId
+  } catch {}
+  const url = new URL(req.url)
+  const qEventId = url.searchParams.get("event_id")
+  const isSuper = await (await import("@/lib/event")).isSuperAdmin(auth.user!.id)
+  let filterEventId: string | null = eventId
+  if (qEventId === "all" && isSuper) filterEventId = null
+  else if (qEventId && qEventId !== "all") filterEventId = qEventId
+  let q = service.from("cms_pages").select("*").order("sort_order", { ascending: true })
+  if (filterEventId) q = (q as any).eq("event_id", filterEventId)
+  const { data: pages, error } = await q
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // enrich with sections count

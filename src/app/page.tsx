@@ -45,17 +45,35 @@ export default async function HomePage(){
     event = data
   }
 
-  // Dynamic CMS — fetch home sections & site settings (fallback gracefully if tables not yet migrated)
+  // Dynamic CMS — fetch home sections & site settings (event-aware)
   let cmsSections: any[] = []
   let siteSettings: Record<string, any> = {}
   try {
-    const { data: page } = await supabase.from("cms_pages").select("id").eq("slug","home").single()
+    let pageQuery: any = supabase.from("cms_pages").select("id").eq("slug","home")
+    if (eventId) pageQuery = pageQuery.eq("event_id", eventId)
+    const { data: page } = await pageQuery.maybeSingle()
     if(page){
-      const { data: secs } = await supabase.from("cms_sections").select("*").eq("page_id", (page as any).id).eq("is_visible", true).order("sort_order",{ascending:true})
+      let secsQuery: any = supabase.from("cms_sections").select("*").eq("page_id", (page as any).id).eq("is_visible", true).order("sort_order",{ascending:true})
+      if (eventId) secsQuery = secsQuery.eq("event_id", eventId)
+      const { data: secs } = await secsQuery
       cmsSections = secs || []
+    } else {
+      // Fallback: try without event filter (for old data)
+      const { data: page2 } = await supabase.from("cms_pages").select("id").eq("slug","home").single()
+      if(page2){
+        const { data: secs2 } = await supabase.from("cms_sections").select("*").eq("page_id", (page2 as any).id).eq("is_visible", true).order("sort_order",{ascending:true})
+        cmsSections = secs2 || []
+      }
     }
-    const { data: settingsRows } = await supabase.from("site_settings").select("key,value").eq("is_public", true)
+    let settingsQuery: any = supabase.from("site_settings").select("key,value").eq("is_public", true)
+    if (eventId) settingsQuery = settingsQuery.eq("event_id", eventId)
+    const { data: settingsRows } = await settingsQuery
     for(const r of (settingsRows as any)||[]) siteSettings[r.key]= (r as any).value
+    // Fallback to global if event-specific empty
+    if (Object.keys(siteSettings).length === 0 && eventId) {
+      const { data: globalRows } = await supabase.from("site_settings").select("key,value").eq("is_public", true).is("event_id", null)
+      for(const r of (globalRows as any)||[]) if(!(r.key in siteSettings)) siteSettings[r.key]= (r as any).value
+    }
   } catch {}
 
   const heroSection = cmsSections.find((s:any)=> s.key==="hero" || s.type==="hero")

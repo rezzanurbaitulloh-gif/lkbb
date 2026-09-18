@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Instrument_Sans, Geist } from "next/font/google"
 import "./globals.css"
 import { AppProvider } from "@/lib/store"
 import { RealtimeSupportNotification } from "@/components/realtime/RealtimeSupportNotification"
@@ -7,12 +7,18 @@ import { ToastProvider } from "@/components/ui/toast"
 import { AppearanceProvider } from "@/components/layout/AppearanceProvider"
 import { cn } from "@/lib/utils";
 
-// Font standart tegas — Inter, satu keluarga untuk semua teks (body & heading) agar tegas dan konsisten
-const inter = Inter({
+const instrument = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument",
   display: "swap",
-  weight: ["400","500","600","700","800","900"],
+  weight: ["400","500","600","700"],
+})
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+  weight: ["400","500"],
 })
 
 export const metadata: Metadata = {
@@ -41,7 +47,7 @@ export const metadata: Metadata = {
   }
 }
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#0A0A09",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -51,11 +57,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={cn("h-full dark", "antialiased", inter.variable, "font-sans")} suppressHydrationWarning>
+    <html lang="id" className={cn("h-full dark", "antialiased", instrument.variable, geist.variable)} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{__html: `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('lkbb-theme','dark')}catch(e){document.documentElement.classList.add('dark')}})()`}} />
       </head>
-      <body className="min-h-full flex flex-col bg-[#09090b] text-foreground selection:bg-primary/20">
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/20">
         <ToastProvider>
           <AppProvider>
             <AppearanceProvider />

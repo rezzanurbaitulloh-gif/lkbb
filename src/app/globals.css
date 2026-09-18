@@ -5,7 +5,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -18,148 +17,102 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-gold: var(--gold);
-  --color-gold-foreground: var(--gold-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-inter);
+  --font-sans: var(--font-geist);
+  --font-display: var(--font-instrument);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
   --breakpoint-xs: 360px;
-  --breakpoint-2xs: 320px;
 }
 
-/* ——— LKBB DESIGN TOKENS ———
-   Dark-first, premium championship, inspired by referensi.png
-   Palette: deep charcoal #09090b, graphite, warm white, gold #C9A86A, crimson #A51D2D
-   Audit fix: standardize font scale, grid gaps, spacing, avoid generic look
+/* ——— EDITORIAL EVENT CULTURE ———
+   Background: #0A0A09 (near-black, not #09090b)
+   Text: #F2F0E9 (warm white), Muted: #92918C, Border: #292927
+   Accent: #D9FF3F (lime) — single, restrained, admin-configurable via --primary
+   Type: Instrument Sans (display) + Geist (body) — 2 families max
 */
 
 :root {
-  /* FORCE DARK ONLY — background hitam permanen, jangan ikut primary */
-  --background: #09090b;
-  --foreground: #F4F4F1;
-  --surface: #111318;
-  --surface-elevated: #17191F;
-  --card: #111318;
-  --card-foreground: #F4F4F1;
-  --popover: #17191F;
-  --popover-foreground: #F4F4F1;
+  --background: #0A0A09;
+  --foreground: #F2F0E9;
+  --surface: #141412;
+  --card: #141412;
+  --card-foreground: #F2F0E9;
+  --popover: #1A1A18;
+  --popover-foreground: #F2F0E9;
 
-  --primary: #C9A86A;
-  --primary-foreground: #0C0A06;
-  --secondary: #1E2026;
-  --secondary-foreground: #F4F4F1;
-  --muted: #1A1D24;
-  --muted-foreground: #A6ACB6;
-  --accent: #A51D2D;
-  --accent-foreground: #FFFFFF;
-  --gold: #D4B77A;
-  --gold-foreground: #0C0A06;
-  --gold-muted: #D4B77A14;
+  --primary: #D9FF3F;
+  --primary-foreground: #0A0A09;
+  --secondary: #1E1E1C;
+  --secondary-foreground: #F2F0E9;
+  --muted: #1C1C1A;
+  --muted-foreground: #92918C;
+  --accent: #D9FF3F;
+  --accent-foreground: #0A0A09;
 
   --destructive: #E53E3E;
-  --destructive-foreground: #FFFFFF;
+  --destructive-foreground: #F2F0E9;
 
-  --border: #23262F;
-  --border-strong: #2E333E;
-  --input: #23262F;
-  --ring: #D4B77A;
+  --border: #292927;
+  --border-strong: #3A3A38;
+  --input: #292927;
+  --ring: #D9FF3F;
 
-  --chart-1: #D4B77A;
-  --chart-2: #A51D2D;
-  --chart-3: #2E333E;
-  --chart-4: #9AA0A9;
-  --chart-5: #6F737A;
+  --radius: 0.5rem;
 
-  --radius: 0.875rem;
+  /* Editorial spacing — generous whitespace */
+  --space-section: 96px;
+  --space-section-mobile: 56px;
+  --space-grid: 24px;
 
-  /* Spacing scale — prevents mepet dengan grid */
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+  /* Typography */
+  --text-hero: clamp(40px, 8vw, 96px);
+  --font-hero-weight: 700;
+  --font-hero-tracking: -0.04em;
+  --font-hero-leading: 0.9;
 
-  /* Typography scale — standardized, not generic */
-  --text-hero: clamp(32px, 6vw, 76px);
-  --text-h1: clamp(26px, 4vw, 36px);
-  --text-h2: clamp(20px, 3vw, 28px);
-  --text-h3: clamp(16px, 2.2vw, 20px);
-
-  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
-  --shadow-soft: 0 4px 16px rgb(0 0 0 / 0.06), 0 1px 4px rgb(0 0 0 / 0.04);
-  --shadow-elevated: 0 16px 40px rgb(0 0 0 / 0.10), 0 4px 12px rgb(0 0 0 / 0.06);
-  --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-subtle: 400ms;
+  --duration-reveal: 700ms;
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #F4F4F1;
-  --surface: #111318;
-  --surface-elevated: #17191F;
-  --card: #111318;
-  --card-foreground: #F4F4F1;
-  --popover: #17191F;
-  --popover-foreground: #F4F4F1;
-
-  --primary: #C9A86A;
-  --primary-foreground: #0C0A06;
-  --secondary: #1E2026;
-  --secondary-foreground: #F4F4F1;
-  --muted: #1A1D24;
-  --muted-foreground: #A6ACB6;
-  --accent: #A51D2D;
-  --accent-foreground: #FFFFFF;
-  --gold: #D4B77A;
-  --gold-foreground: #0C0A06;
-  --gold-muted: #D4B77A14;
-
-  --destructive: #E53E3E;
-  --destructive-foreground: #FFFFFF;
-
-  --border: #23262F;
-  --border-strong: #2E333E;
-  --input: #23262F;
-  --ring: #D4B77A;
-
-  --chart-1: #D4B77A;
-  --chart-2: #A51D2D;
-  --chart-3: #2E333E;
-  --chart-4: #9AA0A9;
-  --chart-5: #6F737A;
-
-  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.3);
-  --shadow-soft: 0 4px 16px rgb(0 0 0 / 0.45), 0 1px 4px rgb(0 0 0 / 0.3);
-  --shadow-elevated: 0 16px 40px rgb(0 0 0 / 0.55), 0 4px 12px rgb(0 0 0 / 0.4);
+  --background: #0A0A09;
+  --foreground: #F2F0E9;
+  --surface: #141412;
+  --card: #141412;
+  --card-foreground: #F2F0E9;
+  --popover: #1A1A18;
+  --popover-foreground: #F2F0E9;
+  --primary: #D9FF3F;
+  --primary-foreground: #0A0A09;
+  --secondary: #1E1E1C;
+  --secondary-foreground: #F2F0E9;
+  --muted: #1C1C1A;
+  --muted-foreground: #92918C;
+  --accent: #D9FF3F;
+  --accent-foreground: #0A0A09;
+  --border: #292927;
+  --border-strong: #3A3A38;
+  --input: #292927;
+  --ring: #D9FF3F;
 }
-/* paksa html tanpa .dark tetap hitam — dark only */
-html { background: #09090b; }
-html:not(.dark) { --background: #09090b; --foreground: #F4F4F1; --surface: #111318; --card: #111318; --popover: #17191F; --border: #23262F; --input: #23262F; }
+
+html { background: #0A0A09; }
+html:not(.dark) { --background: #0A0A09; --foreground: #F2F0E9; --border: #292927; }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
   html {
     @apply antialiased;
     scroll-behavior: smooth;
-    font-feature-settings: "cv02","cv03","cv04","cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -167,297 +120,117 @@ html:not(.dark) { --background: #09090b; --foreground: #F4F4F1; --surface: #1113
     overflow-x: hidden;
   }
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground;
+    font-family: var(--font-geist), system-ui, sans-serif;
     max-width: 100vw;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     line-height: 1.6;
-    letter-spacing: -0.01em;
-    font-weight: 500;
+    font-weight: 400;
   }
-  /* Headings — standart tegas: Inter 700-900, tanpa serif */
-  h1, h2, h3, h4 {
-    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.02em;
-    line-height: 0.95;
-    font-weight: 800;
+  h1, h2, h3 {
+    font-family: var(--font-instrument), var(--font-geist), system-ui, sans-serif;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    font-weight: 700;
   }
-  /* Ensure text not mepet with grid edges */
-  p, ul, ol {
-    line-height: 1.65;
-  }
+  .font-display { font-family: var(--font-instrument), var(--font-geist), system-ui, sans-serif; }
+  .font-body { font-family: var(--font-geist), system-ui, sans-serif; }
   img, video { max-width: 100%; height: auto; }
+  ::selection { background: color-mix(in oklab, var(--primary) 20%, transparent); }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #3A3F4C; }
+  :focus-visible { outline: 1.5px solid var(--ring); outline-offset: 2px; }
 }
 
-@layer base {
-  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
-}
-
-/* ——— Premium utilities ——— */
+/* ——— Editorial utilities ——— */
 @layer utilities {
-  /* Container — avoids mepet grid, premium breathing room */
-  .container-premium {
+  .container-editorial {
     max-width: 1280px;
     margin-inline: auto;
     padding-inline: 24px;
   }
-  @media (max-width: 640px){
-    .container-premium { padding-inline: 16px; }
-  }
-  @media (max-width: 360px){
-    .container-premium { padding-inline: 12px; }
-  }
-  .section-pad { padding-block: 48px; }
-  @media (max-width: 640px){ .section-pad { padding-block: 32px; } }
-  .grid-gap-premium { gap: 24px; }
-  @media (max-width: 640px){ .grid-gap-premium { gap: 16px; } }
-  @media (max-width: 360px){ .grid-gap-premium { gap: 12px; } }
+  @media (max-width: 768px) { .container-editorial { padding-inline: 16px; } }
+  @media (max-width: 360px) { .container-editorial { padding-inline: 12px; } }
+
+  .section-pad { padding-block: var(--space-section); }
+  @media (max-width: 768px) { .section-pad { padding-block: var(--space-section-mobile); } }
 
   .hairline { height: 1px; background: var(--border); }
-  .hairline-gold { height: 1px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--gold) 22%, transparent), transparent); }
-  .card-premium {
-    background: var(--card);
+  .hairline-accent { height: 1px; background: var(--primary); opacity: 0.3; }
+
+  /* Thin border editorial — not rounded card */
+  .frame-editorial {
     border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-subtle);
-    transition: box-shadow 260ms var(--ease-premium), border-color 260ms var(--ease-premium), transform 260ms var(--ease-premium);
-    padding: 20px;
+    background: transparent;
   }
-  @media (max-width: 640px){ .card-premium { padding: 16px; } }
-  .card-premium:hover { box-shadow: var(--shadow-soft); border-color: var(--border-strong); }
-  .btn-press:active { transform: scale(0.97); }
-  .label-ceremonial {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+
+  /* Number — oversized, thin, part of composition */
+  .number-display {
+    font-family: var(--font-instrument), var(--font-geist), system-ui, sans-serif;
+    font-weight: 300;
+    font-size: clamp(48px, 10vw, 120px);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    color: var(--foreground);
+  }
+
+  /* Metadata — uppercase, tracked, compact */
+  .meta-label {
+    font-family: var(--font-geist), system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--muted-foreground);
-    margin-bottom: 8px;
-    display: block;
   }
-  .label-gold {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 8px;
-    display: block;
+
+  /* Accent — restrained */
+  .accent-text { color: var(--primary); }
+  .accent-bg { background: var(--primary); color: var(--primary-foreground); }
+
+  /* Image treatment — editorial crop */
+  .img-editorial {
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+    height: 100%;
   }
-  .text-balance { text-wrap: balance; }
-  .text-pretty { text-wrap: pretty; }
-  .tabular-nums { font-variant-numeric: tabular-nums; }
-  .img-cover { object-fit: cover; object-position: center; }
-  .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
-  .pt-safe { padding-top: env(safe-area-inset-top); }
-  .animate-fade-in { animation: fadeIn 260ms var(--ease-out); }
-  .animate-slide-up { animation: slideUp 420ms var(--ease-premium); }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+
+  /* Hide scrollbar for horizontal participant scroller */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Motion — restrained, respects reduced-motion */
+  .reveal-line { overflow: hidden; }
+  .reveal-line > * { transform: translateY(100%); animation: lineReveal 700ms var(--ease-editorial) forwards; }
+  @keyframes lineReveal { to { transform: translateY(0); } }
+
+  .clip-reveal { clip-path: inset(0 100% 0 0); animation: clipReveal 900ms var(--ease-editorial) forwards; }
+  @keyframes clipReveal { to { clip-path: inset(0 0 0 0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
-  .skeleton {
-    background: linear-gradient(90deg, var(--muted) 25%, var(--surface-elevated) 50%, var(--muted) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.6s infinite;
-  }
-  /* ——— Premium distinctive — not generic — */
-  .gold-gradient-text {
-    background: linear-gradient(135deg, var(--primary) 0%, #FDE68A 25%, var(--primary) 50%, #8C6A2A 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .premium-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(201,168,106,0.04);
-    transition: all 320ms cubic-bezier(0.32,0.72,0,1);
-  }
-  .premium-card:hover {
-    border-color: rgba(201,168,106,0.25);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 8px 32px rgba(201,168,106,0.12), 0 0 0 1px rgba(201,168,106,0.08);
-    transform: translateY(-2px);
-  }
-  .gold-hairline-premium {
-    height: 0.5px;
-    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--primary) 38%, transparent) 20%, color-mix(in oklab, var(--primary) 62%, transparent) 50%, color-mix(in oklab, var(--primary) 38%, transparent) 80%, transparent);
-  }
-  .hairline-thin { height: 0.5px; background: color-mix(in oklab, var(--border) 55%, transparent); }
-  .border-hairline { border-width: 0.5px; }
-  .noise-premium {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-  }
-  .font-display { font-family: var(--font-inter), system-ui, sans-serif; font-weight: 800; }
-  .text-gold-glow { text-shadow: 0 0 20px color-mix(in oklab, var(--primary) 40%, transparent), 0 0 40px color-mix(in oklab, var(--primary) 20%, transparent); }
+
+  /* Hardcode isolation — primary only for CTA/active, not body */
+  [class^="bg-[#C9A86A"], [class*=" bg-[#C9A86A"] { background-color: var(--primary) !important; }
+  [class^="text-[#C9A86A"], [class*=" text-[#C9A86A"] { color: var(--primary) !important; }
+  [class^="border-[#C9A86A"], [class*=" border-[#C9A86A"] { border-color: var(--primary) !important; }
 }
 
-/* ——— Responsive System: dari HP paling kecil (280px) hingga desktop ——— */
+/* ——— Responsive ——— */
 @media (max-width: 640px) {
   html { font-size: 14px; }
-  /* Fluid hero heading — clamp agar tidak overflow di 280-320 */
-  .text-\[44px\] { font-size: clamp(26px, 8vw, 32px) !important; }
-  .text-\[28px\] { font-size: clamp(18px, 6vw, 22px) !important; }
-  .text-\[30px\] { font-size: clamp(20px, 6.5vw, 24px) !important; }
-  h1.text-\[36px\] { font-size: clamp(20px, 6vw, 24px) !important; }
-  /* Container padding lebih kecil di HP */
-  .mx-auto.max-w-\[1280px\] { padding-left: 12px; padding-right: 12px; }
 }
 @media (max-width: 390px) {
   html { font-size: 13.5px; }
-  .text-\[44px\] { font-size: clamp(24px, 8.5vw, 30px) !important; }
 }
-@media (max-width: 375px) {
+@media (max-width: 360px) {
   html { font-size: 13px; }
-  .text-\[44px\] { font-size: clamp(22px, 8vw, 28px) !important; }
-  .text-\[28px\] { font-size: clamp(16px, 5.5vw, 20px) !important; }
-}
-@media (max-width: 360px) {
-  html { font-size: 12.5px; }
-}
-@media (max-width: 340px) {
-  html { font-size: 12px; }
-  .text-\[44px\] { font-size: clamp(20px, 7.5vw, 26px) !important; }
-}
-@media (max-width: 320px) {
-  html { font-size: 11.5px; }
-}
-@media (max-width: 300px) {
-  html { font-size: 11px; }
-}
-@media (max-width: 280px) {
-  html { font-size: 10.5px; }
-  /* Pastikan tidak ada horizontal scroll di layar 280 */
-  body { overflow-x: hidden; }
-  .mx-auto.max-w-\[1280px\] { padding-left: 8px; padding-right: 8px; }
-}
-
-/* ——— Micro-responsive utilities ——— */
-@media (max-width: 360px) {
-  /* Countdown grid: gap lebih rapat, padding lebih kecil */
-  .grid.grid-cols-4 { gap: 4px !important; }
-  /* Button di hero: stack vertical di HP super kecil */
-  .flex.flex-wrap.justify-center { gap: 8px !important; }
-  /* Dialog: pastikan tidak overflow di 320-360 */
-  .sm\:max-w-\[520px\], .sm\:max-w-\[560px\], .sm\:max-w-\[620px\], .sm\:max-w-\[720px\], .sm\:max-w-\[420px\] {
-    max-width: 92vw !important;
-    width: 92vw !important;
-  }
-}
-@media (max-width: 320px) {
-  /* Sheet admin: jangan 320px fixed, pakai vw */
-  [data-state] .w-\[300px\], .w-\[320px\], .w-\[88vw\] { width: 92vw !important; max-width: 92vw !important; }
-  /* Pastikan semua dialog tetap 92vw di 280-320 */
-  [role="dialog"] { max-width: 92vw !important; }
-  /* Grid 2 kolom di HP sangat kecil jadi 1 kolom agar tidak sempit */
-  .max-\[320px\]\:hidden { display: none !important; }
-}
-@media (max-width: 280px) {
-  /* Di 280 tetap jaga 2 kolom untuk dashboard stats (grid-cols-2) — jangan paksa jadi 1 kolom */
-  /* Hanya perkecil padding agar muat: sudah ditangani via p-2.5 & text clamp */
-}
-
-/* Hardcode main background — jangan pakai primary */
-@layer base {
-  html, body, main, #__next, [class*="min-h-screen"] { background-color: #09090b !important; }
-  body.bg-\[\#09090b\], main.bg-\[\#09090b\], .bg-\[\#09090b\].min-h-screen, .bg-zinc-950 { background-color: #09090b !important; }
-}
-/* Primary isolasi: hanya tombol/badge/border/text highlight — jangan sentuh body/main */
-@layer utilities {
-  /* Gold backgrounds — hanya token bg-[#C9A86A] standalone, bukan selection:bg- */
-  [class^="bg-[#C9A86A"], [class*=" bg-[#C9A86A"] { background-color: var(--primary) !important; }
-  [class^="bg-[#D4B77A"], [class*=" bg-[#D4B77A"] { background-color: var(--primary) !important; }
-  [class^="text-[#C9A86A"], [class*=" text-[#C9A86A"] { color: var(--primary) !important; }
-  [class^="text-[#D4B77A"], [class*=" text-[#D4B77A"] { color: var(--primary) !important; }
-  [class^="border-[#C9A86A"], [class*=" border-[#C9A86A"] { border-color: var(--primary) !important; }
-  /* selection variant tetap pakai primary tapi jangan override body background */
-  .selection\:bg-\[\#C9A86A\]\/20::selection,
-  .selection\:bg-\[\#C9A86A\]\/20 *::selection { background-color: color-mix(in oklab, var(--primary) 20%, transparent) !important; }
-}
-
-/* === Border text color enforcement — SATU CLASS WARNA + GLASSMORPH === */
-/* Background berwarna TERPUSAT di 1 class: bg-primary (+ opacity bg-primary/5, /10, /20) */
-/*   -> Diubah admin via AppearanceProvider (--primary) di /admin/settings */
-/*   -> Semua bg-[#C9A86A], bg-gold, bg-[#D4B77A] sudah di-refactor ke bg-primary */
-/* Aturan final: */
-/*  - border + bg TRANSPARAN / GLASSMORPH (bg-transparent, bg-white/5, bg-black/40 + backdrop-blur) => teks PUTIH */
-/*  - border + bg-primary (unified, admin controllable) => teks HITAM */
-/*  - Card tim beranda: kategori bg-white/90 sudah diubah jadi bg-black/40 agar sama dengan nomor (#) & love */
-@layer utilities {
-  /* 1) Border + background TRANSPARAN / GLASSMORPH (gelap) => putih */
-  /* Transparan = bg-transparent, bg-white/5, bg-white/10, bg-white/[0.0x], bg-black/* (+backdrop-blur), bg-[#09090b], bg-[#0B0C0F], bg-[#111318] */
-  [class*="border"][class*="bg-transparent"],
-  [class*="border"][class*="bg-white/5"],
-  [class*="border"][class*="bg-white/10"],
-  [class*="border"][class*="bg-white/[0."],
-  [class*="border"][class*="bg-black/"],
-  [class*="border"][class*="bg-[#09090b"],
-  [class*="border"][class*="bg-[#0B0C0F"],
-  [class*="border"][class*="bg-[#111318"],
-  [class*="border"][class*="bg-[#17191F"] {
-    color: white !important;
-  }
-  [class*="border"][class*="bg-transparent"] *,
-  [class*="border"][class*="bg-white/5"] *,
-  [class*="border"][class*="bg-white/10"] *,
-  [class*="border"][class*="bg-white/[0."] *,
-  [class*="border"][class*="bg-black/"] *,
-  [class*="border"][class*="bg-[#09090b"] *,
-  [class*="border"][class*="bg-[#0B0C0F"] *,
-  [class*="border"][class*="bg-[#111318"] *,
-  [class*="border"][class*="bg-[#17191F"] * {
-    color: white !important;
-  }
-  /* Kecualikan accent primer yang memang harus tetap gold (ikon) */
-  [class*="border"][class*="bg-transparent"] .text-primary,
-  [class*="border"][class*="bg-white/5"] .text-primary {
-    color: var(--primary) !important;
-  }
-
-  /* 2) Border + background BERWARNA => hitam untuk SEMUA putih di background berwarna */
-  /* - Solid primer (bg-primary tanpa /) => hitam */
-  /* - Semua warna lain solid (amber, emerald, red, zinc) yang ada border + text putih => hitam juga */
-  [class*="border"][class*="bg-primary"]:not([class*="bg-primary/"]) {
-    color: black !important;
-  }
-  [class*="border"][class*="bg-primary"]:not([class*="bg-primary/"]) * {
-    color: black !important;
-  }
-  [class*="border"][class*="bg-amber"][class*="text-white"],
-  [class*="border"][class*="bg-emerald"][class*="text-white"],
-  [class*="border"][class*="bg-red"][class*="text-white"],
-  [class*="border"][class*="bg-zinc"][class*="text-white"],
-  [class*="border"][class*="bg-[#FACC15"] [class*="text-white"] {
-    color: black !important;
-  }
-  /* Glassmorph primer translucent (bg-primary/ + backdrop-blur) => PUTIH sesuai instruksi kedua */
-  [class*="border"][class*="bg-primary/"][class*="backdrop-blur"],
-  [class*="border"][class*="bg-primary/"][class*="backdrop-blur"] * {
-    color: white !important;
-  }
-
-  /* 3) Solid white dengan border (status) => hitam (kontras) — bukan transparan */
-  [class*="border"][class*="bg-white"]:not([class*="bg-white/5"]):not([class*="bg-white/10"]):not([class*="bg-white/"]) {
-    color: black !important;
-  }
-  [class*="border"][class*="bg-white"]:not([class*="bg-white/5"]):not([class*="bg-white/10"]):not([class*="bg-white/"]) * {
-    color: black !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }

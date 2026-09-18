@@ -31,7 +31,7 @@ function useCountdown(target: string | null){
   return { ...diff, isValid, targetTime: t }
 }
 
-export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; siteSettings?: Record<string, any> }){
+export function Hero({ event, cms, siteSettings, heroImage: heroImageProp }: { event: any; cms?: any; siteSettings?: Record<string, any>; heroImage?: string | null }){
   const cmsContent = cms?.content || {}
   const state = (event?.state as string) || "NOT_STARTED"
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
@@ -51,7 +51,8 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
   const cd = useCountdown(canonicalTarget)
   const showCountdown = true
 
-  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&auto=format&fit=crop&q=70"
+  // Foto: hanya dari aset resmi — setting admin → CMS → foto peleton asli DB → poster resmi lokal. Tanpa stock/Unsplash.
+  const heroImage = (siteSettings?.["hero.peleton_image"] as string) || cmsContent.heroPeletonImage || heroImageProp || "/assets/poster/lkbb-poster.jpg"
 
   if (cms && cms.is_visible === false) return null
 

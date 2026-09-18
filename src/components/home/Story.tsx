@@ -32,7 +32,7 @@ export function Story({ sponsors, event }: { sponsors?: any[] | null; event?: an
         </div>
         <div className="relative">
           <div className="overflow-hidden rounded-[20px] border border-white/10 bg-white/5 backdrop-blur aspect-[4/3]">
-            <img src="https://images.unsplash.com/photo-1599707367072-cd6ada2bc32d?w=900&auto=format&fit=crop&q=70" alt="LKBB" className="h-full w-full object-cover" />
+            <img src="/assets/poster/lkbb-poster.jpg" alt="LKBB Javasoma" className="h-full w-full object-cover" />
           </div>
           {/* Poster card */}
           <div className="absolute -bottom-4 -left-4 hidden md:flex gap-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-3 shadow-elevated max-w-[320px]">

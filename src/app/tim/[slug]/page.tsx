@@ -16,10 +16,7 @@ export async function generateStaticParams(){
 export default async function PeletonDetail({ params }: { params: Promise<{slug:string}> }){
   const { slug } = await params
   const supabase = await createServerSupabase()
-  let { data: peleton } = await supabase.from("peletons").select("*").eq("slug", slug).eq("verified", true).eq("active", true).single()
-  if(!peleton && slug.startsWith("demo-")){
-    peleton = { id: slug, slug, number: "01", name: "SMKN 1 KERTOSONO", school: "SMKN 1 KERTOSONO", city: "Kertosono", province: "Jawa Timur", category: "SMA", description: "Kami adalah Satriya Dharma, tim LKBB dari SMKN 1 Kertosono. Dengan semangat, disiplin, dan kekompakan, kami siap memberikan yang terbaik di setiap langkah.", image_url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&auto=format&fit=crop&q=70" }
-  }
+  const { data: peleton } = await supabase.from("peletons").select("*").eq("slug", slug).eq("verified", true).eq("active", true).single()
   if(!peleton) return notFound()
 
   const num = String(peleton.number).padStart(2,"0")

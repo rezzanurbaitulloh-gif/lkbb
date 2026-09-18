@@ -40,19 +40,7 @@ export default async function TimPage(){
     sma = (fallback||[]).filter(p=>p.category==='SMA')
   }
 
-  // Fallback demo data persis PNG bila DB kosong (agar plek)
-  if (smp.length===0 && sma.length===0) {
-    const demo = (n:string,name:string,school:string,cat:string)=> ({ id: n, slug: "demo-"+n, number: n, name, school, category: cat, image_url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&auto=format&fit=crop&q=60" })
-    sma = [
-      demo("01","SMKN 1 KERTOSONO","SATRIYA DHARMA","SMA"),
-      demo("02","SMAN 1 KERTOSONO","RAJAWALI","SMA"),
-      demo("03","SMAN 2 KERTOSONO","GARUDA MUDA","SMA"),
-    ]
-    smp = [
-      demo("01","SMPN 1 KERTOSONO","GARUDA MUDA","SMP"),
-      demo("02","SMPN 2 KERTOSONO","SATRIYA DHARMA","SMP"),
-    ]
-  }
+  // Tanpa data demo/fallback gambar stock: kalau DB kosong, tampilkan empty state jujur.
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0A0A09] text-[#F2F0E9]">

@@ -1,21 +1,20 @@
 import type { Peleton, Judge, Sponsor, NewsItem, Announcement, FAQ, TimelineStage } from "./types"
 
 // DEPRECATED — kept for reference only, not used in production (DB-driven)
-// Curated paskibra-appropriate images (not random): all show marching / upacara / baris-berbaris
-// Team photos use Indonesian flag ceremony / marching band context; logos use provided assets
+// Semua gambar menunjuk ke aset resmi lokal. Dilarang memakai stock/Unsplash.
 const IMG = {
-  // Peleton team photos — curated paskibra / baris-berbaris (Unsplash + local poster as fallback)
-  // All are baris-berbaris / paskibra context, not random lifestyle
-  peleton1: "https://images.unsplash.com/photo-1576669801838-1b1c52121d7a?w=800&auto=format&fit=crop&q=60", // SMPN 1 Nganjuk — children marching
-  peleton2: "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?w=800&auto=format&fit=crop&q=60", // SMAN 1 Nganjuk — marching band
-  peleton3: "https://images.unsplash.com/photo-1599707367072-cd6ada2bc32d?w=800&auto=format&fit=crop&q=60", // SMKN etc — paskibra formation
-  peleton4: "/assets/poster/lkbb-poster.jpg", // fallback to official poster if external fails
-  peleton5: "https://images.unsplash.com/photo-1521999697949-8f47d8544533?w=800&auto=format&fit=crop&q=60",
-  peleton6: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
-  peleton7: "https://images.unsplash.com/photo-1595590424283-b8f17842773f?w=800&auto=format&fit=crop&q=60",
-  peleton8: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=800&auto=format&fit=crop&q=60",
-  peleton9: "https://images.unsplash.com/photo-1602632704322-5c8b0d28b6de?w=800&auto=format&fit=crop&q=60",
-  peleton10:"https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=800&auto=format&fit=crop&q=60",
+  // Foto tim resmi berasal dari database (foto upload peleton asli).
+  // Fallback deprecated ini memakai poster & logo resmi lokal saja.
+  peleton1: "/assets/poster/lkbb-poster.jpg",
+  peleton2: "/assets/poster/lkbb-poster.jpg",
+  peleton3: "/assets/poster/lkbb-poster.jpg",
+  peleton4: "/assets/poster/lkbb-poster.jpg",
+  peleton5: "/assets/poster/lkbb-poster.jpg",
+  peleton6: "/assets/poster/lkbb-poster.jpg",
+  peleton7: "/assets/poster/lkbb-poster.jpg",
+  peleton8: "/assets/poster/lkbb-poster.jpg",
+  peleton9: "/assets/poster/lkbb-poster.jpg",
+  peleton10:"/assets/poster/lkbb-poster.jpg",
   // Juri — use formal uniform / portrait, closest to real juri in poster
   juri1: "/assets/poster/lkbb-poster.jpg", // will be cropped via CSS; real juri photos are in poster
   juri2: "/assets/poster/lkbb-poster.jpg",

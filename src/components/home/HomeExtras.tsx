@@ -34,7 +34,9 @@ export function ParticipantsMini({ teams }: { teams: any[] }){
   )
 }
 
-export function ResultsTeaser(){
+export function ResultsTeaser({ image }: { image?: string | null }){
+  // Visual: foto peleton asli DB → poster resmi lokal. Tanpa stock.
+  const src = (typeof image === "string" && image && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(image)) ? image : "/assets/poster/lkbb-poster.jpg"
   return (
     <section className="border border-white/[0.08] bg-[#0A0A09]">
       <div className="mx-auto grid max-w-[1280px] gap-0 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_1fr]">
@@ -45,7 +47,7 @@ export function ResultsTeaser(){
           <div className="mt-4 text-[16px] text-[#D9FF3F]">✳</div>
         </div>
         <div className="relative min-h-[220px] overflow-hidden rounded-r-2xl border border-white/[0.08]">
-          <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&auto=format&fit=crop&q=60" alt="Results" className="absolute inset-0 h-full w-full object-cover grayscale" />
+          <img src={src} alt="Peleton LKBB" className="absolute inset-0 h-full w-full object-cover grayscale" />
           <div className="absolute inset-0 bg-black/45" />
         </div>
       </div>

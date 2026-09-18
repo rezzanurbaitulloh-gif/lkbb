@@ -34,7 +34,7 @@ const TYPE_OPTIONS = [
 
 // Helper: render content fields dynamically based on type defaults
 const CONTENT_PRESETS: Record<string, Record<string, any>> = {
-  hero: { eyebrow:"LKBB • JAVASOMA THE IMPRESSION", headingLine1:"PELETON", headingLine2:"TERFAVORIT", subtitle:"LKBB", subtitle2:"JAVASOMA THE IMPRESSION", tagline:"ASTRA DHARMA HAYUNING BUDAYA", description:"Dukung peleton terbaik pilihanmu", ctaPrimaryLabel:"LIHAT PESERTA", ctaPrimaryLink:"/tim", ctaSecondaryLabel:"CARA DUKUNG", backgroundImage:"https://images.unsplash.com/photo-1595590424283-b8f17842773f?w=1600&auto=format&fit=crop&q=70", logoImage:"/assets/brand/lkbb-logo.jpg" },
+  hero: { eyebrow:"LKBB • JAVASOMA THE IMPRESSION", headingLine1:"PELETON", headingLine2:"TERFAVORIT", subtitle:"LKBB", subtitle2:"JAVASOMA THE IMPRESSION", tagline:"ASTRA DHARMA HAYUNING BUDAYA", description:"Dukung peleton terbaik pilihanmu", ctaPrimaryLabel:"LIHAT PESERTA", ctaPrimaryLink:"/tim", ctaSecondaryLabel:"CARA DUKUNG", backgroundImage:"/assets/poster/lkbb-poster.jpg", logoImage:"/assets/brand/lkbb-logo.jpg" },
   countdown: { title:"EVENT DIMULAI DALAM", fallbackDate:"2026-10-24T23:59:59+07:00" },
   featured: { title:"DUKUNG PELETON FAVORITMU!", subtitle:"PESERTA", description:"Beranda urut nomor peserta" },
   cta: { heading:"SIAP DUKUNG JAGOANMU?", description:"Pilih peleton favoritmu", buttonLabel:"LIHAT DAFTAR TIM", buttonLink:"/tim" },

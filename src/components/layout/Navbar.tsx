@@ -114,7 +114,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
               )
             })}
             <div className="relative mt-6 h-[180px] overflow-hidden rounded-xl border border-white/[0.08]">
-              <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=60" alt="Peleton" className="h-full w-full object-cover opacity-70 grayscale" />
+              <img src="/assets/poster/lkbb-poster.jpg" alt="LKBB 2026" className="h-full w-full object-cover opacity-70 grayscale" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
                 <div className="text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">LKBB 2026</div>

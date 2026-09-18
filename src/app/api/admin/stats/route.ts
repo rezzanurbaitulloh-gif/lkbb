@@ -41,8 +41,25 @@ export async function GET(req: Request) {
   const qEventId = url.searchParams.get("event_id")
   const isSuper = auth.user ? await (await import("@/lib/event")).isSuperAdmin(auth.user.id) : false
   let filterEventId: string | null = eventId
-  if (qEventId === "all" && isSuper) filterEventId = null // global
-  else if (qEventId && qEventId !== "all") filterEventId = qEventId
+  if (qEventId === "all") {
+    if (!isSuper) return NextResponse.json({ error: "SUPER_ADMIN required for all events" }, { status: 403 })
+    filterEventId = null // global
+  } else if (qEventId && qEventId !== "all") {
+    // Strict check: non-super can only query own event
+    if (!isSuper) {
+      const { isEventAdmin } = await import("@/lib/event")
+      if (!await isEventAdmin(qEventId, auth.user.id)) {
+        return NextResponse.json({ error: "Forbidden — not admin for this event" }, { status: 403 })
+      }
+    }
+    filterEventId = qEventId
+  } else if (filterEventId && !isSuper) {
+    // Host-based event: check membership
+    const { isEventAdmin } = await import("@/lib/event")
+    if (!await isEventAdmin(filterEventId, auth.user.id)) {
+      return NextResponse.json({ error: "Forbidden — not admin for this event" }, { status: 403 })
+    }
+  }
 
   // Helper to add event filter
   const addEventFilter = (q: any) => filterEventId ? q.eq("event_id", filterEventId) : q

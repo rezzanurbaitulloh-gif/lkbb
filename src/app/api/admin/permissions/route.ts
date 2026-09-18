@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/auth"
 export async function GET() {
   const auth = await requireAdmin()
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status })
-  if (auth.user!.role !== "ADMIN") {
+  if (!["ADMIN","SUPER_ADMIN"].includes(auth.user!.role || "")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
   const service = createServiceSupabase()
@@ -30,7 +30,7 @@ export async function GET() {
 export async function PATCH(req: Request) {
   const auth = await requireAdmin()
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status })
-  if (auth.user!.role !== "ADMIN") return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
+  if (!["ADMIN","SUPER_ADMIN"].includes(auth.user!.role || "")) return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
   const service = createServiceSupabase()
   const body = await req.json()
 
@@ -52,7 +52,7 @@ export async function PATCH(req: Request) {
 export async function POST(req: Request) {
   const auth = await requireAdmin()
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status })
-  if (auth.user!.role !== "ADMIN") return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
+  if (!["ADMIN","SUPER_ADMIN"].includes(auth.user!.role || "")) return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
   const service = createServiceSupabase()
   const { user_id, permission_key, granted } = await req.json()
   if (!user_id || !permission_key) return NextResponse.json({ error: "user_id & permission_key wajib" }, { status: 400 })
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const auth = await requireAdmin()
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status })
-  if (auth.user!.role !== "ADMIN") return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
+  if (!["ADMIN","SUPER_ADMIN"].includes(auth.user!.role || "")) return NextResponse.json({ error: "Hanya admin" }, { status: 403 })
   const service = createServiceSupabase()
   const { searchParams } = new URL(req.url)
   const user_id = searchParams.get("user_id")

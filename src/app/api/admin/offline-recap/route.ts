@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   try {
     const { user, role } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
     const body = await req.json()
     const { peleton_id, supports, note } = body
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { user, role } = await getUserAndRole()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const service = createServiceSupabase()
   const url = new URL(req.url)
   const limit = Math.min(100, parseInt(url.searchParams.get("limit")||"50")||50)
@@ -94,7 +94,7 @@ export async function PATCH(req: Request) {
   try {
     const { user, role } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     const body = await req.json()
     const { id, supports, note } = body
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
@@ -129,7 +129,7 @@ export async function DELETE(req: Request) {
   try {
     const { user, role } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
     const bodyIds = url.searchParams.get("ids")

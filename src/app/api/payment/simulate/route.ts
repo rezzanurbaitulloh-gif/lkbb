@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   const { data: profile } = await service.from("profiles").select("role").eq("id", user.id).maybeSingle()
-  const isAdmin = profile?.role === "ADMIN"
+  const isAdmin = ["ADMIN","SUPER_ADMIN"].includes(profile?.role || "")
   if (!isAdmin && trx.user_id !== user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }

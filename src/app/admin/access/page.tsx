@@ -138,7 +138,7 @@ export default function AccessControl(){
             <div key={u.id} className="flex flex-col md:grid md:grid-cols-[1.4fr_1.2fr_140px_100px] gap-2 px-4 py-3 items-center border-b border-white/[0.06]/50 text-sm">
               <div className="font-bold truncate w-full md:w-auto">{u.public_name||"-"}</div>
               <div className="text-xs text-muted-foreground truncate w-full md:w-auto">{u.email}</div>
-              <div className="w-full md:w-auto"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="ADMIN" ? "admin" : "user"}</span></div>
+              <div className="w-full md:w-auto"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${u.role==="SUPER_ADMIN" ? "bg-primary text-black" : u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="SUPER_ADMIN" ? "super admin" : u.role==="ADMIN" ? "admin" : "user"}</span></div>
               <div className="w-full md:w-auto"><Button variant="outline" size="sm" className="rounded-full h-7 text-xs w-full md:w-auto" onClick={()=> openEditUser(u)}>Kelola</Button></div>
             </div>
           ))}

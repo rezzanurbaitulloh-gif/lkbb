@@ -21,7 +21,7 @@ async function requireAdmin() {
   if (!user) return { authorized: false as const, status: 401 as const }
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   const role = profile?.role
-  if (role !== "ADMIN") return { authorized: false as const, status: 403 as const }
+  if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return { authorized: false as const, status: 403 as const }
   return { authorized: true as const, user, supabase }
 }
 

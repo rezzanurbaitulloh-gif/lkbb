@@ -20,13 +20,13 @@ export const ROLE_DEFAULTS: Record<string, PermissionKey[]> = {
 
 export function hasPermission(role: string | null | undefined, key: PermissionKey): boolean {
   if (!role) return false
-  if (role === "ADMIN") return true
+  if (["ADMIN","SUPER_ADMIN"].includes(role || "")) return true
   const perms = ROLE_DEFAULTS[role]
   return perms ? perms.includes(key) : false
 }
 
 export function canAccessAdmin(role: string | null | undefined): boolean {
-  return role === "ADMIN"
+  return ["ADMIN","SUPER_ADMIN"].includes(role || "")
 }
 
 // Server-side: fetch role_permissions override from DB (optional)
@@ -37,7 +37,7 @@ export async function checkPermissionDB(
   role: string,
   required: PermissionKey
 ): Promise<boolean> {
-  if (role === "ADMIN") return true
+  if (["ADMIN","SUPER_ADMIN"].includes(role || "")) return true
   // check user override first
   try {
     const { data: userPerm } = await supabase.from("user_permissions").select("granted").eq("user_id", userId).eq("permission_key", required).single()

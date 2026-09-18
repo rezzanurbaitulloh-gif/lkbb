@@ -152,7 +152,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
-  const isAdmin = currentUser?.role === "ADMIN"
+  const isAdmin = ["ADMIN","SUPER_ADMIN"].includes(currentUser?.role || "")
 
   return <Ctx.Provider value={{ theme, setTheme, favorites, toggleFavorite, isFavorite, dukunganHistory, addTransaction, currentUser, isAdmin, loadingAuth, login, loginWithPassword, signUp, logout, refreshUser }}>{children}</Ctx.Provider>
 }

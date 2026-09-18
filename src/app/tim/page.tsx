@@ -3,12 +3,26 @@ import { createServerSupabase } from "@/lib/supabase"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
+import { headers } from "next/headers"
 
 export const revalidate = 0
 
 export default async function TimPage(){
   const supabase = await createServerSupabase()
-  const { data: event } = await supabase.from("competitions").select("state, show_provisional_result, show_final_result").order("created_at", { ascending: false }).limit(1).single()
+  const hdrs = await headers()
+  const host = hdrs.get("host") || hdrs.get("x-forwarded-host") || ""
+  let event: any = null
+  let eventId: string | null = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    event = r.event
+    eventId = r.eventId
+  } catch {}
+  if (!event) {
+    const { data } = await supabase.from("competitions").select("state, show_provisional_result, show_final_result").order("created_at", { ascending: false }).limit(1).single()
+    event = data
+  }
   // Fetch background: tim-specific, fallback to hero background (beranda)
   let timBg: string | null = null
   let heroBg: string | null = null
@@ -36,18 +50,24 @@ export default async function TimPage(){
   let smp: any[] = []
   let sma: any[] = []
   if (isVotingClosed) {
-    const { data } = await supabase.from("team_ranking").select("*").order("online_ballots", { ascending: false })
+    let q = supabase.from("team_ranking").select("*").order("online_ballots", { ascending: false })
+    if (eventId) q = (q as any).eq("event_id", eventId)
+    const { data } = await q
     smp = (data||[]).filter(p=>p.category==='SMP')
     sma = (data||[]).filter(p=>p.category==='SMA')
   } else {
     // Untuk semua state lain (NOT_STARTED, ACTIVE, PUBLISHED) pakai total_ballots tertinggi di atas
-    const { data } = await supabase.from("team_ranking").select("*").order("total_ballots", { ascending: false })
+    let q2 = supabase.from("team_ranking").select("*").order("total_ballots", { ascending: false })
+    if (eventId) q2 = (q2 as any).eq("event_id", eventId)
+    const { data } = await q2
     if (data && data.length > 0) {
       smp = data.filter(p=>p.category==='SMP')
       sma = data.filter(p=>p.category==='SMA')
     } else {
       // Fallback jika team_ranking kosong (belum ada support) — ambil peletons lalu urutkan by support 0 (tetap pakai number sebagai secondary)
-      const { data: fallback } = await supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("number", { ascending: true })
+      let fq = supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("number", { ascending: true })
+      if (eventId) fq = (fq as any).eq("event_id", eventId)
+      const { data: fallback } = await fq
       smp = (fallback||[]).filter(p=>p.category==='SMP')
       sma = (fallback||[]).filter(p=>p.category==='SMA')
     }

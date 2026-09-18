@@ -7,11 +7,25 @@ import { PodiumSection } from "@/components/competition/Podium"
 import { CmsSections } from "@/components/cms/CmsSectionRenderer"
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
 import { createServerSupabase } from "@/lib/supabase"
+import { headers } from "next/headers"
 
 export const revalidate = 0
 export default async function HomePage(){
   const supabase = await createServerSupabase()
-  const { data: event } = await supabase.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single()
+  const hdrs = await headers()
+  const host = hdrs.get("host") || hdrs.get("x-forwarded-host") || ""
+  let event: any = null
+  let eventId: string | null = null
+  try {
+    const { resolveEventFromHost } = await import("@/lib/event")
+    const r = await resolveEventFromHost(host)
+    event = r.event
+    eventId = r.eventId
+  } catch {}
+  if (!event) {
+    const { data } = await supabase.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single()
+    event = data
+  }
 
   // Dynamic CMS — fetch home sections & site settings (fallback gracefully if tables not yet migrated)
   let cmsSections: any[] = []
@@ -39,18 +53,24 @@ export default async function HomePage(){
   let smpPodium: any[] = []
   let smaPodium: any[] = []
   if (isNotStarted || isActive) {
-    const { data } = await supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("category", { ascending: true }).order("number", { ascending: true })
+    let q = supabase.from("peletons").select("*").eq("verified", true).eq("active", true).order("category", { ascending: true }).order("number", { ascending: true })
+    if (eventId) q = (q as any).eq("event_id", eventId)
+    const { data } = await q
     teams = (data||[]).sort((a:any,b:any)=>{
       if(a.category!==b.category) return String(a.category).localeCompare(String(b.category))
       return parseInt(String(a.number).replace(/^0+/,"")||"0") - parseInt(String(b.number).replace(/^0+/,"")||"0")
     })
   } else if (isVotingClosed) {
-    const { data } = await supabase.from("team_ranking").select("*").order("online_ballots", { ascending: false })
+    let q = supabase.from("team_ranking").select("*").order("online_ballots", { ascending: false })
+    if (eventId) q = (q as any).eq("event_id", eventId)
+    const { data } = await q
     teams = data||[]
     smpPodium = teams.filter(p=>p.category==='SMP').slice(0,3)
     smaPodium = teams.filter(p=>p.category==='SMA').slice(0,3)
   } else if (isPublished) {
-    const { data } = await supabase.from("team_ranking").select("*").order("total_ballots", { ascending: false })
+    let q = supabase.from("team_ranking").select("*").order("total_ballots", { ascending: false })
+    if (eventId) q = (q as any).eq("event_id", eventId)
+    const { data } = await q
     teams = data||[]
     smpPodium = teams.filter(p=>p.category==='SMP').slice(0,3)
     smaPodium = teams.filter(p=>p.category==='SMA').slice(0,3)

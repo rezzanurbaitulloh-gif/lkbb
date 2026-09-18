@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   const role = profile?.role
-  if (role !== "ADMIN") {
+  if (!(["ADMIN","SUPER_ADMIN"].includes(role || ""))) {
     redirect("/?error=unauthorized")
   }
   return <AdminNav>{children}</AdminNav>

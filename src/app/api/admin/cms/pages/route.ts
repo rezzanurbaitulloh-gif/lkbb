@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
 import { requireAdmin } from "@/lib/auth"
+import { rowInScope } from "@/lib/permissions"
 
 export async function GET(req: Request) {
   const auth = await requireAdmin()
@@ -44,9 +45,18 @@ export async function POST(req: Request) {
   if (!slug || !title) return NextResponse.json({ error: "slug & title wajib" }, { status: 400 })
   if (!/^[a-z0-9-]+$/.test(slug)) return NextResponse.json({ error: "slug hanya huruf kecil, angka, strip" }, { status: 400 })
 
+  const bodyEventId = (body as any).event_id || null
+  if (!auth.ctx!.isSuper) {
+    const target = bodyEventId || (auth.ctx!.eventIds.length === 1 ? auth.ctx!.eventIds[0] : null)
+    if (!target || !auth.ctx!.eventIds.includes(target)) {
+      return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+    }
+    body.event_id = target
+  }
   const { data, error } = await service
     .from("cms_pages")
     .insert({
+      event_id: (body as any).event_id || null,
       slug: slug.toLowerCase().trim(),
       title: title.trim(),
       description: description || null,
@@ -76,6 +86,10 @@ export async function PATCH(req: Request) {
   if (!id) return NextResponse.json({ error: "id wajib" }, { status: 400 })
 
   const { data: before } = await service.from("cms_pages").select("*").eq("id", id).single()
+  if (!before) return NextResponse.json({ error: "Halaman tidak ditemukan" }, { status: 404 })
+  if (!rowInScope(auth.ctx!, (before as any)?.event_id)) {
+    return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+  }
 
   const patch: any = {}
   if (slug !== undefined) {
@@ -105,8 +119,12 @@ export async function DELETE(req: Request) {
   const id = searchParams.get("id")
   if (!id) return NextResponse.json({ error: "id wajib" }, { status: 400 })
 
-  const { data: page } = await service.from("cms_pages").select("is_system, slug").eq("id", id).single()
+  const { data: page } = await service.from("cms_pages").select("is_system, slug, event_id").eq("id", id).single()
+  if (!page) return NextResponse.json({ error: "Halaman tidak ditemukan" }, { status: 404 })
   if ((page as any)?.is_system) return NextResponse.json({ error: "Halaman sistem tidak boleh dihapus" }, { status: 400 })
+  if (!rowInScope(auth.ctx!, (page as any)?.event_id)) {
+    return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+  }
 
   const { error } = await service.from("cms_pages").delete().eq("id", id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

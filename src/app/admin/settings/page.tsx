@@ -69,6 +69,14 @@ export default function SettingsPage(){
 
   const loadEvent = async ()=>{
     const s=createBrowserSupabase()
+    // Matriks: ADMIN dikunci ke event sendiri — ?event_id milik event lain diabaikan.
+    let ownIds: string[] | null = null
+    let isSuper = false
+    try {
+      const me = await fetch("/api/me/admin", { cache:"no-store" }).then(r=> r.json())
+      isSuper = !!me.isSuper
+      if(!isSuper) ownIds = Array.isArray(me.eventIds) ? me.eventIds : []
+    } catch {}
     // Try to resolve current event from host/query (for multi-event), fallback to competitions
     let ev: any = null
     try {
@@ -92,6 +100,15 @@ export default function SettingsPage(){
         }
       }
     } catch {}
+    // Clamp: ADMIN yang meminta event di luar miliknya dikembalikan ke event sendiri.
+    if (!isSuper && ownIds && ev?.id && !ownIds.includes(ev.id)) {
+      try {
+        if (ownIds.length > 0) {
+          const { data: own } = await s.from("events").select("*").eq("id", ownIds[0]).maybeSingle()
+          if (own) ev = own
+        }
+      } catch {}
+    }
     if (!ev) {
       // Fallback to competitions (legacy) and also try events default
       const { data: comp } = await s.from("competitions").select("*").order("created_at",{ascending:false}).limit(1).single()

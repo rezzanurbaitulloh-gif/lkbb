@@ -64,7 +64,7 @@ async function isEventAdmin(eventId: string, userId: string): Promise<boolean> {
   return !!data
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
   // Resolve event per-request (host → path → query)
   let eventId: string | null = null
@@ -98,7 +98,10 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Protect /admin and /admin/* — require auth + ADMIN (event-scoped) OR SUPER_ADMIN
+  // Protect /admin and /admin/* — require auth + ADMIN (event-scoped) OR SUPER_ADMIN.
+  // Matriks eksplisit: halaman super-only (users, peserta) ditolak untuk ADMIN di sini;
+  // seksi event diizinkan untuk admin event ybs.
+  const SUPER_ONLY_PREFIXES = ["/admin/users", "/admin/peserta"]
   if (pathname.startsWith("/admin")) {
     if (!user) {
       const url = request.nextUrl.clone()
@@ -107,6 +110,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
     const superAdmin = await isSuperAdmin(user.id)
+    if (!superAdmin && SUPER_ONLY_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/admin"
+      url.searchParams.set("error", "forbidden")
+      return NextResponse.redirect(url)
+    }
     if (superAdmin) {
       return supabaseResponse
     }
@@ -130,10 +139,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /api/admin/* — hanya admin event atau super admin
+  // Protect /api/admin/* — hanya admin event atau super admin.
+  // API super-only (users, permissions) ditolak untuk ADMIN dengan JSON 403.
+  const SUPER_ONLY_APIS = ["/api/admin/users", "/api/admin/permissions", "/api/admin/super-admins"]
   if (pathname.startsWith("/api/admin")) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const superAdminApi = await isSuperAdmin(user.id)
+    if (!superAdminApi && SUPER_ONLY_APIS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+      return NextResponse.json({ error: "Forbidden — di luar akses peran Anda" }, { status: 403 })
     }
     const superAdmin = await isSuperAdmin(user.id)
     if (superAdmin) return supabaseResponse

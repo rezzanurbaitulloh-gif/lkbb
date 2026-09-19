@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
 import { requireAdmin } from "@/lib/auth"
+import { rowInScope } from "@/lib/permissions"
 
 // GET ?page_id=xxx or ?slug=home
 export async function GET(req: Request) {
@@ -49,9 +50,15 @@ export async function POST(req: Request) {
     order = ((maxRow as any)?.sort_order ?? 0) + 1
   }
 
+  const { data: parentPage } = await service.from("cms_pages").select("event_id").eq("id", pid).single()
+  if (!parentPage) return NextResponse.json({ error: "Halaman tidak ditemukan" }, { status: 404 })
+  if (!rowInScope(auth.ctx!, (parentPage as any)?.event_id)) {
+    return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+  }
   const { data, error } = await service
     .from("cms_sections")
     .insert({
+      event_id: (parentPage as any)?.event_id || null,
       page_id: pid,
       key: key.toLowerCase().trim(),
       title,
@@ -80,6 +87,15 @@ export async function PATCH(req: Request) {
   if (!id) return NextResponse.json({ error: "id wajib" }, { status: 400 })
 
   const { data: before } = await service.from("cms_sections").select("*").eq("id", id).single()
+  if (!before) return NextResponse.json({ error: "Section tidak ditemukan" }, { status: 404 })
+  let secEvent = (before as any)?.event_id || null
+  if (!secEvent && (before as any)?.page_id) {
+    const { data: sp } = await service.from("cms_pages").select("event_id").eq("id", (before as any).page_id).single()
+    secEvent = (sp as any)?.event_id || null
+  }
+  if (!rowInScope(auth.ctx!, secEvent)) {
+    return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+  }
   const patch: any = {}
   if (key !== undefined) {
     if (!/^[a-z0-9_-]+$/.test(key)) return NextResponse.json({ error: "key tidak valid" }, { status: 400 })
@@ -108,6 +124,15 @@ export async function DELETE(req: Request) {
   if (!id) return NextResponse.json({ error: "id wajib" }, { status: 400 })
 
   const { data: before } = await service.from("cms_sections").select("*").eq("id", id).single()
+  if (!before) return NextResponse.json({ error: "Section tidak ditemukan" }, { status: 404 })
+  let delEvent = (before as any)?.event_id || null
+  if (!delEvent && (before as any)?.page_id) {
+    const { data: sp } = await service.from("cms_pages").select("event_id").eq("id", (before as any).page_id).single()
+    delEvent = (sp as any)?.event_id || null
+  }
+  if (!rowInScope(auth.ctx!, delEvent)) {
+    return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+  }
   const { error } = await service.from("cms_sections").delete().eq("id", id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   await service.from("cms_revisions").insert({ entity_type: "section", entity_id: id, action: "delete", before, changed_by: auth.user!.id })

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { createBrowserSupabase } from "@/lib/supabase"
+import { useOwnEventFilter } from "@/hooks/useOwnEventFilter"
 import { useToast } from "@/components/ui/toast"
 
 export default function ResultsControl(){
@@ -9,18 +10,24 @@ export default function ResultsControl(){
   const [event, setEvent] = useState<any>(null)
   const [provisional, setProvisional] = useState<any[]>([])
   const [final, setFinal] = useState<any[]>([])
+  const { ready: evReady, isSuper: evSuper, eventIds: ownEvents } = useOwnEventFilter()
 
   const load = ()=>{
+    if(!evReady) return
     const supabase = createBrowserSupabase()
-    supabase.from("competitions").select("*").order("created_at", {ascending:false}).limit(1).single().then(({data})=> setEvent(data))
-    supabase.from("team_ranking").select("*").order("total_ballots", {ascending:false}).then(({data})=>{
+    let cq: any = supabase.from("competitions").select("*").order("created_at", {ascending:false}).limit(1)
+    if(!evSuper && ownEvents.length>0) cq = cq.in("event_id", ownEvents)
+    cq.single().then(({data}: any)=> setEvent(data))
+    let rq: any = supabase.from("team_ranking").select("*").order("total_ballots", {ascending:false})
+    if(!evSuper && ownEvents.length>0) rq = rq.in("event_id", ownEvents)
+    rq.then(({data}: any)=>{
       // provisional = online only, final = online+offline (view already does)
       // For demo, provisional is same as final but filtered
       setProvisional((data||[]).slice(0,3))
       setFinal((data||[]).slice(0,3))
     })
   }
-  useEffect(()=>{ load() },[])
+  useEffect(()=>{ load() },[evReady])
 
   const [toggling,setToggling]=useState<string|null>(null)
   const toggle = async (field: "show_provisional_result" | "show_final_result")=>{

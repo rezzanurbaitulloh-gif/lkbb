@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select } from "@/components/ui/select"
 import { AlertDialog } from "@/components/ui/alert-dialog"
 import { createBrowserSupabase } from "@/lib/supabase"
+import { useOwnEventFilter } from "@/hooks/useOwnEventFilter"
 import { useToast } from "@/components/ui/toast"
 import { ImageUploadGrid } from "@/components/ui/image-upload-grid"
 import { Pencil, Trash2 } from "lucide-react"
@@ -23,10 +24,14 @@ export default function AdminPeleton(){
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<any>({ number:"", name:"", school:"", city:"Kertosono", province:"Jawa Timur", category:"SMA", image_url:"", logo_url:"", active:true })
 
+  const { ready: evReady, isSuper: evSuper, eventIds: ownEvents } = useOwnEventFilter()
   const load = ()=>{
+    if(!evReady) return
     const supabase = createBrowserSupabase()
     // nomor urut = urutan tampil, order per kategori lalu nomor (SMP 1.., SMK 1.. terpisah)
-    supabase.from("peletons").select("*").order("category", {ascending:true}).order("number", {ascending:true}).then(({data})=> {
+    let q: any = supabase.from("peletons").select("*").order("category", {ascending:true}).order("number", {ascending:true})
+    if(!evSuper && ownEvents.length>0) q = q.in("event_id", ownEvents)
+    q.then(({data}: any)=> {
       // fallback sort by numeric number if string like "01"
       const sorted = (data||[]).sort((a:any,b:any)=>{
         if(a.category!==b.category) return a.category.localeCompare(b.category)
@@ -35,7 +40,7 @@ export default function AdminPeleton(){
       setTeams(sorted)
     })
   }
-  useEffect(()=>{ load() },[])
+  useEffect(()=>{ load() },[evReady])
 
   const filtered = filter==="All" ? teams : teams.filter(t=>t.category===filter)
 

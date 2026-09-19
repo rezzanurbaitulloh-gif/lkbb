@@ -1,27 +1,22 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { getAdminContext } from "@/lib/auth"
+import { SUPER_ONLY_TABLES, EVENT_TABLES } from "@/lib/permissions"
 
 const ALLOWED_TABLES = ["peletons","news","announcements","timeline_stages","judges","sponsors","faqs","profiles","audit_logs","transactions","supports","competitions"]
 
 async function requireAdmin(){
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll(){ return cookieStore.getAll() },
-        setAll(cookiesToSet){ try{ cookiesToSet.forEach(({name,value,options})=> cookieStore.set(name,value,options)) } catch{} },
-      }
-    }
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  if(!user) return { ok:false as const, status:401 }
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if(!["ADMIN","SUPER_ADMIN"].includes(profile?.role || "")) return { ok:false as const, status:403 }
-  return { ok:true as const, user, role: profile?.role }
+  const ctx = await getAdminContext()
+  if (!ctx) return { ok:false as const, status:401 }
+  if (ctx.scope === "none") return { ok:false as const, status:403 }
+  return { ok:true as const, user: { id: ctx.userId }, role: ctx.profileRole, ctx }
+}
+
+// ADMIN non-super dilarang menyentuh baris di luar event-nya.
+function eventAllowed(ctx: { isSuper: boolean; eventIds: string[] }, rowEventId: string | null): boolean {
+  if (ctx.isSuper) return true
+  if (!rowEventId) return false
+  return ctx.eventIds.includes(rowEventId)
 }
 
 export async function POST(req: Request){
@@ -30,6 +25,10 @@ export async function POST(req: Request){
   const body = await req.json()
   const { table, data } = body
   if(!ALLOWED_TABLES.includes(table)) return NextResponse.json({ error:"Table not allowed" }, { status:400 })
+  // Matriks: tabel super-only (profiles/peran/izin) dilarang untuk ADMIN.
+  if (SUPER_ONLY_TABLES.includes(table) && !auth.ctx.isSuper) {
+    return NextResponse.json({ error:"Forbidden — di luar akses peran Anda" }, { status:403 })
+  }
   const service = createServiceSupabase()
   // Resolve event from host for event-scoped tables
   const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
@@ -43,6 +42,12 @@ export async function POST(req: Request){
   const eventScopedTables = ["peletons","sponsors","judges","news","announcements","timeline_stages","faqs","competitions","transactions","supports"]
   if (eventId && eventScopedTables.includes(table) && !data.event_id) {
     data.event_id = eventId
+  }
+  // Matriks: ADMIN hanya boleh membuat baris di event sendiri.
+  if (EVENT_TABLES.includes(table) && !auth.ctx.isSuper) {
+    if (!data.event_id || !auth.ctx.eventIds.includes(data.event_id)) {
+      return NextResponse.json({ error:"Forbidden — di luar event Anda" }, { status:403 })
+    }
   }
   // For peletons, force verified + duplicate prevention per kategori (SMP/SMA terpisah)
   if(table==="peletons"){
@@ -86,7 +91,21 @@ export async function PATCH(req: Request){
   const body = await req.json()
   const { table, id, data } = body
   if(!ALLOWED_TABLES.includes(table) || !id) return NextResponse.json({ error:"Invalid" }, { status:400 })
+  // Matriks: tabel super-only dilarang untuk ADMIN (mencegah eskalasi peran).
+  if (SUPER_ONLY_TABLES.includes(table) && !auth.ctx.isSuper) {
+    return NextResponse.json({ error:"Forbidden — di luar akses peran Anda" }, { status:403 })
+  }
   const service = createServiceSupabase()
+  // Matriks: ADMIN hanya boleh mengubah baris di event sendiri; event_id tak boleh dipindah keluar.
+  if (EVENT_TABLES.includes(table) && !auth.ctx.isSuper) {
+    const { data: row } = await service.from(table).select("event_id").eq("id", id).maybeSingle()
+    if (!row || !eventAllowed(auth.ctx, (row as any)?.event_id)) {
+      return NextResponse.json({ error:"Forbidden — di luar event Anda" }, { status:403 })
+    }
+    if (data.event_id && !auth.ctx.eventIds.includes(data.event_id)) {
+      return NextResponse.json({ error:"Forbidden — event_id di luar akses Anda" }, { status:403 })
+    }
+  }
   // Admin boleh kelola SELURUH transaksi & supports milik siapa pun (tidak ada isolasi per-admin)
   // Duplicate prevention on update for peletons per kategori
   if(table==="peletons" && (data.number || data.name)){
@@ -126,7 +145,18 @@ export async function DELETE(req: Request){
   const table = searchParams.get("table")
   const id = searchParams.get("id")
   if(!table || !id || !ALLOWED_TABLES.includes(table)) return NextResponse.json({ error:"Invalid" }, { status:400 })
+  // Matriks: tabel super-only + hapus audit_logs dilarang untuk ADMIN.
+  if ((SUPER_ONLY_TABLES.includes(table) || table === "audit_logs") && !auth.ctx.isSuper) {
+    return NextResponse.json({ error:"Forbidden — di luar akses peran Anda" }, { status:403 })
+  }
   const service = createServiceSupabase()
+  // Matriks: ADMIN hanya boleh menghapus baris di event sendiri.
+  if (EVENT_TABLES.includes(table) && !auth.ctx.isSuper) {
+    const { data: row } = await service.from(table).select("event_id").eq("id", id).maybeSingle()
+    if (!row || !eventAllowed(auth.ctx, (row as any)?.event_id)) {
+      return NextResponse.json({ error:"Forbidden — di luar event Anda" }, { status:403 })
+    }
+  }
   // Admin boleh hapus SELURUH transaksi milik siapa pun (tidak ada isolasi per-admin)
   if(table === "transactions"){
     // also delete supports linked to this transaction

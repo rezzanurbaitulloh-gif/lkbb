@@ -17,14 +17,15 @@ async function requireAdmin(){
   )
   const { data: { user } } = await supabase.auth.getUser()
   if(!user) return { ok:false as const, status:401 }
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if(!["ADMIN","SUPER_ADMIN"].includes(profile?.role || "")) return { ok:false as const, status:403 }
+  const { getAdminContext } = await import("@/lib/auth")
+  const ctx = await getAdminContext()
+  if(!ctx?.isSuper) return { ok:false as const, status:403 }
   return { ok:true as const, user }
 }
 
 export async function POST(req: Request){
   const auth = await requireAdmin()
-  if(!auth.ok) return NextResponse.json({ error:"Tidak punya izin — hanya admin" }, { status: auth.status })
+  if(!auth.ok) return NextResponse.json({ error:"Tidak punya izin — hanya SUPER_ADMIN" }, { status: auth.status })
   const { userId, newPassword } = await req.json()
   if(!userId || !newPassword || newPassword.length<6) return NextResponse.json({ error:"Kata sandi minimal 6 karakter" }, { status:400 })
   const service = createServiceSupabase()

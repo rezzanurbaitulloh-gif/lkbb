@@ -1,19 +1,23 @@
 "use client"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
-import { Shield, Users, Lock, Crown, Edit3 } from "lucide-react"
+import { Shield, Users, Lock, Crown, Edit3, UserPlus, Trash2 } from "lucide-react"
 import { createBrowserSupabase } from "@/lib/supabase"
+import { useAdminContext } from "@/hooks/useAdminContext"
 
 const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Admin — akses penuh",
+  SUPER_ADMIN: "Super Admin — akses penuh semua event",
+  ADMIN: "Admin — hanya event sendiri",
   USER: "User — tanpa akses admin",
 }
 
 export default function AccessControl(){
   const { toast } = useToast()
+  const adminCtx = useAdminContext()
   const [perms, setPerms]=useState<any[]>([])
   const [rolePerms, setRolePerms]=useState<any[]>([])
   const [profiles, setProfiles]=useState<any[]>([])
@@ -70,6 +74,11 @@ export default function AccessControl(){
   }
 
   if(loading) return <div className="p-8 text-sm">Memuat hak akses...</div>
+
+  // Matriks: ADMIN hanya mengelola admin event sendiri (bukan matriks global).
+  if (!adminCtx.loading && !adminCtx.isSuper) {
+    return <EventAdminManager />
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5">
@@ -149,13 +158,159 @@ export default function AccessControl(){
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader><DialogTitle>Kelola Peran Pengguna</DialogTitle><DialogDescription>{editingUser?.public_name} — {editingUser?.email}</DialogDescription></DialogHeader>
           <div className="grid gap-3">
-            <div><label className="text-xs font-bold">Peran Baru</label><Select value={newRole} onValueChange={setNewRole} options={[{value:"USER",label:"USER — User Biasa"},{value:"ADMIN",label:"admin — Akses penuh"}]} /></div>
+            <div><label className="text-xs font-bold">Peran Baru</label><Select value={newRole} onValueChange={setNewRole} options={[{value:"USER",label:"USER — User Biasa"},{value:"ADMIN",label:"admin — Event sendiri"}]} /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={()=> setEditingUser(null)}>Batal</Button><Button onClick={handleSaveUserRole}>Simpan</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] backdrop-blur/20 p-3 text-xs flex items-center gap-2"><Lock className="h-4 w-4"/> Sistem disederhanakan: hanya admin & user. Semua perubahan hak akses tercatat di audit_logs dan langsung diberlakukan di middleware (ADMIN).</div>
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.04] backdrop-blur/20 p-3 text-xs flex items-center gap-2"><Lock className="h-4 w-4"/> Matriks 3 peran: SUPER_ADMIN semua event & platform, ADMIN hanya event sendiri, USER tanpa akses admin. Semua perubahan tercatat di audit_logs.</div>
+
+      <EventAdminManager showEventFilter />
+
+      <SuperAdminManager />
+    </div>
+  )
+}
+
+// Kelola SUPER_ADMIN platform — hanya tampil untuk SUPER_ADMIN (matriks).
+export function SuperAdminManager(){
+  const { toast } = useToast()
+  const [supers, setSupers] = useState<any[]>([])
+  const [usersMap, setUsersMap] = useState<Record<string, any>>({})
+  const [email, setEmail] = useState("")
+  const [saving, setSaving] = useState(false)
+  const load = async ()=>{
+    const res = await fetch("/api/admin/super-admins")
+    const j = await res.json()
+    if(res.ok){ setSupers(j.supers||[]); setUsersMap(j.users||{}) }
+  }
+  useEffect(()=>{ load() },[])
+  const handleAdd = async ()=>{
+    if(!email.trim()){ toast({ title:"Email wajib", variant:"error" }); return }
+    setSaving(true)
+    const res = await fetch("/api/admin/super-admins",{ method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: email.trim() }) })
+    const j = await res.json().catch(()=> ({}))
+    setSaving(false)
+    if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+    toast({ title:"Super admin ditambahkan", variant:"success" })
+    setEmail("")
+    load()
+  }
+  const handleRemove = async (user_id: string)=>{
+    const res = await fetch(`/api/admin/super-admins?user_id=${user_id}`, { method:"DELETE" })
+    const j = await res.json().catch(()=> ({}))
+    if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+    toast({ title:"Super admin dicabut", variant:"success" })
+    load()
+  }
+  return (
+    <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur overflow-hidden">
+      <div className="p-4 border-b border-white/[0.06]">
+        <h3 className="text-sm font-black flex items-center gap-2"><Crown className="h-4 w-4 text-amber-500"/> Super Admin Platform</h3>
+        <p className="text-xs text-muted-foreground">Akses penuh semua event & platform. Minimal satu harus tersisa.</p>
+      </div>
+      <div className="p-4 grid sm:grid-cols-[1fr_auto] gap-2 border-b border-white/[0.06]">
+        <Input value={email} onChange={e=> setEmail(e.target.value)} placeholder="Email pengguna…" />
+        <Button onClick={handleAdd} disabled={saving} className="rounded-full gap-2"><UserPlus className="h-4 w-4"/>{saving ? "Menyimpan…" : "Angkat Super Admin"}</Button>
+      </div>
+      <div className="max-h-[240px] overflow-y-auto">
+        {supers.length===0 ? <div className="p-6 text-center text-sm text-muted-foreground">Belum ada data.</div> :
+          supers.map((s:any)=> {
+            const u = usersMap[s.user_id] || {}
+            return (
+              <div key={s.user_id} className="flex items-center justify-between gap-2 px-4 py-3 border-b border-white/[0.06]/50 text-sm">
+                <div className="min-w-0">
+                  <div className="font-bold truncate">{u.public_name || u.email?.split("@")[0] || "-"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{u.email || ""}</div>
+                </div>
+                <Button variant="ghost" size="sm" className="rounded-full h-7 w-7 p-0 text-red-600 shrink-0" onClick={()=> handleRemove(s.user_id)}><Trash2 className="h-3.5 w-3.5"/></Button>
+              </div>
+            )
+          })}
+      </div>
+    </div>
+  )
+}
+
+// Kelola ADMIN per event — dipakai SUPER (semua event + filter) dan ADMIN (event sendiri).
+// Matriks: "Manage Event Admin — own event".
+export function EventAdminManager({ showEventFilter = false }: { showEventFilter?: boolean }){
+  const { toast } = useToast()
+  const adminCtx = useAdminContext()
+  const [members, setMembers] = useState<any[]>([])
+  const [usersMap, setUsersMap] = useState<Record<string, any>>({})
+  const [eventsMap, setEventsMap] = useState<Record<string, any>>({})
+  const [filterEvent, setFilterEvent] = useState<string>("")
+  const [email, setEmail] = useState("")
+  const [addEvent, setAddEvent] = useState<string>("")
+  const [saving, setSaving] = useState(false)
+
+  const load = async ()=>{
+    const qs = filterEvent ? `?event_id=${encodeURIComponent(filterEvent)}` : ""
+    const res = await fetch(`/api/admin/event-members${qs}`)
+    const j = await res.json()
+    if(res.ok){ setMembers(j.members||[]); setUsersMap(j.users||{}); setEventsMap(j.events||{}) }
+  }
+  useEffect(()=>{ load() },[filterEvent])
+
+  const eventOptions = adminCtx.events.map((e:any)=> ({ value: e.id, label: `${e.slug} — ${e.name}` }))
+  useEffect(()=>{ if(!addEvent && eventOptions.length>0) setAddEvent(eventOptions[0].value) },[adminCtx.events])
+
+  const handleAdd = async ()=>{
+    if(!email.trim() || !addEvent){ toast({ title:"Email dan event wajib", variant:"error" }); return }
+    setSaving(true)
+    const res = await fetch("/api/admin/event-members",{ method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: email.trim(), event_id: addEvent }) })
+    const j = await res.json().catch(()=> ({}))
+    setSaving(false)
+    if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+    toast({ title:"Admin event ditambahkan", variant:"success" })
+    setEmail("")
+    load()
+  }
+  const handleRemove = async (id: string)=>{
+    const res = await fetch(`/api/admin/event-members?id=${id}`, { method:"DELETE" })
+    const j = await res.json().catch(()=> ({}))
+    if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+    toast({ title:"Admin event dihapus", variant:"success" })
+    load()
+  }
+
+  return (
+    <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur overflow-hidden">
+      <div className="p-4 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-black flex items-center gap-2"><Users className="h-4 w-4"/> Admin Event</h3>
+          <p className="text-xs text-muted-foreground">{adminCtx.isSuper ? "Semua event" : "Hanya event Anda"} — peran ADMIN berlaku per event, bukan global.</p>
+        </div>
+        {showEventFilter && adminCtx.isSuper && eventOptions.length>0 && (
+          <Select value={filterEvent} onValueChange={setFilterEvent} options={[{value:"",label:"Semua event"},...eventOptions]} />
+        )}
+      </div>
+      <div className="p-4 grid sm:grid-cols-[1fr_220px_auto] gap-2 border-b border-white/[0.06]">
+        <Input value={email} onChange={e=> setEmail(e.target.value)} placeholder="Email pengguna…" />
+        {eventOptions.length>0 && <Select value={addEvent} onValueChange={setAddEvent} options={eventOptions} />}
+        <Button onClick={handleAdd} disabled={saving} className="rounded-full gap-2"><UserPlus className="h-4 w-4"/>{saving ? "Menyimpan…" : "Tambah Admin"}</Button>
+      </div>
+      <div className="max-h-[320px] overflow-y-auto">
+        {members.length===0 ? <div className="p-6 text-center text-sm text-muted-foreground">Belum ada admin event.</div> :
+          members.map((m:any)=> {
+            const u = usersMap[m.user_id] || {}
+            const ev = eventsMap[m.event_id] || {}
+            return (
+              <div key={m.id} className="flex items-center justify-between gap-2 px-4 py-3 border-b border-white/[0.06]/50 text-sm">
+                <div className="min-w-0">
+                  <div className="font-bold truncate">{u.public_name || u.email?.split("@")[0] || "-"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{u.email || ""} • {ev.slug || ev.name || ""}</div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="rounded-full bg-amber-500 text-black px-2.5 py-1 text-xs font-bold">admin</span>
+                  <Button variant="ghost" size="sm" className="rounded-full h-7 w-7 p-0 text-red-600" onClick={()=> handleRemove(m.id)}><Trash2 className="h-3.5 w-3.5"/></Button>
+                </div>
+              </div>
+            )
+          })}
+      </div>
     </div>
   )
 }

@@ -1,16 +1,22 @@
 "use client"
 import { useEffect, useState } from "react"
 import { createBrowserSupabase } from "@/lib/supabase"
+import { useOwnEventFilter } from "@/hooks/useOwnEventFilter"
 import { Podium } from "@/components/competition/Podium"
 export default function AdminKlasemen(){
   const [smp,setSmp]=useState<any[]>([])
   const [sma,setSma]=useState<any[]>([])
   const [isFinal,setIsFinal]=useState(false)
+  const { ready: evReady, isSuper: evSuper, eventIds: ownEvents } = useOwnEventFilter()
   const load = async ()=>{
+    if(!evReady) return
     const s=createBrowserSupabase()
     // list ranking pakai total (online+offline), podium preview online saja
-    const { data: smpData } = await s.from("team_ranking").select("*").eq("category","SMP").order("total_ballots",{ascending:false}).order("online_ballots",{ascending:false})
-    const { data: smaData } = await s.from("team_ranking").select("*").eq("category","SMA").order("total_ballots",{ascending:false}).order("online_ballots",{ascending:false})
+    let qSmp: any = s.from("team_ranking").select("*").eq("category","SMP").order("total_ballots",{ascending:false}).order("online_ballots",{ascending:false})
+    let qSma: any = s.from("team_ranking").select("*").eq("category","SMA").order("total_ballots",{ascending:false}).order("online_ballots",{ascending:false})
+    if(!evSuper && ownEvents.length>0){ qSmp = qSmp.in("event_id", ownEvents); qSma = qSma.in("event_id", ownEvents) }
+    const { data: smpData } = await qSmp
+    const { data: smaData } = await qSma
     if(smpData) setSmp(smpData)
     if(smaData) setSma(smaData)
     // status final (sudah gabung rekap offline): jumlah di podium disembunyikan
@@ -18,7 +24,7 @@ export default function AdminKlasemen(){
     const st = (ev as any)?.state as string
     setIsFinal(st === "RESULT_PUBLISHED" || st === "COMPLETED")
   }
-  useEffect(()=>{ load(); const i=setInterval(load,4000); const sup=createBrowserSupabase(); const ch=sup.channel("klasemen-podium").on("postgres_changes",{event:"*",schema:"public",table:"supports"},()=> load()).subscribe(); return ()=>{ clearInterval(i); sup.removeChannel(ch) } },[])
+  useEffect(()=>{ if(!evReady) return; load(); const i=setInterval(load,4000); const sup=createBrowserSupabase(); const ch=sup.channel("klasemen-podium").on("postgres_changes",{event:"*",schema:"public",table:"supports"},()=> load()).subscribe(); return ()=>{ clearInterval(i); sup.removeChannel(ch) } },[evReady])
   const Section = ({title, list}:{title:string, list:any[]})=> (
     <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur p-4">
       <div className="flex items-center justify-between">

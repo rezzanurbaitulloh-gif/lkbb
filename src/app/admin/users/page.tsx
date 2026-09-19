@@ -85,7 +85,8 @@ export default function Users(){
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader><DialogTitle>Kelola Pengguna</DialogTitle><DialogDescription>{editing?.public_name} — {editing?.email}</DialogDescription></DialogHeader>
           <div className="grid gap-3">
-            <div><label className="text-xs font-bold">Peran Pengguna</label><Select value={role} onValueChange={setRole} options={[{value:"USER",label:"user — User Biasa"},{value:"ADMIN",label:"admin — Akses penuh"}]} /></div>
+            <div><label className="text-xs font-bold">Peran Pengguna</label><Select value={role} onValueChange={setRole} options={[{value:"USER",label:"user — User Biasa"},{value:"ADMIN",label:"admin — Event sendiri"}]} /></div>
+            <p className="-mt-1 text-[11px] text-muted-foreground">Peran ADMIN membutuhkan keanggotaan event — atur di halaman Akses &amp; Admin setelah menyimpan.</p>
             <div>
               <label className="text-xs font-bold">Kata Sandi Baru (opsional)</label>
               <div className="flex gap-2">

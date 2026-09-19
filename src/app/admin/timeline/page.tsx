@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select } from "@/components/ui/select"
 import { AlertDialog } from "@/components/ui/alert-dialog"
 import { createBrowserSupabase } from "@/lib/supabase"
+import { useOwnEventFilter } from "@/hooks/useOwnEventFilter"
 import { useToast } from "@/components/ui/toast"
 import { Pencil, Trash2 } from "lucide-react"
 
@@ -18,8 +19,11 @@ export default function Page(){
   const [selected,setSelected]=useState<Set<string>>(new Set())
   const [saving,setSaving]=useState(false)
   const [form,setForm]=useState<any>({ title:"", date:"", description:"", status:"upcoming", sort_order:1 })
-  const load = ()=>{ const s=createBrowserSupabase(); s.from("timeline_stages").select("*").order("sort_order").then(({data})=> setList(data||[])) }
-  useEffect(()=>{ load() },[])
+  const { ready: evReady, isSuper: evSuper, eventIds: ownEvents } = useOwnEventFilter()
+  const load = ()=>{ if(!evReady) return; const s=createBrowserSupabase(); let tq: any = s.from("timeline_stages").select("*").order("sort_order")
+      if(!evSuper && ownEvents.length>0) tq = tq.in("event_id", ownEvents)
+      tq.then(({data}: any)=> setList(data||[])) }
+  useEffect(()=>{ load() },[evReady])
   const toggleSelect = (id:string)=>{ const n=new Set(selected); if(n.has(id)) n.delete(id); else n.add(id); setSelected(n) }
   const toggleAll = ()=>{ if(selected.size===list.length) setSelected(new Set()); else setSelected(new Set(list.map((i:any)=>i.id))) }
   const handleBulkDelete = async ()=>{ if(selected.size===0) return; for(const id of selected){ await fetch(`/api/admin/crud?table=timeline_stages&id=${id}`, { method:"DELETE" }) } ; toast({ title: `${selected.size} data dihapus`, variant:"success"}); setSelected(new Set()); load() }

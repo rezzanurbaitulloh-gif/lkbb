@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import { getAdminContext } from "@/lib/auth"
+import { rowInScope } from "@/lib/permissions"
 
 async function getUserAndRole() {
   const cookieStore = await cookies()
@@ -25,9 +27,10 @@ async function getUserAndRole() {
 
 export async function POST(req: Request) {
   try {
-    const { user, role } = await getUserAndRole()
+    const { user } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    const gateCtx = await getAdminContext()
+    if (!gateCtx || gateCtx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
     const body = await req.json()
     const { peleton_id, supports, note } = body
@@ -38,17 +41,25 @@ export async function POST(req: Request) {
     if (supports !== Math.floor(supports)) return NextResponse.json({ error: "Supports must be integer" }, { status: 400 })
 
     const service = createServiceSupabase()
-    // Validate peleton
-    const { data: peleton } = await service.from("peletons").select("id").eq("id", peleton_id).single()
+    const ctx = await getAdminContext()
+    if (!ctx || ctx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    // Validate peleton — matriks: hanya tim event sendiri
+    const { data: peleton } = await service.from("peletons").select("id,event_id").eq("id", peleton_id).single()
     if (!peleton) return NextResponse.json({ error: "Peleton not found" }, { status: 404 })
+    if (!rowInScope(ctx, (peleton as any)?.event_id)) {
+      return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+    }
 
-    // Price from DB
-    const { data: event } = await service.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1).single()
+    // Price from DB (competitions event sendiri)
+    let compQ: any = service.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1)
+    if (!ctx.isSuper && ctx.eventIds.length > 0) compQ = compQ.in("event_id", ctx.eventIds)
+    const { data: event } = await compQ.single()
     const offlinePrice = event?.settings?.offline_price ?? 5000
     const amount = Math.abs(supports) * offlinePrice
 
     const transactionId = crypto.randomUUID()
     const { data: inserted, error } = await service.from("supports").insert({
+      event_id: (peleton as any)?.event_id || null,
       peleton_id,
       transaction_id: transactionId,
       amount: supports > 0 ? amount : 0,
@@ -66,7 +77,8 @@ export async function POST(req: Request) {
       action: "offline_recap_add",
       target: peleton_id,
       details: { supports, note, amount, peleton_id },
-    })
+      event_id: (peleton as any)?.event_id || null,
+    } as any)
 
     return NextResponse.json({ ok: true, data: inserted })
   } catch (e: any) {
@@ -75,15 +87,19 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const { user, role } = await getUserAndRole()
+  const { user } = await getUserAndRole()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  const gateCtx = await getAdminContext()
+  if (!gateCtx || gateCtx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const service = createServiceSupabase()
   const url = new URL(req.url)
   const limit = Math.min(100, parseInt(url.searchParams.get("limit")||"50")||50)
   const all = url.searchParams.get("all") === "true"
   // Isolasi: tiap admin lihat hanya offline miliknya, tidak gabung; ?all=true untuk audit semua
+  const ctx2 = await getAdminContext()
   let query = service.from("supports").select("*, peletons(number,name, category)").eq("source", "offline").order("created_at", { ascending: false }).limit(limit)
+  if (!ctx2 || ctx2.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (!ctx2.isSuper) query = query.in("event_id", ctx2.eventIds)
   if (!all) query = query.eq("admin_id", user.id)
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -92,9 +108,10 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { user, role } = await getUserAndRole()
+    const { user } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    const gateCtx = await getAdminContext()
+    if (!gateCtx || gateCtx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     const body = await req.json()
     const { id, supports, note } = body
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
@@ -102,13 +119,19 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Supports must be integer -10000..10000 and !=0" }, { status: 400 })
     }
     const service = createServiceSupabase()
-    const { data: existing } = await service.from("supports").select("id, peleton_id, supports, note, amount, source, admin_id").eq("id", id).eq("source", "offline").single()
+    const { data: existing } = await service.from("supports").select("id, peleton_id, supports, note, amount, source, admin_id, event_id").eq("id", id).eq("source", "offline").single()
     if (!existing) return NextResponse.json({ error: "Offline record not found" }, { status: 404 })
+    const ctx3 = await getAdminContext()
+    if (!ctx3 || ctx3.scope === "none" || !rowInScope(ctx3, (existing as any)?.event_id)) {
+      return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
+    }
     // Isolasi per-admin: hanya pemilik yang boleh ubah
     if ((existing as any).admin_id && (existing as any).admin_id !== user.id) {
       return NextResponse.json({ error: "Forbidden: bukan milik Anda" }, { status: 403 })
     }
-    const { data: event } = await service.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1).single()
+    let compQ2: any = service.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1)
+    if (ctx3!.isSuper === false && ctx3!.eventIds.length > 0) compQ2 = compQ2.in("event_id", ctx3!.eventIds)
+    const { data: event } = await compQ2.single()
     const offlinePrice = event?.settings?.offline_price ?? 5000
     const amount = Math.abs(supports) * offlinePrice
     const { data: updated, error } = await service.from("supports").update({ supports, amount: supports>0 ? amount : 0, note: note ?? existing.note }).eq("id", id).select().single()
@@ -127,9 +150,10 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const { user, role } = await getUserAndRole()
+    const { user } = await getUserAndRole()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    if (!["ADMIN","SUPER_ADMIN"].includes(role || "")) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    const gateCtx = await getAdminContext()
+    if (!gateCtx || gateCtx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     const url = new URL(req.url)
     const id = url.searchParams.get("id")
     const bodyIds = url.searchParams.get("ids")
@@ -147,8 +171,12 @@ export async function DELETE(req: Request) {
     if (ids.length===0) return NextResponse.json({ error: "Missing id(s)" }, { status: 400 })
     const service = createServiceSupabase()
     // Fetch for audit before delete — isolasi per-admin
-    const { data: rows } = await service.from("supports").select("id, peleton_id, supports, note, admin_id").in("id", ids).eq("source","offline")
+    const { data: rows } = await service.from("supports").select("id, peleton_id, supports, note, admin_id, event_id").in("id", ids).eq("source","offline")
     if (!rows || rows.length===0) return NextResponse.json({ error: "No offline records found" }, { status: 404 })
+    const ctx4 = await getAdminContext()
+    if (!ctx4 || ctx4.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    const outScope = (rows as any[]).filter((r: any) => !rowInScope(ctx4, r?.event_id))
+    if (outScope.length > 0) return NextResponse.json({ error: "Forbidden — ada data di luar event Anda" }, { status: 403 })
     // Hanya boleh hapus milik sendiri
     const notOwned = rows.filter((r: any) => r.admin_id && r.admin_id !== user.id)
     if (notOwned.length > 0) return NextResponse.json({ error: "Forbidden: ada data bukan milik Anda" }, { status: 403 })

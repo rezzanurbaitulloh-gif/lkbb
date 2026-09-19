@@ -1,53 +1,32 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { getAdminContext } from "@/lib/auth"
 
-// Status admin milik sendiri — dipakai UI publik untuk menampilkan/menyembunyikan menu ADMIN.
-// Meniru logika proteksi di middleware.ts: SUPER_ADMIN (platform_roles) > profiles.role > event_members.
+// Status admin milik sendiri — dipakai UI untuk menampilkan/menyembunyikan menu
+// sesuai matriks (SUPER_ADMIN semua event, ADMIN hanya event sendiri).
+// Meniru logika proteksi di middleware.ts.
 export async function GET(req: Request) {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll(cookiesToSet) {
-          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
-        },
-      },
-    }
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ admin: false })
+  const ctx = await getAdminContext()
+  if (!ctx) return NextResponse.json({ admin: false })
 
   const service = createServiceSupabase()
-
-  // 1) Super admin platform
+  let events: { id: string; slug: string; name: string }[] = []
   try {
-    const { data } = await service.from("platform_roles").select("user_id").eq("user_id", user.id).maybeSingle()
-    if (data) return NextResponse.json({ admin: true, role: "SUPER_ADMIN" })
-  } catch {}
-
-  // 2) Role global legacy
-  try {
-    const { data: profile } = await service.from("profiles").select("role").eq("id", user.id).single()
-    if (["ADMIN","SUPER_ADMIN"].includes((profile as any)?.role || "")) {
-      return NextResponse.json({ admin: true, role: (profile as any).role })
+    if (ctx.isSuper) {
+      const { data } = await service.from("events").select("id,slug,name").order("created_at", { ascending: true })
+      events = (data as any) || []
+    } else if (ctx.eventIds.length > 0) {
+      const { data } = await service.from("events").select("id,slug,name").in("id", ctx.eventIds)
+      events = (data as any) || []
     }
   } catch {}
 
-  // 3) Admin event (event_members)
-  try {
-    const host = (req.headers as any).get?.("host") || (req.headers as any).get?.("x-forwarded-host") || ""
-    const { resolveEventFromHost } = await import("@/lib/event")
-    const { eventId } = await resolveEventFromHost(host)
-    if (eventId) {
-      const { data } = await service.from("event_members").select("id").eq("event_id", eventId).eq("user_id", user.id).eq("role", "ADMIN").eq("status", "active").maybeSingle()
-      if (data) return NextResponse.json({ admin: true, role: "ADMIN" })
-    }
-  } catch {}
-
-  return NextResponse.json({ admin: false })
+  return NextResponse.json({
+    admin: ctx.scope !== "none",
+    role: ctx.profileRole,
+    isSuper: ctx.isSuper,
+    eventIds: ctx.eventIds,
+    scope: ctx.scope,
+    events,
+  })
 }

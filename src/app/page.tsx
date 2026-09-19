@@ -142,7 +142,7 @@ export default async function HomePage(){
           <PodiumSection smp={teams.filter(p=>p.category==='SMP')} sma={teams.filter(p=>p.category==='SMA')} isPublished={false} variant="provisional" />
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
-        <ParticipantsMini teams={teams} />
+        <ParticipantsMini teams={teams} showCount={showSementara || showFinal} />
         <ResultsTeaser image={teaserImage} />
         {extraSections.filter((s:any)=> {
           const featOrder = cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 0

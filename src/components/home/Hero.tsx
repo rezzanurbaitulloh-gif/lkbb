@@ -51,18 +51,37 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
   const cd = useCountdown(canonicalTarget)
   const showCountdown = true
 
-  // Visual hero: logo resmi LKBB (bukan foto peleton, bukan stock).
-  // Admin tetap bisa override via setting hero.logo_image / CMS.
-  const heroImage = (siteSettings?.["hero.logo_image"] as string) || cmsContent.heroLogoImage || "/assets/brand/lkbb-logo.jpg"
+  // Visual hero: logo resmi LKBB — setting hero.logo_image → branding.logo → logo lokal.
+  const heroImage = (siteSettings?.["hero.logo_image"] as string) || (siteSettings?.["branding.logo"] as string) || cmsContent.heroLogoImage || "/assets/brand/lkbb-logo.jpg"
+
+  // Tanggal & lokasi dari event — bukan hardcode.
+  const eventDateStr = (event?.event_date as string) || null
+  const dateLabel = (()=> {
+    if(!eventDateStr) return null
+    const d = new Date(eventDateStr + "T00:00:00")
+    if(isNaN(d.getTime())) return null
+    const day = String(d.getDate()).padStart(2,"0")
+    const month = d.toLocaleString("en-US", { month: "long" }).toUpperCase()
+    return `${day} ${month} ${d.getFullYear()}`
+  })()
+  const yearLabel = eventDateStr?.slice(0,4) || ""
+  const venueLabel = (()=>{
+    const addr = (siteSettings?.["contact.address"] as string) || event?.settings?.contact?.address || ""
+    if(!addr) return ""
+    const first = addr.split(",")[0].trim()
+    const short = first.replace(/^(SMK Negeri 1|SMKN 1|SMA Negeri 1|SMAN 1|SMP Negeri 1|SMPN 1|MTs Negeri|MTsN)\s+/i, "").trim()
+    return (short || first).toUpperCase()
+  })()
 
   if (cms && cms.is_visible === false) return null
 
-  const statusLabel = isActive ? "VOTING OPEN" : isClosed ? "VOTING CLOSED" : isPublished ? "RESULTS PUBLISHED" : "VOTING OPEN"
+  const statusLabel = isActive ? "VOTING OPEN" : isClosed ? "VOTING CLOSED" : isPublished ? "RESULTS PUBLISHED" : "COMING SOON"
+  const showUnits = cd.isValid && !cd.expired
   const units = [
-    { v: cd.isValid ? String(cd.days).padStart(2,"0") : "12", l: "DAYS" },
-    { v: cd.isValid ? String(cd.hours).padStart(2,"0") : "08", l: "HOURS" },
-    { v: cd.isValid ? String(cd.minutes).padStart(2,"0") : "24", l: "MINUTES" },
-    { v: cd.isValid ? String(cd.seconds).padStart(2,"0") : "17", l: "SECONDS" },
+    { v: String(cd.days).padStart(2,"0"), l: "DAYS" },
+    { v: String(cd.hours).padStart(2,"0"), l: "HOURS" },
+    { v: String(cd.minutes).padStart(2,"0"), l: "MINUTES" },
+    { v: String(cd.seconds).padStart(2,"0"), l: "SECONDS" },
   ]
 
   return (
@@ -87,14 +106,16 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
             <span className="block text-[44px] text-[#D9FF3F] sm:text-[56px] lg:text-[64px]">VOICE.</span>
           </h1>
           <p className="mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0]">
-            Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB 2026.
+            Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB{yearLabel ? ` ${yearLabel}` : ""}.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D9FF3F]/30 bg-[#D9FF3F]/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-[#D9FF3F]">
-              <span className="leading-none">24 OCTOBER 2026<br /><span className="text-[#F2F0E9]/80">KERTOSONO</span></span>
+          {dateLabel && (
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#D9FF3F]/30 bg-[#D9FF3F]/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-[#D9FF3F]">
+                <span className="leading-none">{dateLabel}{venueLabel && (<><br /><span className="text-[#F2F0E9]/80">{venueLabel}</span></>)}</span>
+              </div>
             </div>
-          </div>
+          )}
           <div className="mt-4">
             <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-[#D9FF3F] px-5 py-2.5 text-[11px] font-bold tracking-wide text-black transition-transform hover:scale-[1.02]">
               EXPLORE PARTICIPANTS <span aria-hidden>→</span>
@@ -121,7 +142,7 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
               <span className="h-1.5 w-1.5 rounded-full bg-[#D9FF3F] animate-pulse" /> {statusLabel}
             </div>
             <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-2.5">
-              {units.map(u=> (
+              {showUnits && units.map(u=> (
                 <div key={u.l} className="text-right">
                   <div className="font-display text-[22px] font-bold tabular-nums leading-none text-white">{u.v}</div>
                   <div className="mt-0.5 text-[8px] font-semibold tracking-[0.18em] text-white/50">{u.l}</div>
@@ -130,9 +151,11 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
             </div>
           </div>
 
-          {/* 2026 outline raksasa */}
-          <div className="select-none font-display text-[90px] font-light leading-none tracking-tight text-transparent sm:text-[120px] lg:text-[150px]"
-            style={{ WebkitTextStroke: "1px rgba(242,240,233,0.22)" }}>2026</div>
+          {/* tahun event outline raksasa */}
+          {yearLabel && (
+            <div className="select-none font-display text-[90px] font-light leading-none tracking-tight text-transparent sm:text-[120px] lg:text-[150px]"
+              style={{ WebkitTextStroke: "1px rgba(242,240,233,0.22)" }}>{yearLabel}</div>
+          )}
         </div>
       </div>
     </section>

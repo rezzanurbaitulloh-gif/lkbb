@@ -55,7 +55,7 @@ export function ParticipantsBoard({ smp, sma }: { smp: any[]; sma: any[] }){
                     <div className="mt-3">
                       <div className="font-display text-[13px] font-bold tracking-tight text-[#F2F0E9] truncate">{p.name || p.school}</div>
                       <div className="mt-0.5 font-body text-[11px] font-medium text-[#92918C] truncate">{p.school?.toUpperCase?.() || p.name}</div>
-                      <div className="mt-1 font-body text-[9px] tracking-[0.14em] text-[#92918C]">{p.category} • KERTOSONO</div>
+                      <div className="mt-1 font-body text-[9px] tracking-[0.14em] text-[#92918C]">{p.category}{(p.city ? ` • ${String(p.city).toUpperCase()}` : "")}</div>
                       <Link href={`/dukungan?peleton=${p.slug}`} className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.12em] text-[#D9FF3F] hover:underline">
                         ✦ SUPPORT →
                       </Link>

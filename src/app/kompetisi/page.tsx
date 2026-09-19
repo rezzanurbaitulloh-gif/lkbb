@@ -12,6 +12,34 @@ export const revalidate = 0
 export default async function KompetisiPage(){
   const supabase = await createServerSupabase()
   const { data: judges } = await supabase.from("judges").select("name,role,photo_url").eq("active", true).order("sort_order")
+  // Event + settings dinamis
+  let ev: any = null
+  let settings: Record<string,any> = {}
+  try {
+    const { data } = await supabase.from("competitions").select("*").order("created_at", { ascending: false }).limit(1).single()
+    ev = data
+  } catch {}
+  try {
+    const { data } = await supabase.from("site_settings").select("key,value")
+    for(const r of (data as any)||[]) settings[r.key] = (r as any).value
+  } catch {}
+  const evSettings = (ev as any)?.settings || {}
+  const eventDates = settings["event.dates"] || {}
+  const pelaksanaan = eventDates.pelaksanaan || (ev?.event_date ? new Date(String(ev.event_date)+"T00:00:00").toLocaleDateString("id-ID", { day:"numeric", month:"long", year:"numeric" }) : "")
+  const pendaftaran = eventDates.pendaftaran || ""
+  const address = settings["contact.address"] || evSettings?.contact?.address || ""
+  const organizer = settings["site.organizer"] || "PASKIBRA SMKN 1 KERTOSONO"
+  const waSmp = settings["contact.whatsapp_smp"] || ""
+  const waSma = settings["contact.whatsapp_sma"] || ""
+  const poster = settings["branding.poster"] || "/assets/poster/lkbb-poster.jpg"
+  const tagline = ev?.tagline || settings["site.tagline"] || ""
+  const year = ev?.event_date ? String(ev.event_date).slice(0,4) : ""
+  // Hitung peleton terverifikasi per kategori (dinamis)
+  let smpCount = 0, smaCount = 0
+  try {
+    const { data: pel } = await supabase.from("peletons").select("category").eq("verified", true).eq("active", true)
+    for(const p of (pel as any)||[]) { if(p.category==="SMP") smpCount++; else if(p.category==="SMA") smaCount++ }
+  } catch {}
   // sponsor toggle
   let sponsors: any[] = []
   let sponsorsEnabled = true
@@ -37,7 +65,8 @@ export default async function KompetisiPage(){
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/85 to-transparent" />
           <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-10">
             <Badge className="bg-primary text-black border-primary">TENTANG KOMPETISI</Badge>
-            <h1 className="mt-3 text-[30px] md:text-[44px] font-black tracking-[-0.03em] leading-none">LKBB JAVASOMA<br/><span className="text-primary">THE IMPRESSION</span></h1>
+            <h1 className="mt-3 text-[30px] md:text-[44px] font-black tracking-[-0.03em] leading-none">LKBB {(ev?.subtitle || "JAVASOMA THE IMPRESSION").split(" ")[0]}<br /><span className="text-primary">{(ev?.subtitle || "JAVASOMA THE IMPRESSION").split(" ").slice(1).join(" ")}</span></h1>
+            {tagline && <p className="mt-2 text-xs font-bold tracking-[0.18em] text-muted-foreground">{tagline}</p>}
             <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/tim"><Button className="rounded-full">Lihat Peserta</Button></Link>
               <Link href="/timeline"><Button variant="outline" className="rounded-full bg-white/10 border-white/15 text-white hover:bg-white/15">Lihat Timeline</Button></Link>
@@ -48,8 +77,8 @@ export default async function KompetisiPage(){
         <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-8 space-y-8">
           <section className="grid lg:grid-cols-3 gap-4">
             {[
-              {icon: Calendar, title:"Pelaksanaan", desc:"24 Oktober 2026", sub:"SMKN 1 Kertosono, Nganjuk"},
-              {icon: Users, title:"Kategori", desc:"SMP & SMA / Sederajat", sub:"20 kuota per kategori • 16 anggota/peleton"},
+              {icon: Calendar, title:"Pelaksanaan", desc: pelaksanaan || "-", sub: address || ""},
+              {icon: Users, title:"Kategori", desc:"SMP & SMA / Sederajat", sub:`${smpCount} tim SMP • ${smaCount} tim SMA terverifikasi`},
               {icon: Award, title:"Sistem Penilaian", desc:"PBB + Variasi + Formasi", sub:"Dewan juri kompeten & independen"},
             ].map(item=> (
               <div key={item.title} className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-5">
@@ -65,10 +94,10 @@ export default async function KompetisiPage(){
             <div className="space-y-6">
               <div className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-6">
                 <h2 className="text-[18px] font-black tracking-tight">Tentang Kompetisi</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">LKBB Javasoma The Impression adalah ajang kompetisi ketangkasan baris-berbaris tingkat SMP/MTs & SMA/MA/SMK se-derajat se-Jawa Timur. Kompetisi ini menguji kedisiplinan, kekompakan, dan kreativitas setiap peleton dalam menampilkan gerakan PBB, variasi, dan formasi. Dengan tagline <b className="text-foreground">Astra Dharma Hayuning Budaya</b>, kompetisi ini tidak hanya menilai ketepatan gerakan, tetapi juga menghayati nilai budaya dan kebersamaan.</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground text-pretty">LKBB Javasoma The Impression adalah ajang kompetisi ketangkasan baris-berbaris tingkat SMP/MTs & SMA/MA/SMK se-derajat se-Jawa Timur. Kompetisi ini menguji kedisiplinan, kekompakan, dan kreativitas setiap peleton dalam menampilkan gerakan PBB, variasi, dan formasi. Dengan tagline <b className="text-foreground">{tagline || "ASTRA DHARMA HAYUNING BUDAYA"}</b>, kompetisi ini tidak hanya menilai ketepatan gerakan, tetapi juga menghayati nilai budaya dan kebersamaan.</p>
                 <div className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl bg-white/5 backdrop-blur p-3"><div className="label-ceremonial">Penyelenggara</div><div className="font-bold">PASKIBRA SMKN 1 KERTOSONO</div><div className="text-xs text-muted-foreground">Satria Cengkara</div></div>
-                  <div className="rounded-xl bg-white/5 backdrop-blur p-3"><div className="label-ceremonial">Lokasi</div><div className="font-bold">SMKN 1 KERTOSONO</div><div className="text-xs text-muted-foreground">Kertosono, Nganjuk, Jawa Timur</div></div>
+                  <div className="rounded-xl bg-white/5 backdrop-blur p-3"><div className="label-ceremonial">Penyelenggara</div><div className="font-bold">{organizer}</div></div>
+                  <div className="rounded-xl bg-white/5 backdrop-blur p-3"><div className="label-ceremonial">Lokasi</div><div className="font-bold">{address ? address.split(",")[0] : "-"}</div><div className="text-xs text-muted-foreground">{address || ""}</div></div>
                 </div>
               </div>
 
@@ -121,19 +150,18 @@ export default async function KompetisiPage(){
 
             <div className="space-y-4">
               <div className="rounded-[16px] border border-white/10 overflow-hidden bg-white/5 backdrop-blur">
-                <img src="/assets/poster/lkbb-poster.jpg" alt="Poster LKBB" className="w-full object-cover" />
+                <img src={poster} alt="Poster LKBB" className="w-full object-cover" />
                 <div className="p-4">
-                  <div className="text-sm font-black">Poster Resmi LKBB 2026</div>
-                  <div className="text-xs text-muted-foreground">Pendaftaran Agustus s.d. kuota terpenuhi • IDR 550.000/pasukan</div>
+                  <div className="text-sm font-black">Poster Resmi LKBB{year ? ` ${year}` : ""}</div>
+                  {pendaftaran && <div className="text-xs text-muted-foreground">Pendaftaran {pendaftaran}</div>}
                 </div>
               </div>
               <div className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-5">
                 <h4 className="text-sm font-black">Kontak Pendaftaran</h4>
                 <div className="mt-3 grid gap-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">SMP/MTs</span><span className="font-mono font-bold">0815-7820-2646</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">SMA/SMK/MA</span><span className="font-mono font-bold">0878-6688-2594</span></div>
-                  <div className="hairline my-2" />
-                  <div className="flex justify-between"><span className="text-muted-foreground">Biaya</span><span className="font-bold">Rp550.000 / pasukan</span></div>
+                  {waSmp && <div className="flex justify-between"><span className="text-muted-foreground">SMP/MTs</span><a href={`https://wa.me/${String(waSmp).replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="font-mono font-bold hover:underline">{waSmp}</a></div>}
+                  {waSma && <div className="flex justify-between"><span className="text-muted-foreground">SMA/SMK/MA</span><a href={`https://wa.me/${String(waSma).replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="font-mono font-bold hover:underline">{waSma}</a></div>}
+                  {!waSmp && !waSma && <p className="text-xs text-muted-foreground">Kontak menyusul dari panitia.</p>}
                 </div>
               </div>
             </div>

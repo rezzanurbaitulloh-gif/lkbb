@@ -134,10 +134,10 @@ function CheckoutInner(){
           </div>
           <div className="mt-3 space-y-2">
             {[
-              { k:"va", t:"Virtual Account", s:"BCA • BRI • BNI" },
-              { k:"qris", t:"QRIS", s:"QR" },
-              { k:"ew", t:"E-Wallet", s:"OVO • GoPay • DANA" },
-              { k:"cc", t:"Credit / Debit Card", s:"VISA" },
+              { k:"qris", t:"QRIS", s: trx?.provider ? `via ${trx.provider}` : "Scan QR dari e-wallet / m-banking" },
+              { k:"va", t:"Virtual Account", s: trx?.method && trx.method!=="QRIS" ? String(trx.method) : "Transfer bank" },
+              { k:"ew", t:"E-Wallet", s: "OVO • GoPay • DANA • LinkAja" },
+              { k:"cc", t:"Credit / Debit Card", s: "VISA • Mastercard" },
             ].map(o=> (
               <button key={o.k} onClick={()=> setMethod(o.k)} className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${method===o.k ? "border-[#D9FF3F]/50 bg-[#D9FF3F]/[0.05]" : "border-white/[0.08] hover:border-white/20"}`}>
                 <span className="flex items-center gap-3">
@@ -148,6 +148,7 @@ function CheckoutInner(){
               </button>
             ))}
           </div>
+          <p className="mt-2 text-center text-[10px] leading-relaxed text-[#92918C]">Kanal aktual mengikuti invoice {trx?.provider || "Xendit"}{trx?.method ? ` • ${trx.method}` : ""}. Pilihan di atas preferensi tampilan.</p>
           {qrDataUrl ? (
             <div className="mt-3 rounded-xl border border-white/[0.08] bg-white p-3">
               <img src={qrDataUrl} alt="QRIS" className="mx-auto h-[180px] w-[180px] object-contain" />

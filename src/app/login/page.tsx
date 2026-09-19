@@ -43,7 +43,7 @@ export default function LoginPage(){
             </p>
             <div className="mt-8 hidden lg:block hairline" />
             <div className="mt-6 hidden lg:block text-xs leading-relaxed text-muted-foreground max-w-[320px]">
-              Admin: SACENGMIN / Saceng1! — Demo: jap / 121212 — User baru daftar dengan Nama unik + Password.
+              Masuk dengan Nama akun + Password yang didaftarkan. Akun baru bisa daftar dengan Nama unik.
             </div>
           </div>
 
@@ -69,11 +69,6 @@ export default function LoginPage(){
                 <Link href="/register" className="font-semibold text-primary hover:underline">Daftar →</Link>
               </div>
             </form>
-            <div className="hairline my-6" />
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="rounded-none border-border" type="button" onClick={()=>{setName("SACENGMIN"); setPassword("Saceng1!")}}>Isi Admin</Button>
-              <Button variant="outline" className="rounded-none border-border" type="button" onClick={()=>{setName("jap"); setPassword("121212")}}>Isi Demo</Button>
-            </div>
           </div>
         </div>
       </main>

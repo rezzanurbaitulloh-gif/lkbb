@@ -80,17 +80,17 @@ export default function SubProfile(){
 
           {isNotif && (
             <div className="mt-4 space-y-2">
-              {[
-                {t:"Dukungan berhasil", d:"Dukungan 50 ballot untuk SMKN 1 KERTOSONO berhasil tercatat", time:"2 jam lalu"},
-                {t:"Voting dibuka", d:"Voting peleton terfavorit telah dibuka", time:"1 hari lalu"},
-                {t:"Pengumuman", d:"Technical meeting 3 Oktober 2026 wajib hadir", time:"3 hari lalu"},
-              ].map((n,i)=> (
-                <div key={i} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
-                  <div className="text-sm font-bold">{n.t}</div>
-                  <div className="text-sm text-muted-foreground">{n.d}</div>
-                  <div className="text-xs text-muted-foreground">{n.time}</div>
-                </div>
-              ))}
+              {transactions.length===0 ? (
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">Belum ada notifikasi. Notifikasi muncul dari aktivitas dukunganmu.</div>
+              ) : (
+                transactions.slice(0,10).map((tx:any)=> (
+                  <div key={tx.id} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+                    <div className="text-sm font-bold">{tx.status==="Success" ? "Dukungan berhasil" : `Dukungan ${String(tx.status||"").toLowerCase()}`}</div>
+                    <div className="text-sm text-muted-foreground">Dukungan {tx.supports} ballot untuk {tx.peletons?.name || tx.peletonName || "peleton"} {tx.status==="Success" ? "berhasil tercatat" : "menunggu pembayaran"}</div>
+                    <div className="text-xs text-muted-foreground">{tx.created_at ? new Date(tx.created_at).toLocaleString("id-ID") : ""}</div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

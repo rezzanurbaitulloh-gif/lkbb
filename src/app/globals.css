@@ -207,6 +207,19 @@ html:not(.dark) { --background: #0A0A09; --foreground: #F2F0E9; --border: #29292
   .reveal-line > * { transform: translateY(100%); animation: lineReveal 700ms var(--ease-editorial) forwards; }
   @keyframes lineReveal { to { transform: translateY(0); } }
 
+  /* Podium meriah 2D — tetap satu tema (gelap + lime) */
+  .podium-rise { opacity: 0; transform: translateY(28px); animation: podiumRise 700ms var(--ease-editorial) forwards; }
+  @keyframes podiumRise { to { opacity: 1; transform: translateY(0); } }
+
+  .podium-float { animation: podiumFloat 3.2s ease-in-out infinite; }
+  @keyframes podiumFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  .podium-shimmer { background: linear-gradient(105deg, transparent 40%, rgba(217,255,63,0.16) 50%, transparent 60%); background-size: 220% 100%; animation: podiumShimmer 2.8s ease-in-out infinite; }
+  @keyframes podiumShimmer { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+
+  .podium-confetti { animation-name: podiumFall; animation-timing-function: linear; animation-iteration-count: infinite; }
+  @keyframes podiumFall { to { transform: translateY(110vh) rotate(340deg); } }
+
   .clip-reveal { clip-path: inset(0 100% 0 0); animation: clipReveal 900ms var(--ease-editorial) forwards; }
   @keyframes clipReveal { to { clip-path: inset(0 0 0 0); } }
 

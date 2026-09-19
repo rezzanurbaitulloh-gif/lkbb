@@ -139,7 +139,15 @@ export default async function HomePage(){
         {/* Podium end-user: hanya saat voting ditutup (sementara, online saja).
             Saat hasil final (sudah gabung rekap offline): podium disembunyikan. */}
         {(isVotingClosed) && showPodiumViaCms && (smpPodium.length>0 || smaPodium.length>0) && (
-          <PodiumSection smp={teams.filter(p=>p.category==='SMP')} sma={teams.filter(p=>p.category==='SMA')} isPublished={false} variant="provisional" />
+          <PodiumSection
+            smp={teams.filter(p=>p.category==='SMP')}
+            sma={teams.filter(p=>p.category==='SMA')}
+            isPublished={false}
+            variant="provisional"
+            eventTitle={ev?.subtitle || "JAVASOMA"}
+            eventYear={ev?.event_date ? String(ev.event_date).slice(0,4) : ""}
+            tagline={ev?.tagline || ""}
+          />
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
         <ParticipantsMini teams={teams} showCount={showSementara || showFinal} />

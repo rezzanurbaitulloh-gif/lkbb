@@ -127,9 +127,6 @@ export default async function HomePage(){
   const showSementara = isVotingClosed
   const showFinal = isPublished
 
-  // Logo teaser: dari pengaturan admin (dinamis) — hero.logo_image → branding.logo → logo lokal.
-  const teaserLogo = (siteSettings?.["hero.logo_image"] as string) || (siteSettings?.["branding.logo"] as string) || "/assets/brand/lkbb-logo.jpg"
-
   // Featured & podium dapat di-hide via CMS visibility
   const showFeatured = !cmsSections.find((s:any)=> s.key==="featured") || cmsSections.find((s:any)=> s.key==="featured")?.is_visible !== false
   const showPodiumViaCms = !cmsSections.find((s:any)=> s.key==="podium") || cmsSections.find((s:any)=> s.key==="podium")?.is_visible !== false
@@ -160,7 +157,7 @@ export default async function HomePage(){
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
         <ParticipantsMini teams={teams} showCount={showSementara || showFinal} />
-        <ResultsTeaser image={teaserLogo} />
+        <ResultsTeaser />
         {extraSections.filter((s:any)=> {
           const featOrder = cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 0
           return s.sort_order > featOrder

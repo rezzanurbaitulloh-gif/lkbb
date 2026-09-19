@@ -49,22 +49,14 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
   )
 }
 
-export function ResultsTeaser({ image }: { image?: string | null }){
-  // Visual: logo resmi LKBB (dinamis via pengaturan admin) — bukan foto peleton.
-  const src = (typeof image === "string" && image && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(image)) ? image : "/assets/brand/lkbb-logo.jpg"
+export function ResultsTeaser(){
+  // Teks murni tanpa border dan tanpa kartu gambar.
   return (
-    <section className="border border-white/[0.08] bg-[#0A0A09]">
-      <div className="mx-auto grid max-w-[1280px] gap-0 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_1fr]">
-        <div className="flex flex-col justify-center rounded-l-2xl border border-white/[0.08] bg-[#111110] p-8">
-          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">HASIL AKHIR</div>
-          <h2 className="mt-2 font-display text-[30px] font-bold leading-[0.95]">MASIH<br />DIRAHASIAKAN.</h2>
-          <p className="mt-3 max-w-[280px] text-[12px] leading-relaxed text-[#92918C]">Hasil final akan diumumkan setelah acara selesai.</p>
-          <div className="mt-4 text-[16px] text-[#D9FF3F]">✳</div>
-        </div>
-        <div className="relative min-h-[220px] overflow-hidden rounded-r-2xl border border-white/[0.08]">
-          <img src={src} alt="Peleton LKBB" className="absolute inset-0 h-full w-full object-cover grayscale" />
-          <div className="absolute inset-0 bg-black/45" />
-        </div>
+    <section className="bg-[#0A0A09]">
+      <div className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 lg:py-14">
+        <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">HASIL AKHIR</div>
+        <h2 className="mt-2 font-display text-[30px] font-bold leading-[0.95] sm:text-[40px]">MASIH<br />DIRAHASIAKAN.</h2>
+        <p className="mt-3 max-w-[320px] text-[12px] leading-relaxed text-[#92918C]">Hasil final akan diumumkan setelah acara selesai.</p>
       </div>
     </section>
   )

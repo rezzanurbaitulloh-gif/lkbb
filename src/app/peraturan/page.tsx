@@ -1,17 +1,29 @@
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
+import { createServerSupabase } from "@/lib/supabase"
 
-const sections = [
+export const revalidate = 0
+
+export default async function PeraturanPage(){
+  let onlinePrice = 3000, offlinePrice = 5000
+  try {
+    const supabase = await createServerSupabase()
+    const { data } = await supabase.from("competitions").select("settings").order("created_at", { ascending: false }).limit(1).single()
+    const s = (data as any)?.settings || {}
+    if(Number(s.online_price) > 0) onlinePrice = Number(s.online_price)
+    if(Number(s.offline_price) > 0) offlinePrice = Number(s.offline_price)
+  } catch {}
+
+  const sections = [
   { title:"Ketentuan Umum", items:["Peserta adalah siswa aktif SMP/MTs & SMA/MA/SMK se-Jawa Timur","Satu peleton terdiri dari 15 anggota + 1 Danton (total 16)","Pakaian seragam ditentukan panitia, atribut tambahan diperbolehkan","Keputusan juri bersifat mutlak dan tidak dapat diganggu gugat"]},
   { title:"Ketentuan Peserta", items:["Membawa surat tugas dari sekolah","Registrasi ulang H-1 pelaksanaan","Wajib hadir Technical Meeting 3 Oktober 2026","Terlambat lebih dari 15 menit dianggap mengundurkan diri"]},
   { title:"Ketentuan Kompetisi", items:["Durasi penampilan maksimal 12 menit","Gerakan PBB mengacu pada Peraturan Baris-Berbaris TNI","Variasi dan formasi dinilai kreativitas & kekompakan","Dilarang membawa alat berbahaya"]},
-  { title:"Ketentuan Dukungan", items:["Dukungan via ballot online Rp3.000 / offline Rp5.000","Dukungan hanya tercatat setelah pembayaran berhasil","Dukungan tidak dapat dikembalikan","Hanya ranking yang ditampilkan ke publik"]},
-  { title:"Diskualifikasi", items:["Memalsukan data peserta","Melakukan kecurangan voting/payment","Bersikap tidak sportif kepada juri/peserta lain","Melanggar norma kesopanan"]},
+  { title:"Ketentuan Dukungan", items:[`Dukungan via suara online Rp${onlinePrice.toLocaleString("id-ID")} / offline Rp${offlinePrice.toLocaleString("id-ID")}`,"Dukungan hanya tercatat setelah pembayaran berhasil","Dukungan tidak dapat dikembalikan","Hanya peringkat yang ditampilkan ke publik"]},
+  { title:"Diskualifikasi", items:["Memalsukan data peserta","Melakukan kecurangan dukungan/pembayaran","Bersikap tidak sportif kepada juri/peserta lain","Melanggar norma kesopanan"]},
   { title:"Hasil & Pengumuman", items:["Rekapitulasi online + offline oleh panitia","Hasil final dipublikasikan 26 Oktober 2026","Protes diajukan maksimal 1x24 jam setelah pengumuman"]},
 ]
 
-export default function PeraturanPage(){
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

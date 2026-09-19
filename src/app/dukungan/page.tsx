@@ -47,7 +47,7 @@ function DukunganInner(){
   if(!peleton) return <div className="p-8 text-center text-sm text-[#92918C]">Memuat peleton...</div>
 
   const onlinePrice = event?.settings?.online_price ?? 3000
-  // Preset ballot dari settings event (dinamis) — fallback bila event belum termuat.
+  // Preset jumlah dukungan dari pengaturan event (dinamis) — fallback bila event belum termuat.
   const presets: number[] = Array.isArray(event?.settings?.ballot_presets) && event.settings.ballot_presets.length>0
     ? event.settings.ballot_presets.map(Number).filter((n:number)=> n>0).slice(0,4)
     : [10,50,100]
@@ -58,7 +58,7 @@ function DukunganInner(){
 
   const handlePay = async ()=>{
     if(loading) return
-    if(isClosed){ setError("Voting ditutup"); return }
+    if(isClosed){ setError("Dukungan ditutup"); return }
     if(!currentUser){ router.push(`/login?redirect=${encodeURIComponent(`/dukungan?peleton=${peleton.slug}`)}`); return }
     const safeQty = Math.max(1, Math.min(10000, Math.floor(Number(qty)||1)))
     setLoading(true); setError("")
@@ -90,31 +90,31 @@ function DukunganInner(){
             <div className="text-[10px] tracking-[0.14em] text-white/60">{peleton.category}{peleton.city ? ` • ${String(peleton.city).toUpperCase()}` : ""}</div>
           </div>
         </div>
-        {/* kanan: CHOOSE YOUR BALLOT plek PNG */}
+        {/* kanan: kartu pilih dukungan */}
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
           <div className="pointer-events-none absolute -right-2 -top-4 select-none font-display text-[110px] font-light leading-none text-transparent" style={{ WebkitTextStroke: "1px rgba(242,240,233,0.18)" }}>02</div>
-          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ SUPPORT</div>
-          <h2 className="mt-2 font-display text-[26px] font-bold leading-[0.95] tracking-tight">CHOOSE YOUR<br /><span className="text-[#D9FF3F]">BALLOT.</span></h2>
+          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ DUKUNGAN</div>
+          <h2 className="mt-2 font-display text-[26px] font-bold leading-[0.95] tracking-tight">TENTUKAN<br /><span className="text-[#D9FF3F]">DUKUNGANMU.</span></h2>
           <div className={`mt-5 grid gap-2 ${presets.length>3 ? "grid-cols-4" : "grid-cols-3"}`}>
             {presets.map(n=> (
               <button key={n} onClick={()=>{setQty(n); setCustom(false)}} className={`h-11 rounded-lg border text-[13px] font-bold transition-colors ${qty===n&&!custom ? "border-[#D9FF3F] bg-[#D9FF3F]/10 text-[#D9FF3F]" : "border-white/[0.08] hover:border-white/20"}`}>{n}</button>
             ))}
           </div>
-          <button onClick={()=> setCustom(!custom)} className="mt-2 h-10 w-full rounded-lg border border-white/[0.08] text-[10px] font-bold tracking-[0.16em] text-[#92918C] hover:text-white">CUSTOM</button>
+          <button onClick={()=> setCustom(!custom)} className="mt-2 h-10 w-full rounded-lg border border-white/[0.08] text-[10px] font-bold tracking-[0.16em] text-[#92918C] hover:text-white">JUMLAH LAIN</button>
           {custom && (
             <input type="number" min={1} max={10000} value={qty} onChange={e=> setQty(Number(e.target.value))} className="mt-2 h-10 w-full rounded-lg border border-[#D9FF3F]/40 bg-black/40 px-3 text-sm font-bold tabular-nums focus:outline-none" />
           )}
           <div className="mt-5 rounded-xl border border-white/[0.08] bg-black/30 p-4">
             <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">TOTAL</div>
-            <div className="mt-1 text-[13px] font-bold tabular-nums">{qty} BALLOTS</div>
-            <div className="text-[11px] text-[#92918C] tabular-nums">Rp{onlinePrice.toLocaleString("id-ID")} / ballot</div>
+            <div className="mt-1 text-[13px] font-bold tabular-nums">{qty} SUARA</div>
+            <div className="text-[11px] text-[#92918C] tabular-nums">Rp{onlinePrice.toLocaleString("id-ID")} / suara</div>
             <div className="text-[15px] font-bold tabular-nums">Rp{total.toLocaleString("id-ID")}</div>
           </div>
           {error && <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">{error}</div>}
           <button onClick={handlePay} disabled={loading} className="mt-4 grid h-11 w-full place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold tracking-wide text-black hover:brightness-105 disabled:opacity-60">
-            {loading ? "Memproses..." : "CONTINUE →"}
+            {loading ? "Memproses..." : "LANJUT →"}
           </button>
-          <button onClick={()=> router.back()} className="mt-3 w-full text-center text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">← BACK</button>
+          <button onClick={()=> router.back()} className="mt-3 w-full text-center text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">← KEMBALI</button>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { SocialIcon, socialEntries } from "@/components/ui/SocialIcons"
 
 export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } = {}){
   const [dynamic, setDynamic]=useState<Record<string,any>>(siteSettings||{})
@@ -13,12 +14,8 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
     fetch("/api/sponsors").then(r=> r.json()).then(j=> { if(j.enabled) setSponsors(j.sponsors||[]) }).catch(()=>{})
   },[siteSettings])
 
-  const siteDesc = (dynamic["site.description"] as string) || "One Event. One Voice."
-  const socials = [
-    { k:"IG", label:"Instagram", url: dynamic["social.instagram"] as string },
-    { k:"YT", label:"Youtube", url: dynamic["social.youtube"] as string },
-    { k:"TT", label:"Tiktok", url: dynamic["social.tiktok"] as string },
-  ].filter(s=> typeof s.url === "string" && s.url.length>0)
+  const siteDesc = (dynamic["site.description"] as string) || "Satu Event. Satu Suara."
+  const socials = socialEntries(dynamic)
   const year = new Date().getFullYear()
 
   return (
@@ -30,7 +27,9 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
           {socials.length>0 && (
             <div className="mt-4 flex gap-2">
               {socials.map(s=> (
-                <a key={s.k} href={s.url} target="_blank" rel="noreferrer" aria-label={s.label} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-[11px] text-[#F2F0E9] hover:bg-white/5">{s.k}</a>
+                <a key={s.key} href={s.url} target="_blank" rel="noreferrer" aria-label={s.label} title={s.label} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-[#F2F0E9] hover:border-[#D9FF3F]/50 hover:text-[#D9FF3F]">
+                  <SocialIcon name={s.key} className="h-4 w-4" />
+                </a>
               ))}
             </div>
           )}
@@ -38,16 +37,16 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
         <div>
           <div className="meta-label">Menu</div>
           <ul className="mt-3 space-y-2 font-body text-[12px] text-[#92918C]">
+            <li><Link href="/" className="hover:text-[#F2F0E9]">Beranda</Link></li>
+            <li><Link href="/tim" className="hover:text-[#F2F0E9]">Tim</Link></li>
             <li><Link href="/kompetisi" className="hover:text-[#F2F0E9]">Event</Link></li>
-            <li><Link href="/tim" className="hover:text-[#F2F0E9]">Participants</Link></li>
-            <li><Link href="/dukungan" className="hover:text-[#F2F0E9]">Voting</Link></li>
-            <li><Link href="/profile" className="hover:text-[#F2F0E9]">Results</Link></li>
+            <li><Link href="/profile" className="hover:text-[#F2F0E9]">Profil</Link></li>
           </ul>
         </div>
         <div>
           {sponsors.length>0 ? (
             <>
-              <div className="meta-label">Supported by</div>
+              <div className="meta-label">Didukung oleh</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {sponsors.slice(0,6).map((s:any)=> (
                   s.logo_url && /^https?:\/\//.test(s.logo_url) ? (
@@ -59,7 +58,7 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
               </div>
             </>
           ) : null}
-          <p className="mt-4 font-body text-[11px] leading-relaxed text-[#92918C]">Semarak Dirgahayu Talenta Generasi.<br />© {year} LKBB. All rights reserved.</p>
+          <p className="mt-4 font-body text-[11px] leading-relaxed text-[#92918C]">Semarak Dirgahayu Talenta Generasi.<br />© {year} LKBB. Hak cipta dilindungi.</p>
         </div>
       </div>
     </footer>

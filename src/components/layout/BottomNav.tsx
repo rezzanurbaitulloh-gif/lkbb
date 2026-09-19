@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation"
 import { Home, Users, Trophy, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// 4 MENU UTAMA — plek PNG mobile: HOME / PARTICIPANTS / EVENT / PROFILE
+// 4 MENU UTAMA: Beranda / Tim / Event / Profil
 const items = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/tim", label: "Participants", icon: Users },
+  { href: "/", label: "Beranda", icon: Home },
+  { href: "/tim", label: "Tim", icon: Users },
   { href: "/kompetisi", label: "Event", icon: Trophy },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/profile", label: "Profil", icon: User },
 ]
 
 export function BottomNav(){

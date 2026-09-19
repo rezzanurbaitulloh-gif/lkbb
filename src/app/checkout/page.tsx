@@ -87,7 +87,7 @@ function CheckoutInner(){
   const qty = trx ? String(trx.supports) : (sp.get("qty") || "75")
   const total = trx ? Number(trx.amount) : 225000
 
-  // SUCCESS — plek PNG: SUPPORT RECEIVED
+  // SUCCESS — DUKUNGAN DITERIMA
   if(status==="success"){
     return (
       <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6">
@@ -97,14 +97,14 @@ function CheckoutInner(){
             <div className="absolute inset-0 bg-black/55" />
             <div className="relative flex h-full min-h-[420px] flex-col items-center justify-center p-8 text-center">
               <div className="grid h-14 w-14 place-items-center rounded-full border border-[#D9FF3F] text-[22px] text-[#D9FF3F]">✓</div>
-              <h2 className="mt-4 font-display text-[28px] font-bold leading-[0.95]">SUPPORT<br /><span className="text-[#D9FF3F]">RECEIVED.</span></h2>
-              <p className="mt-2 text-[12px] text-white/70">Your voice has been counted.</p>
-              <Link href="/tim" className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-[11px] font-bold tracking-wide hover:bg-white/10">BACK TO EVENT →</Link>
+              <h2 className="mt-4 font-display text-[28px] font-bold leading-[0.95]">DUKUNGAN<br /><span className="text-[#D9FF3F]">DITERIMA.</span></h2>
+              <p className="mt-2 text-[12px] text-white/70">Suaramu sudah tercatat.</p>
+              <Link href="/tim" className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-[11px] font-bold tracking-wide hover:bg-white/10">KEMBALI KE EVENT →</Link>
             </div>
           </div>
           <div className="rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
-            <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PAYMENT</div>
-            <div className="mt-2 text-[13px] font-bold">{qty} BALLOTS • Rp{Number(total).toLocaleString("id-ID")}</div>
+            <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PEMBAYARAN</div>
+            <div className="mt-2 text-[13px] font-bold">{qty} SUARA • Rp{Number(total).toLocaleString("id-ID")}</div>
             <div className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">Pembayaran terverifikasi. Ballot masuk.</div>
             <Link href="/profile/dukungan" className="mt-4 grid h-11 place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold text-black">LIHAT TRANSAKSI</Link>
           </div>
@@ -113,7 +113,7 @@ function CheckoutInner(){
     )
   }
 
-  // PAYMENT — plek PNG: Complete Your Payment
+  // PAYMENT — Selesaikan Pembayaran
   return (
     <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6">
       <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
@@ -122,22 +122,22 @@ function CheckoutInner(){
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4">
             <div className="font-display text-[15px] font-bold text-white">{p.name}</div>
-            <div className="text-[10px] tracking-[0.14em] text-white/60">{qty} BALLOTS • Rp{Number(total).toLocaleString("id-ID")}</div>
+            <div className="text-[10px] tracking-[0.14em] text-white/60">{qty} SUARA • Rp{Number(total).toLocaleString("id-ID")}</div>
           </div>
         </div>
         <div className="rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
-          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PAYMENT</div>
-          <h2 className="mt-2 font-display text-[18px] font-bold">Complete Your Payment</h2>
+          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ PEMBAYARAN</div>
+          <h2 className="mt-2 font-display text-[18px] font-bold">Selesaikan Pembayaranmu</h2>
           <div className="mt-4 flex items-center justify-between rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3">
-            <span className="text-[11px] text-[#92918C]">Total Amount</span>
+            <span className="text-[11px] text-[#92918C]">Total Bayar</span>
             <span className="text-[13px] font-bold tabular-nums">Rp{Number(total).toLocaleString("id-ID")}</span>
           </div>
           <div className="mt-3 space-y-2">
             {[
-              { k:"qris", t:"QRIS", s: trx?.provider ? `via ${trx.provider}` : "Scan QR dari e-wallet / m-banking" },
-              { k:"va", t:"Virtual Account", s: trx?.method && trx.method!=="QRIS" ? String(trx.method) : "Transfer bank" },
-              { k:"ew", t:"E-Wallet", s: "OVO • GoPay • DANA • LinkAja" },
-              { k:"cc", t:"Credit / Debit Card", s: "VISA • Mastercard" },
+              { k:"qris", t:"QRIS", s: trx?.provider ? `via ${trx.provider}` : "Pindai QR dari dompet digital / m-banking" },
+              { k:"va", t:"Akun Virtual", s: trx?.method && trx.method!=="QRIS" ? String(trx.method) : "Transfer bank" },
+              { k:"ew", t:"Dompet Digital", s: "OVO • GoPay • DANA • LinkAja" },
+              { k:"cc", t:"Kartu Kredit / Debit", s: "VISA • Mastercard" },
             ].map(o=> (
               <button key={o.k} onClick={()=> setMethod(o.k)} className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${method===o.k ? "border-[#D9FF3F]/50 bg-[#D9FF3F]/[0.05]" : "border-white/[0.08] hover:border-white/20"}`}>
                 <span className="flex items-center gap-3">
@@ -157,11 +157,11 @@ function CheckoutInner(){
             <p className="mt-3 text-center text-[11px] text-[#92918C]">QR / VA muncul setelah metode dipilih{ id ? "" : " — buat transaksi dulu via Dukungan" }.</p>
           )}
           <button onClick={handleCheckStatus} disabled={polling || !id} className="mt-4 grid h-11 w-full place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold text-black hover:brightness-105 disabled:opacity-50">
-            {polling ? "Memeriksa..." : "PAY NOW"}
+            {polling ? "Memeriksa..." : "BAYAR SEKARANG"}
           </button>
           {!id && <Link href={`/dukungan?peleton=${slug||""}`} className="mt-2 grid h-11 w-full place-items-center rounded-full border border-white/15 text-[11px] font-bold">BUAT TRANSAKSI DULU</Link>}
-          {id && <button onClick={handleSimulate} disabled={simulating} className="mt-2 h-9 w-full rounded-full border border-dashed border-white/15 text-[11px] font-bold text-[#92918C]">{simulating ? "Mensimulasikan..." : "Simulasi Bayar (Sandbox)"}</button>}
-          <button onClick={()=> history.back()} className="mt-3 w-full text-center text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">→ BACK</button>
+          {id && <button onClick={handleSimulate} disabled={simulating} className="mt-2 h-9 w-full rounded-full border border-dashed border-white/15 text-[11px] font-bold text-[#92918C]">{simulating ? "Mensimulasikan..." : "Simulasi Bayar (Uji Coba)"}</button>}
+          <button onClick={()=> history.back()} className="mt-3 w-full text-center text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">→ KEMBALI</button>
         </div>
       </div>
     </div>

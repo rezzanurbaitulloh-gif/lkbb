@@ -10,6 +10,19 @@ export default async function TimelinePage(){
   const supabase = await createServerSupabase()
   const { data } = await supabase.from("timeline_stages").select("*").order("sort_order")
   const timelineStages = data || []
+  let ev: any = null
+  try {
+    const { data: e } = await supabase.from("competitions").select("state,voting_start,voting_end,event_date").order("created_at", { ascending: false }).limit(1).single()
+    ev = e
+  } catch {}
+  const state = (ev?.state as string) || ""
+  const stateLabel = state==="ACTIVE"||state==="VOTING_OPEN" ? "DUKUNGAN DIBUKA" : state==="VOTING_CLOSED" ? "DUKUNGAN DITUTUP" : state==="RESULT_PUBLISHED" ? "HASIL DIUMUMKAN" : state==="NOT_STARTED" ? "SEGERA DATANG" : "JADWAL KOMPETISI"
+  const fmtDate = (iso: string|null)=>{
+    if(!iso) return ""
+    const d = new Date(iso)
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString("id-ID", { day:"numeric", month:"long", year:"numeric" })
+  }
+  const votingRange = [fmtDate(ev?.voting_start), fmtDate(ev?.voting_end)].filter(Boolean).join(" hingga ")
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -17,7 +30,7 @@ export default async function TimelinePage(){
         <div className="border-b border-white/10 bg-[#09090b] text-white">
           <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-8">
             <div className="label-gold text-white/60">Jadwal Kompetisi</div>
-            <h1 className="mt-2 text-[30px] font-black tracking-[-0.03em] leading-none">TIMELINE</h1>
+            <h1 className="mt-2 text-[30px] font-black tracking-[-0.03em] leading-none">LINIMASA</h1>
           </div>
         </div>
 
@@ -52,8 +65,8 @@ export default async function TimelinePage(){
 
           <div className="mt-8 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-5">
             <h3 className="text-sm font-black">Status Saat Ini</h3>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-black"><Clock className="h-3.5 w-3.5"/> VOTING BERLANGSUNG</div>
-            <p className="mt-2 text-sm text-muted-foreground">Voting peleton terfavorit dibuka 1 September 2026 hingga 24 Oktober 2026. Dukung peleton favoritmu sekarang.</p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-black"><Clock className="h-3.5 w-3.5"/> {stateLabel}</div>
+            {votingRange && <p className="mt-2 text-sm text-muted-foreground">Dukungan untuk peleton terfavorit dibuka {votingRange}. Dukung peleton favoritmu sekarang.</p>}
           </div>
         </div>
       </main>

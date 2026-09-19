@@ -111,7 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       // Provide friendlier message, especially for name-based login
       if (error.message.includes("Invalid login credentials")) {
-        return { error: "Nama atau password salah." }
+        return { error: "Nama atau kata sandi salah." }
       }
       return { error: error.message }
     }

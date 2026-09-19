@@ -20,9 +20,9 @@ export default function RegisterPage(){
   const router=useRouter()
   const onSubmit= async (e:React.FormEvent)=>{
     e.preventDefault()
-    if(!name || !password){ setErr("Nama dan password wajib diisi"); return}
+    if(!name || !password){ setErr("Nama dan kata sandi wajib diisi"); return}
     if(name.trim().length < 3){ setErr("Nama minimal 3 karakter"); return}
-    if(password.length<6){ setErr("Password minimal 6 karakter"); return}
+    if(password.length<6){ setErr("Kata sandi minimal 6 karakter"); return}
     setErr(""); setLoading(true)
     const res = await signUp(name.trim(), password)
     setLoading(false)
@@ -39,14 +39,14 @@ export default function RegisterPage(){
           <form onSubmit={onSubmit} className="mt-6 grid gap-3">
             <div><label className="text-xs font-bold">Nama <span className="text-muted-foreground font-normal">(unik, 3-30 karakter)</span></label><Input value={name} onChange={e=>setName(e.target.value)} placeholder="Contoh: Reja123" autoComplete="username" /></div>
             <div>
-              <label className="text-xs font-bold">Password</label>
+              <label className="text-xs font-bold">Kata Sandi</label>
               <div className="relative">
                 <Input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Minimal 6 karakter" type={showPass ? "text" : "password"} className="pr-10" autoComplete="new-password" />
                 <button type="button" onClick={()=> setShowPass(!showPass)} className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 grid place-items-center rounded-full hover:bg-white/5 backdrop-blur text-muted-foreground">
                   {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">Nama tidak boleh sama dengan user lain.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Nama tidak boleh sama dengan pengguna lain.</p>
             </div>
             {err && <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-2.5 text-xs text-red-600">{err}</div>}
             <Button type="submit" disabled={loading} className="rounded-full h-11 w-full">{loading?"Mendaftar…":"Daftar"}</Button>

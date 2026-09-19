@@ -10,7 +10,7 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
     <section className="border border-white/[0.08] bg-[#0A0A09]">
       <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[15px] font-bold tracking-tight">THE PARTICIPANTS</h2>
+          <h2 className="font-display text-[15px] font-bold tracking-tight">PARA PESERTA</h2>
           <div className="flex items-center gap-1 rounded-full border border-white/[0.08] p-1">
             {(["SMA","SMP"] as const).map(t=> (
               <button key={t} onClick={()=> setTab(t)}
@@ -33,7 +33,7 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
                   <span className="block truncate text-[10px] tracking-[0.12em] text-[#92918C]">{p.school || p.category}</span>
                 </span>
                 {showCount && count!=null ? (
-                  <span className="text-[12px] font-bold tabular-nums text-[#F2F0E9]">{Number(count).toLocaleString("id-ID")}</span>
+                  <span className="text-[12px] font-bold tabular-nums text-[#F2F0E9]">{Number(count).toLocaleString("id-ID")} suara</span>
                 ) : (
                   <span className="text-[11px] font-bold tabular-nums text-[#92918C]">#{String(p.number||"").padStart(2,"0")}</span>
                 )}
@@ -42,7 +42,7 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
           })}
         </div>
         <div className="mt-2 text-right">
-          <Link href="/tim" className="text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">VIEW ALL →</Link>
+          <Link href="/tim" className="text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white">LIHAT SEMUA →</Link>
         </div>
       </div>
     </section>
@@ -50,15 +50,15 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
 }
 
 export function ResultsTeaser({ image }: { image?: string | null }){
-  // Visual: foto peleton asli DB → poster resmi lokal. Tanpa stock.
-  const src = (typeof image === "string" && image && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(image)) ? image : "/assets/poster/lkbb-poster.jpg"
+  // Visual: logo resmi LKBB (dinamis via pengaturan admin) — bukan foto peleton.
+  const src = (typeof image === "string" && image && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(image)) ? image : "/assets/brand/lkbb-logo.jpg"
   return (
     <section className="border border-white/[0.08] bg-[#0A0A09]">
       <div className="mx-auto grid max-w-[1280px] gap-0 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_1fr]">
         <div className="flex flex-col justify-center rounded-l-2xl border border-white/[0.08] bg-[#111110] p-8">
-          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">THE RESULTS</div>
-          <h2 className="mt-2 font-display text-[30px] font-bold leading-[0.95]">ARE STILL<br />UNDER WRAP.</h2>
-          <p className="mt-3 max-w-[280px] text-[12px] leading-relaxed text-[#92918C]">The final result will be revealed after the event.</p>
+          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">HASIL AKHIR</div>
+          <h2 className="mt-2 font-display text-[30px] font-bold leading-[0.95]">MASIH<br />DIRAHASIAKAN.</h2>
+          <p className="mt-3 max-w-[280px] text-[12px] leading-relaxed text-[#92918C]">Hasil final akan diumumkan setelah acara selesai.</p>
           <div className="mt-4 text-[16px] text-[#D9FF3F]">✳</div>
         </div>
         <div className="relative min-h-[220px] overflow-hidden rounded-r-2xl border border-white/[0.08]">

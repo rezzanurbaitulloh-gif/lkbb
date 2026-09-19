@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { createServerSupabase, createStaticSupabase } from "@/lib/supabase"
+import { SocialIcon } from "@/components/ui/SocialIcons"
 
 export const revalidate = 0
 
@@ -38,9 +39,9 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
     : `${peleton.category}${peleton.city ? " • " + String(peleton.city).toUpperCase() : ""}`
   const meta = `${peleton.category}${peleton.city ? " • " + String(peleton.city).toUpperCase() : ""}`
   const socialLinks = [
-    { k:"IG", url: socials.instagram },
-    { k:"YT", url: socials.youtube },
-    { k:"TT", url: socials.tiktok },
+    { key:"instagram", label:"Instagram", url: socials.instagram },
+    { key:"youtube", label:"YouTube", url: socials.youtube },
+    { key:"tiktok", label:"TikTok", url: socials.tiktok },
   ].filter(s=> !!s.url)
 
   return (
@@ -49,7 +50,7 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
       <main className="flex-1 pb-[72px] md:pb-0">
         <section className="mx-auto max-w-[1280px] border border-white/[0.08] bg-[#0A0A09] px-4 py-6 sm:px-6">
           <Link href="/tim" className="inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-[#92918C] hover:text-white uppercase">
-            ← BACK TO PARTICIPANTS
+            ← KEMBALI KE TIM
           </Link>
           <div className="mt-4 flex items-start gap-5">
             <div className="font-display text-[64px] font-light leading-none text-transparent sm:text-[80px]" style={{ WebkitTextStroke: "1px rgba(242,240,233,0.4)" }}>{num}</div>
@@ -59,9 +60,12 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
             </div>
           </div>
 
-          <div className="relative mt-5 aspect-[16/8] overflow-hidden rounded-xl border border-white/[0.08]">
-            <img src={photo} alt={peleton.name} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="relative mt-5 aspect-[16/8] overflow-hidden rounded-xl border border-white/[0.08] bg-black">
+            {/* Foto tim sebagai latar samar — seperti latar hero beranda/event */}
+            <img src={photo} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-[2px]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/30" />
+            <img src={photo} alt={peleton.name} className="relative h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">
@@ -77,17 +81,19 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
               )}
               {socialLinks.length>0 && (
                 <>
-                  <div className="mt-4 text-[10px] font-bold tracking-[0.14em] text-[#92918C]">FOLLOW OUR JOURNEY</div>
+                  <div className="mt-4 text-[10px] font-bold tracking-[0.14em] text-[#92918C]">IKUTI PERJALANAN KAMI</div>
                   <div className="mt-2 flex gap-2">
                     {socialLinks.map(s=> (
-                      <a key={s.k} href={s.url} target="_blank" rel="noreferrer" className="grid h-7 w-7 place-items-center rounded-full border border-white/[0.08] text-[10px] hover:border-[#D9FF3F]/50 hover:text-[#D9FF3F]">{s.k}</a>
+                      <a key={s.key} href={s.url} target="_blank" rel="noreferrer" aria-label={s.label} title={s.label} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-[#F2F0E9] hover:border-[#D9FF3F]/50 hover:text-[#D9FF3F]">
+                        <SocialIcon name={s.key} className="h-4 w-4" />
+                      </a>
                     ))}
                   </div>
                 </>
               )}
             </div>
             <div className="rounded-xl border border-white/[0.08] bg-[#111110] p-4">
-              <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">SUPPORT THIS TEAM</div>
+              <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">DUKUNG TIM INI</div>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {presets.slice(0,3).map(n=> (
                   <Link key={n} href={`${supportUrl}&qty=${n}`} className="grid h-9 place-items-center rounded-lg border border-white/[0.08] text-[12px] font-bold hover:border-[#D9FF3F]/50 hover:text-[#D9FF3F]">{n}</Link>
@@ -99,7 +105,7 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
                 <Link href={`${supportUrl}&qty=${presets[0]}`} className="grid h-8 w-8 place-items-center rounded-lg border border-white/[0.08] hover:border-[#D9FF3F]/50">→</Link>
               </div>
               <Link href={supportUrl} className="mt-3 grid h-10 place-items-center rounded-full bg-[#D9FF3F] text-[11px] font-bold tracking-wide text-black hover:brightness-105">
-                CONTINUE →
+                LANJUT →
               </Link>
             </div>
           </div>

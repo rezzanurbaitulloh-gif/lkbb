@@ -32,6 +32,8 @@ export default async function KompetisiPage(){
   const waSmp = settings["contact.whatsapp_smp"] || ""
   const waSma = settings["contact.whatsapp_sma"] || ""
   const poster = settings["branding.poster"] || "/assets/poster/lkbb-poster.jpg"
+  // Latar hero event: bisa diubah admin — hero.background_image → logo LKBB → poster.
+  const heroBg = settings["hero.background_image"] || settings["branding.logo"] || settings["hero.logo_image"] || poster
   const tagline = ev?.tagline || settings["site.tagline"] || ""
   const year = ev?.event_date ? String(ev.event_date).slice(0,4) : ""
   // Hitung peleton terverifikasi per kategori (dinamis)
@@ -61,15 +63,16 @@ export default async function KompetisiPage(){
       <Navbar />
       <main className="flex-1 pb-[72px] md:pb-0">
         <div className="border-b border-white/10 bg-[#09090b] text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20"><img src="/assets/poster/lkbb-poster.jpg" alt="" className="h-full w-full object-cover" /></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/85 to-transparent" />
+          <div className="absolute inset-0 opacity-25"><img src={heroBg} alt="" className="h-full w-full object-cover" /></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/85 to-[#09090b]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/70 via-transparent to-transparent" />
           <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-10">
             <Badge className="bg-primary text-black border-primary">TENTANG KOMPETISI</Badge>
             <h1 className="mt-3 text-[30px] md:text-[44px] font-black tracking-[-0.03em] leading-none">LKBB {(ev?.subtitle || "JAVASOMA THE IMPRESSION").split(" ")[0]}<br /><span className="text-primary">{(ev?.subtitle || "JAVASOMA THE IMPRESSION").split(" ").slice(1).join(" ")}</span></h1>
             {tagline && <p className="mt-2 text-xs font-bold tracking-[0.18em] text-muted-foreground">{tagline}</p>}
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link href="/tim"><Button className="rounded-full">Lihat Peserta</Button></Link>
-              <Link href="/timeline"><Button variant="outline" className="rounded-full bg-white/10 border-white/15 text-white hover:bg-white/15">Lihat Timeline</Button></Link>
+              <Link href="/tim"><Button className="rounded-full">Lihat Tim</Button></Link>
+              <Link href="/timeline"><Button variant="outline" className="rounded-full bg-white/10 border-white/15 text-white hover:bg-white/15">Lihat Jadwal</Button></Link>
             </div>
           </div>
         </div>
@@ -185,7 +188,7 @@ export default async function KompetisiPage(){
                       <div className="h-12 w-full grid place-items-center rounded-lg bg-white/5 backdrop-blur border text-xs font-black mb-2">{s.name.slice(0,12)}</div>
                     )}
                     <div className="text-xs font-bold leading-tight line-clamp-2">{s.name}</div>
-                    <div className="text-[10px] tracking-widest font-bold text-muted-foreground mt-0.5">{s.tier}</div>
+                    <div className="text-[10px] tracking-widest font-bold text-muted-foreground mt-0.5">{{"Main Sponsor":"SPONSOR UTAMA","Official Partner":"MITRA RESMI","Supporting Partner":"MITRA PENDUKUNG","Media Partner":"MITRA MEDIA"}[s.tier as string] || s.tier}</div>
                   </div>
                 ))}
               </div>

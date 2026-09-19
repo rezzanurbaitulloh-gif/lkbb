@@ -5,7 +5,12 @@ import { BottomNav } from "@/components/layout/BottomNav"
 import { useEffect, useState } from "react"
 import { createBrowserSupabase } from "@/lib/supabase"
 
-const tiers = ["Main Sponsor","Official Partner","Supporting Partner","Media Partner"] as const
+const tiers = [
+  { en: "Main Sponsor", id: "SPONSOR UTAMA" },
+  { en: "Official Partner", id: "MITRA RESMI" },
+  { en: "Supporting Partner", id: "MITRA PENDUKUNG" },
+  { en: "Media Partner", id: "MITRA MEDIA" },
+] as const
 
 export default function SponsorPage(){
   const [sponsors,setSponsors]=useState<any[]>([])
@@ -18,16 +23,16 @@ export default function SponsorPage(){
           <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-8">
             <div className="label-gold text-white/60">Mitra & Sponsor</div>
             <h1 className="mt-2 text-[30px] font-black tracking-[-0.03em]">SPONSOR</h1>
-            <p className="mt-2 text-sm text-white/60">Terima kasih kepada mitra yang mendukung terselenggaranya LKBB Javasoma 2026.</p>
+            <p className="mt-2 text-sm text-white/60">Terima kasih kepada mitra yang mendukung terselenggaranya LKBB Javasoma.</p>
           </div>
         </div>
         <div className="mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6 py-8 space-y-8">
           {tiers.map(tier=> {
-            const list = sponsors.filter(s=>s.tier===tier)
+            const list = sponsors.filter(s=>s.tier===tier.en)
             if(list.length===0) return null
             return (
-              <div key={tier} className="rounded-[16px] border border-primary bg-primary p-6">
-                <h2 className="text-xs font-black tracking-[0.14em] text-black">{tier.toUpperCase()}</h2>
+              <div key={tier.en} className="rounded-[16px] border border-primary bg-primary p-6">
+                <h2 className="text-xs font-black tracking-[0.14em] text-black">{tier.id}</h2>
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {list.map(s=> (
                     <div key={s.id} className="rounded-xl border border-primary bg-primary p-4 grid place-items-center h-[84px] text-center">

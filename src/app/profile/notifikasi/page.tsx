@@ -86,7 +86,7 @@ export default function SubProfile(){
                 transactions.slice(0,10).map((tx:any)=> (
                   <div key={tx.id} className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
                     <div className="text-sm font-bold">{tx.status==="Success" ? "Dukungan berhasil" : `Dukungan ${String(tx.status||"").toLowerCase()}`}</div>
-                    <div className="text-sm text-muted-foreground">Dukungan {tx.supports} ballot untuk {tx.peletons?.name || tx.peletonName || "peleton"} {tx.status==="Success" ? "berhasil tercatat" : "menunggu pembayaran"}</div>
+                    <div className="text-sm text-muted-foreground">Dukungan {tx.supports} suara untuk {tx.peletons?.name || tx.peletonName || "peleton"} {tx.status==="Success" ? "berhasil tercatat" : "menunggu pembayaran"}</div>
                     <div className="text-xs text-muted-foreground">{tx.created_at ? new Date(tx.created_at).toLocaleString("id-ID") : ""}</div>
                   </div>
                 ))

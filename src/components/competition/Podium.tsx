@@ -117,7 +117,7 @@ function PodiumCard({ team, rank, showCount = true, index = 0 }: { team: Team; r
         {team.school && <div className="meta-label mt-1 truncate">{team.school}</div>}
         {showCount && (
           <div className={`mt-1.5 text-xs font-bold tabular-nums ${isFirst ? "text-[#D9FF3F]" : "text-[#92918C]"}`}>
-            {counted.toLocaleString("id-ID")} ballot
+            {counted.toLocaleString("id-ID")} suara
           </div>
         )}
       </div>
@@ -219,7 +219,7 @@ export function PodiumSection({ smp, sma, isPublished, variant = "final", showBa
             <Trophy className="h-3.5 w-3.5" /> {isFinal ? "HASIL FINAL" : "HASIL SEMENTARA"}
           </div>
           <h2 className="mt-4 font-display font-bold text-[30px] lg:text-[40px] leading-[0.9] tracking-[-0.03em] text-[#F2F0E9]">
-            PODIUM PELETON<br /><span className="text-[#D9FF3F]">TERFAVORIT</span>
+            PODIUM TIM<br /><span className="text-[#D9FF3F]">TERFAVORIT</span>
           </h2>
           {(eventTitle || eventYear) && (
             <div className="mt-2 meta-label">{[eventTitle, eventYear].filter(Boolean).join(" • ")}</div>

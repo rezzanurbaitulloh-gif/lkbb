@@ -44,9 +44,9 @@ export default function ProfilePage(){
       <main className="flex-1 pb-[72px] md:pb-0">
         <div className="container-editorial py-8">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8">
-            {/* Left: MY PROFILE */}
+            {/* Kiri: PROFIL SAYA */}
             <div className="border border-border p-6">
-              <div className="meta-label">MY PROFILE</div>
+              <div className="meta-label">PROFIL SAYA</div>
               <div className="mt-4 flex gap-4 items-start">
                 {(currentUser as any).avatar_url ? (
                   <img src={(currentUser as any).avatar_url} alt={currentUser.name} className="h-16 w-16 rounded-full object-cover border border-border" />
@@ -56,7 +56,7 @@ export default function ProfilePage(){
                   </div>
                 )}
                 <div>
-                  <div className="font-display font-bold text-lg leading-none">Hello, {currentUser.name}</div>
+                  <div className="font-display font-bold text-lg leading-none">Halo, {currentUser.name}</div>
                   <div className="mt-1 text-sm text-muted-foreground">{currentUser.email}</div>
                   <div className="mt-3 flex gap-2">
                     <Link href="/profile/edit"><Button variant="outline" size="sm" className="rounded-none h-8 text-xs">Edit Profil</Button></Link>
@@ -87,28 +87,28 @@ export default function ProfilePage(){
                   </Link>
                 )}
                 <Link href="/profile/edit" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
-                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Account Information</span><span>›</span>
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Informasi Akun</span><span>›</span>
                 </Link>
                 <Link href="/profile/dukungan" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
-                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Voting History</span><span>{transactions.length}</span>
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Riwayat Dukungan</span><span>{transactions.length}</span>
                 </Link>
                 <Link href="/profile/dukungan" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
-                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Payment History</span><span>→</span>
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Riwayat Pembayaran</span><span>→</span>
                 </Link>
                 <Link href="/profile/edit" className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
-                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Change Password</span><span>→</span>
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Ubah Kata Sandi</span><span>→</span>
                 </Link>
                 <button onClick={()=>{logout(); router.push("/")}} className="flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-[13px] hover:bg-white/5 transition-colors">
-                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Log Out</span><span>→</span>
+                  <span className="flex items-center gap-2"><span className="text-[#92918C]">◉</span> Keluar</span><span>→</span>
                 </button>
               </div>
             </div>
 
-            {/* Right: Voting History */}
+            {/* Kanan: Riwayat Dukungan */}
             <div className="border border-border p-6">
               <div className="flex items-baseline justify-between border-b border-border pb-3">
-                <h2 className="font-display font-bold text-sm tracking-[-0.01em]">Voting History</h2>
-                <Link href="/profile/dukungan" className="text-xs font-bold hover:underline">View All →</Link>
+                <h2 className="font-display font-bold text-sm tracking-[-0.01em]">Riwayat Dukungan</h2>
+                <Link href="/profile/dukungan" className="text-xs font-bold hover:underline">Lihat Semua →</Link>
               </div>
               {transactions.length===0 ? (
                 <div className="py-12 text-center border border-dashed border-border mt-4">
@@ -122,9 +122,9 @@ export default function ProfilePage(){
                       <img src={favPeletons.find((p:any)=>p.id===tx.peleton_id)?.image_url || "/assets/brand/lkbb-logo.jpg"} alt="" className="h-10 w-10 object-cover border border-border shrink-0" />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-bold truncate">{tx.peletons?.name || tx.peletonName}</div>
-                        <div className="meta-label truncate">{new Date(tx.created_at || tx.date).toLocaleDateString("id-ID")} • {tx.supports} ballot • Rp{(tx.amount||0).toLocaleString("id-ID")}</div>
+                        <div className="meta-label truncate">{new Date(tx.created_at || tx.date).toLocaleDateString("id-ID")} • {tx.supports} suara • Rp{(tx.amount||0).toLocaleString("id-ID")}</div>
                       </div>
-                      <span className="text-xs font-bold self-center">{tx.status}</span>
+                      <span className="text-xs font-bold self-center">{({ Success: "Berhasil", Pending: "Menunggu", Failed: "Gagal", Expired: "Kedaluarsa" } as Record<string,string>)[tx.status] || tx.status}</span>
                     </Link>
                   ))}
                 </div>

@@ -75,13 +75,13 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
 
   if (cms && cms.is_visible === false) return null
 
-  const statusLabel = isActive ? "VOTING OPEN" : isClosed ? "VOTING CLOSED" : isPublished ? "RESULTS PUBLISHED" : "COMING SOON"
+  const statusLabel = isActive ? "DUKUNGAN DIBUKA" : isClosed ? "DUKUNGAN DITUTUP" : isPublished ? "HASIL DIUMUMKAN" : "SEGERA DATANG"
   const showUnits = cd.isValid && !cd.expired
   const units = [
-    { v: String(cd.days).padStart(2,"0"), l: "DAYS" },
-    { v: String(cd.hours).padStart(2,"0"), l: "HOURS" },
-    { v: String(cd.minutes).padStart(2,"0"), l: "MINUTES" },
-    { v: String(cd.seconds).padStart(2,"0"), l: "SECONDS" },
+    { v: String(cd.days).padStart(2,"0"), l: "HARI" },
+    { v: String(cd.hours).padStart(2,"0"), l: "JAM" },
+    { v: String(cd.minutes).padStart(2,"0"), l: "MENIT" },
+    { v: String(cd.seconds).padStart(2,"0"), l: "DETIK" },
   ]
 
   return (
@@ -101,9 +101,9 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
         {/* LEFT — headline plek PNG */}
         <div className="relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:min-h-[560px] lg:px-12 lg:py-14">
           <h1 className="font-display font-bold leading-[0.88] tracking-[-0.03em]">
-            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">THE CROWD</span></span>
-            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">HAS A</span></span>
-            <span className="block text-[44px] text-[#D9FF3F] sm:text-[56px] lg:text-[64px]">VOICE.</span>
+            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">SUARAMU</span></span>
+            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">ADALAH</span></span>
+            <span className="block text-[44px] text-[#D9FF3F] sm:text-[56px] lg:text-[64px]">KEKUATAN.</span>
           </h1>
           <p className="mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0]">
             Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB{yearLabel ? ` ${yearLabel}` : ""}.
@@ -118,12 +118,12 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
           )}
           <div className="mt-4">
             <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-[#D9FF3F] px-5 py-2.5 text-[11px] font-bold tracking-wide text-black transition-transform hover:scale-[1.02]">
-              EXPLORE PARTICIPANTS <span aria-hidden>→</span>
+              LIHAT TIM PESERTA <span aria-hidden>→</span>
             </Link>
           </div>
 
           <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-[#92918C] uppercase">
-            <span className="text-[#D9FF3F]">↓</span> SCROLL TO EXPLORE
+            <span className="text-[#D9FF3F]">↓</span> GULIR KE BAWAH
           </div>
 
           {/* diagonal hairlines dekoratif */}

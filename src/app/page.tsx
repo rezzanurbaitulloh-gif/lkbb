@@ -46,6 +46,17 @@ export default async function HomePage(){
     event = data
   }
 
+  // Display event: competitions adalah sumber tanggal/state/settings tampil.
+  // (events-row dari resolver hanya untuk scoping event_id — skemanya beda: status vs state, tanpa tanggal.)
+  let displayEvent: any = event
+  try {
+    let dq: any = supabase.from("competitions").select("*").order("created_at", { ascending: false }).limit(1)
+    if (eventId) dq = dq.eq("event_id", eventId)
+    const { data: d } = await dq.single()
+    if (d) displayEvent = d
+  } catch {}
+  const ev = displayEvent || event || null
+
   // Dynamic CMS — fetch home sections & site settings (event-aware)
   let cmsSections: any[] = []
   let siteSettings: Record<string, any> = {}
@@ -80,7 +91,7 @@ export default async function HomePage(){
   const heroSection = cmsSections.find((s:any)=> s.key==="hero" || s.type==="hero")
   const countdownSection = cmsSections.find((s:any)=> s.key==="countdown" || s.type==="countdown")
   const extraSections = cmsSections.filter((s:any)=> s.key!=="hero" && s.key!=="countdown" && s.type!=="countdown" && !(s.key==="hero"||s.type==="hero"))
-  const state = (event?.state as string) || "NOT_STARTED"
+  const state = (displayEvent?.state as string) || "NOT_STARTED"
   const isNotStarted = state === "NOT_STARTED"
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
   const isVotingClosed = state === "VOTING_CLOSED"
@@ -113,13 +124,11 @@ export default async function HomePage(){
     smaPodium = teams.filter(p=>p.category==='SMA').slice(0,3)
   }
 
-  const ev = event || null
   const showSementara = isVotingClosed
   const showFinal = isPublished
 
-  // Foto teaser: pakai foto peleton asli dari DB (bukan stock). Tolak URL Unsplash/stock.
-  const isRealPhoto = (u: any)=> typeof u === "string" && u.length>0 && !/unsplash|picsum|placehold|dummyimage|loremflickr/i.test(u)
-  const teaserImage = teams.map((t:any)=> t.image_url || t.image).find(isRealPhoto) || null
+  // Logo teaser: dari pengaturan admin (dinamis) — hero.logo_image → branding.logo → logo lokal.
+  const teaserLogo = (siteSettings?.["hero.logo_image"] as string) || (siteSettings?.["branding.logo"] as string) || "/assets/brand/lkbb-logo.jpg"
 
   // Featured & podium dapat di-hide via CMS visibility
   const showFeatured = !cmsSections.find((s:any)=> s.key==="featured") || cmsSections.find((s:any)=> s.key==="featured")?.is_visible !== false
@@ -151,7 +160,7 @@ export default async function HomePage(){
         )}
         {showFeatured && <Featured peletons={teams} showSementara={showSementara} showFinal={showFinal} />}
         <ParticipantsMini teams={teams} showCount={showSementara || showFinal} />
-        <ResultsTeaser image={teaserImage} />
+        <ResultsTeaser image={teaserLogo} />
         {extraSections.filter((s:any)=> {
           const featOrder = cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 0
           return s.sort_order > featOrder
@@ -161,7 +170,7 @@ export default async function HomePage(){
         {isVotingClosed && (
           <div className="mx-auto max-w-[1280px] px-3 xs:px-4 sm:px-6 pb-6">
             <div className="rounded-[12px] xs:rounded-xl border border-amber-500/20 bg-amber-500/[0.10] p-3 xs:p-4 text-center backdrop-blur">
-              <p className="text-[11px] xs:text-xs font-bold tracking-wide text-amber-200 leading-relaxed">Voting ditutup — peringkat sementara <span className="text-white">online</span> saja. Admin sedang merekap offline.</p>
+              <p className="text-[11px] xs:text-xs font-bold tracking-wide text-amber-200 leading-relaxed">Dukungan ditutup — peringkat sementara <span className="text-white">online</span> saja. Admin sedang merekap offline.</p>
             </div>
           </div>
         )}

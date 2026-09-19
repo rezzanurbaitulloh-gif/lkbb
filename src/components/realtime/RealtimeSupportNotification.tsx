@@ -63,7 +63,7 @@ function SupportPopup({ item, onClose }: { item: QueueItem; onClose: () => void 
             {item.displayText}
           </p>
           {item.isPrivate && item.ballotQuantity ? (
-            <p className="mt-2 text-sm text-white/70">{item.ballotQuantity} ballot • terima kasih!</p>
+            <p className="mt-2 text-sm text-white/70">{item.ballotQuantity} suara • terima kasih!</p>
           ) : (
             <p className="mt-2 text-sm text-white/60">Terima kasih sudah meramaikan!</p>
           )}
@@ -178,8 +178,8 @@ export function RealtimeSupportNotification(){
           const supporterAvatar = row.supporter_avatar || row.data?.supporter_avatar || (currentUser as any)?.avatar_url || null
           const peletonName = row.peleton_name || "peleton"
           const qty = row.data?.ballot_quantity
-          const displayText = row.body || `Selamat!! Kamu telah mendukung ${peletonName}${qty ? ` — ${qty} ballot` : ""}`
-          const ttsText = qty ? `Selamat!! Kamu telah mendukung ${peletonName} — ${qty} ballot` : `Selamat!! Kamu telah mendukung ${peletonName}`
+          const displayText = row.body || `Selamat!! Kamu telah mendukung ${peletonName}${qty ? ` — ${qty} suara` : ""}`
+          const ttsText = qty ? `Selamat!! Kamu telah mendukung ${peletonName} — ${qty} suara` : `Selamat!! Kamu telah mendukung ${peletonName}`
           enqueue({
             id: row.id,
             supporterName,

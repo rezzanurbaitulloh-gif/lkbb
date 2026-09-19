@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
@@ -9,6 +9,19 @@ import { Button } from "@/components/ui/button"
 export default function KontakPage(){
   const [sent,setSent]=useState(false)
   const [loading,setLoading]=useState(false)
+  const [info,setInfo]=useState<Record<string,string>>({})
+  useEffect(()=>{
+    fetch("/api/cms/settings").then(r=> r.json()).then(j=> {
+      const s = j.settings || {}
+      const pick = (k: string)=> typeof s[k] === "string" ? s[k] as string : ""
+      setInfo({
+        email: pick("contact.email"),
+        wa: pick("contact.whatsapp"),
+        ig: pick("social.instagram"),
+        address: pick("contact.address"),
+      })
+    }).catch(()=>{})
+  },[])
   const onSubmit=(e:React.FormEvent)=>{
     e.preventDefault()
     setLoading(true)
@@ -29,10 +42,11 @@ export default function KontakPage(){
             <div className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-5">
               <h3 className="text-sm font-black">Informasi Kontak</h3>
               <div className="mt-3 grid gap-2 text-sm">
-                <div><span className="text-muted-foreground">Email</span><br/><span className="font-bold">info@lkbb-event.id</span></div>
-                <div><span className="text-muted-foreground">WhatsApp Panitia</span><br/><span className="font-mono font-bold">0812-3456-7890</span></div>
-                <div><span className="text-muted-foreground">Instagram</span><br/><span className="font-bold">@lkbb_event</span></div>
-                <div><span className="text-muted-foreground">Alamat</span><br/><span>SMK Negeri 1 Kertosono, Nganjuk, Jawa Timur</span></div>
+                {info.email && <div><span className="text-muted-foreground">Surel</span><br/><a href={`mailto:${info.email}`} className="font-bold hover:underline">{info.email}</a></div>}
+                {info.wa && <div><span className="text-muted-foreground">WhatsApp Panitia</span><br/><a href={`https://wa.me/${info.wa.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="font-mono font-bold hover:underline">{info.wa}</a></div>}
+                {info.ig && <div><span className="text-muted-foreground">Instagram</span><br/><a href={info.ig} target="_blank" rel="noreferrer" className="font-bold hover:underline">Instagram LKBB</a></div>}
+                {info.address && <div><span className="text-muted-foreground">Alamat</span><br/><span>{info.address}</span></div>}
+                {!info.email && !info.wa && !info.ig && !info.address && <p className="text-xs text-muted-foreground">Info kontak menyusul dari panitia.</p>}
               </div>
             </div>
             <div className="rounded-[16px] border border-white/10 bg-white/5 backdrop-blur p-5">
@@ -52,7 +66,7 @@ export default function KontakPage(){
               <form onSubmit={onSubmit} className="mt-4 grid gap-3">
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div><label className="text-xs font-bold">Nama</label><Input required placeholder="Nama lengkap" /></div>
-                  <div><label className="text-xs font-bold">Email</label><Input required type="email" placeholder="email@contoh.id" /></div>
+                  <div><label className="text-xs font-bold">Surel</label><Input required type="email" placeholder="surel@contoh.id" /></div>
                 </div>
                 <div><label className="text-xs font-bold">Subjek</label><Input required placeholder="Judul pesan" /></div>
                 <div><label className="text-xs font-bold">Pesan</label><Textarea required placeholder="Tulis pesanmu…" rows={5} /></div>

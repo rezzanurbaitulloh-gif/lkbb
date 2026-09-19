@@ -86,6 +86,7 @@ export default function InvoicePage(){
   const invoiceNo = tx ? `LKBB-${String(tx.id).slice(0,8).toUpperCase()}` : "-"
   const txDate = tx ? new Date(tx.created_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) : "-"
   const unitPrice = tx ? (tx.supports ? Math.round(Number(tx.amount) / Number(tx.supports)) : Number(tx.amount)) : 0
+  const statusId = ({ Success: "Berhasil", Pending: "Menunggu", Failed: "Gagal", Expired: "Kedaluarsa" } as Record<string,string>)[tx?.status || ""] || tx?.status || "-"
 
   const handlePrint = ()=>{
     if(!isSuccess) return
@@ -143,7 +144,7 @@ export default function InvoicePage(){
             <div>No. Invoice&nbsp;&nbsp;&nbsp;: {invoiceNo}</div>
             <div>ID Transaksi : {tx.id}</div>
             <div>Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {txDate}</div>
-            <div>Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: LUNAS / SUCCESS</div>
+            <div>Status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: LUNAS</div>
             <div>----------------------------------------</div>
             <div>PEMBAYAR</div>
             <div>Nama&nbsp;&nbsp;: {currentUser.name}</div>
@@ -154,7 +155,7 @@ export default function InvoicePage(){
             <div>Peleton&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {peleton?.name || tx.peletons?.name || "-"}</div>
             <div>Sekolah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {peleton?.school || "-"}</div>
             <div>Kategori/No : {(peleton?.category || "-") + " / #" + (peleton?.number || "-")}</div>
-            <div>Jumlah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.supports} ballot</div>
+            <div>Jumlah&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.supports} suara</div>
             <div>Harga satuan : Rp{Number(unitPrice).toLocaleString("id-ID")}</div>
             <div>Metode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.method || "QRIS"}</div>
             <div>Provider&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {tx.provider || "XENDIT"}</div>
@@ -192,7 +193,7 @@ export default function InvoicePage(){
                       <div className="font-mono text-xs text-white/60">Ref: {tx.provider_ref || tx.doku_reference_no || "-"}</div>
                     </div>
                     <div className="text-right">
-                      <div className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tx.status==="Success" ? "bg-emerald-500 text-black" : tx.status==="Pending" ? "bg-amber-500 text-black" : "bg-red-500 text-black"}`}>{tx.status}</div>
+                      <div className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tx.status==="Success" ? "bg-emerald-500 text-black" : tx.status==="Pending" ? "bg-amber-500 text-black" : "bg-red-500 text-black"}`}>{statusId}</div>
                       <div className="mt-1 text-xs text-white/50">{new Date(tx.created_at).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}</div>
                     </div>
                   </div>
@@ -225,8 +226,8 @@ export default function InvoicePage(){
 
                   <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="grid gap-2 text-sm">
-                      <div className="flex justify-between"><span className="text-white/50">Jumlah Ballot</span><span className="font-black tabular-nums">{tx.supports} ballot</span></div>
-                      <div className="flex justify-between"><span className="text-white/50">Harga per Ballot</span><span className="tabular-nums">Rp{tx.supports ? Math.round(tx.amount / tx.supports).toLocaleString("id-ID") : tx.amount?.toLocaleString("id-ID")}</span></div>
+                      <div className="flex justify-between"><span className="text-white/50">Jumlah Suara</span><span className="font-black tabular-nums">{tx.supports} suara</span></div>
+                      <div className="flex justify-between"><span className="text-white/50">Harga per Suara</span><span className="tabular-nums">Rp{tx.supports ? Math.round(tx.amount / tx.supports).toLocaleString("id-ID") : tx.amount?.toLocaleString("id-ID")}</span></div>
                       <div className="flex justify-between"><span className="text-white/50">Metode</span><span className="font-bold">{tx.method || "QRIS"} • {tx.provider || "XENDIT"}</span></div>
                       <div className="flex justify-between"><span className="text-white/50">Provider Ref</span><span className="font-mono text-xs">{tx.provider_ref?.slice(0,16) || "-"}...</span></div>
                       {tx.expires_at && <div className="flex justify-between"><span className="text-white/50">Kadaluarsa</span><span className="text-xs">{new Date(tx.expires_at).toLocaleString("id-ID")}</span></div>}
@@ -257,10 +258,10 @@ export default function InvoicePage(){
                             const a=document.createElement('a'); a.href=qrDataUrl; a.download=`qris-LKBB-${tx.id.slice(0,8)}.png`; document.body.appendChild(a); a.click(); document.body.removeChild(a)
                           }}
                         >
-                          ⬇ Download QR
+                          ⬇ Unduh QR
                         </Button>
                       )}
-                      <p className="mt-2 text-xs text-muted-foreground text-center">QR tetap terlihat sampai status berubah. Akan otomatis hilang saat Success/Batal.</p>
+                      <p className="mt-2 text-xs text-muted-foreground text-center">QR tetap terlihat sampai status berubah. Akan otomatis hilang saat Berhasil/Batal.</p>
                       {polling && <p className="mt-1 text-[11px] text-muted-foreground text-center">Memeriksa status...</p>}
                     </div>
                   )}
@@ -270,7 +271,7 @@ export default function InvoicePage(){
                       <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handlePrint}>Cetak Invoice</Button>
                     ) : (
                       <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-200">
-                        Invoice hanya dapat dicetak setelah pembayaran <b>Success</b>. Status saat ini: <b>{tx.status}</b>.
+                        Invoice hanya dapat dicetak setelah pembayaran <b>berhasil</b>. Status saat ini: <b>{statusId}</b>.
                       </div>
                     )}
                     <Link href="/profile/dukungan"><Button variant="outline" className="rounded-full">Kembali</Button></Link>
@@ -282,7 +283,7 @@ export default function InvoicePage(){
 
               <div className="rounded-xl border border-white/10 bg-[#111318] p-4">
                 <h3 className="text-xs font-black tracking-wide">BANTUAN</h3>
-                <p className="mt-1 text-xs text-white/50">Jika status masih Pending setelah bayar, gunakan Cek Status di halaman Checkout atau hubungi panitia via Kontak.</p>
+                <p className="mt-1 text-xs text-white/50">Jika status masih Menunggu setelah bayar, gunakan Cek Status di halaman Pembayaran atau hubungi panitia via Kontak.</p>
               </div>
             </div>
           ) : null}

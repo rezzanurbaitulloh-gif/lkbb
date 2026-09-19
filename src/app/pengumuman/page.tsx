@@ -7,11 +7,17 @@ import { createBrowserSupabase } from "@/lib/supabase"
 
 const catColor: Record<string,string> = {
   Important:"bg-red-500 text-black",
+  Penting:"bg-red-500 text-black",
   Voting:"bg-primary text-black",
+  Dukungan:"bg-primary text-black",
   Schedule:"bg-secondary text-foreground",
+  Jadwal:"bg-secondary text-foreground",
   Payment:"bg-emerald-500 text-black",
+  Pembayaran:"bg-emerald-500 text-black",
   Competition:"bg-[#1A1C1E] text-white dark:bg-white dark:text-black",
+  Kompetisi:"bg-[#1A1C1E] text-white dark:bg-white dark:text-black",
   Result:"bg-[#A51D2D] text-white",
+  Hasil:"bg-[#A51D2D] text-white",
 }
 
 export default function PengumumanPage(){

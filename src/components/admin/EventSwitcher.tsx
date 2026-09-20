@@ -53,12 +53,12 @@ export function EventSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] font-bold tracking-widest text-white/40">EVENT</span>
+    <div className="flex items-center gap-2 w-full max-w-[320px]">
+      <span className="text-[11px] font-bold tracking-widest text-white/40 shrink-0">EVENT</span>
       <select
         value={current}
         onChange={(e) => handleChange(e.target.value)}
-        className="rounded-full border border-white/10 bg-[#17191F] px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-1 focus:ring-primary"
+        className="rounded-full border border-white/10 bg-[#17191F] px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-1 focus:ring-primary flex-1 min-w-0 truncate"
       >
         <option value="all">Semua Event</option>
         {events.map((ev: any) => (
@@ -67,7 +67,7 @@ export function EventSwitcher() {
           </option>
         ))}
       </select>
-      <span className="hidden sm:inline text-[10px] text-white/30">SUPER_ADMIN</span>
+      <span className="hidden sm:inline text-[10px] text-white/30 shrink-0">SUPER_ADMIN</span>
     </div>
   )
 }

@@ -15,7 +15,7 @@ export type AdminSectionKey =
   | "dashboard" | "cms" | "peleton" | "transaksi" | "klasemen" | "results"
   | "offline-recap" | "pengumuman" | "timeline" | "juri" | "sponsor"
   | "settings" | "audit-log" | "access"
-  | "users" | "peserta" | "roles"
+  | "users" | "roles"
 
 export interface SectionDef {
   key: AdminSectionKey
@@ -45,7 +45,6 @@ export const ACCESS_MATRIX: SectionDef[] = [
   // ——— AKSES ———
   { key: "access", label: "Akses & Admin", href: "/admin/access", group: "AKSES", super: "all", admin: "own", note: "Kelola admin event sendiri (super: semua + matriks global)" },
   { key: "users", label: "Pengguna", href: "/admin/users", group: "AKSES", super: "all", admin: "none", note: "Pengguna global — super saja" },
-  { key: "peserta", label: "Peserta", href: "/admin/peserta", group: "AKSES", super: "all", admin: "none", note: "Daftar pengguna global — super saja" },
   // ——— SISTEM ———
   { key: "settings", label: "Pengaturan", href: "/admin/settings", group: "SISTEM", super: "all", admin: "own", note: "Pengaturan, harga suara & countdown event sendiri" },
   { key: "audit-log", label: "Riwayat", href: "/admin/audit-log", group: "SISTEM", super: "all", admin: "own", note: "Log event sendiri, baca saja" },
@@ -99,7 +98,6 @@ export function sectionForPath(pathname: string): AdminSectionKey | null {
     ["/admin/audit-log", "audit-log"],
     ["/admin/access", "access"],
     ["/admin/users", "users"],
-    ["/admin/peserta", "peserta"],
     ["/admin/roles", "roles"],
   ]
   for (const [prefix, key] of map) {

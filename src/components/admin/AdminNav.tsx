@@ -22,7 +22,6 @@ const ICONS: Record<AdminSectionKey, any> = {
   sponsor: Handshake,
   access: Shield,
   users: UserCog,
-  peserta: Users,
   settings: Settings,
   "audit-log": ScrollText,
   roles: BookOpen,

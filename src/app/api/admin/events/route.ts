@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   // Check slug unique
   const { data: existing } = await service.from("events").select("id").eq("slug", cleanSlug).maybeSingle()
   if (existing) return NextResponse.json({ error: "Slug already exists" }, { status: 409 })
-  const { data, error } = await service.from("events").insert({
+  const baseRow: any = {
     slug: cleanSlug,
     name,
     organizer_name: organizer_name || "PASKIBRA",
@@ -77,9 +77,21 @@ export async function POST(req: Request) {
     event_date: event_date || null,
     status: status || "DRAFT",
     settings: {},
-    template_id: template_id || null,
-  } as any).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  };
+  // template_id hanya bila kolom sudah ada (migrasi 021); fallback tanpa kolom
+  let data: any = null;
+  {
+    const r1 = await service.from("events").insert({ ...baseRow, template_id: template_id || null }).select().single();
+    if (!r1.error) {
+      data = r1.data;
+    } else if (/template_id|column/i.test(r1.error.message || "")) {
+      const r2 = await service.from("events").insert(baseRow).select().single();
+      if (r2.error) return NextResponse.json({ error: r2.error.message }, { status: 500 });
+      data = r2.data;
+    } else {
+      return NextResponse.json({ error: r1.error.message }, { status: 500 });
+    }
+  }
   const eventId = (data as any).id as string
   // Domain: lkbb.my.id (production) atau lkbb.vercel.app (dev/preview)
   const useCustom = (domain_mode || "myid") === "myid"
@@ -109,17 +121,21 @@ export async function POST(req: Request) {
       const { data: tpl } = await service.from("event_templates").select("*").eq("id", template_id).maybeSingle()
       if (tpl) {
         const t: any = tpl
-        await service.from("events").update({
+        const { error: upErr } = await service.from("events").update({
           template_config: { themeTokens: t.theme_tokens || {}, layoutVariant: t.layout_variant, heroVariant: t.hero_variant, componentRegistry: t.component_registry || {} },
           component_registry: t.component_registry || {},
           branding: t.branding_assets || {},
           settings: t.default_settings || {},
           updated_at: new Date().toISOString(),
         } as any).eq("id", eventId)
-        try {
-          await service.from("competitions").update({ settings: t.default_settings || {} } as any).eq("event_id", eventId)
-        } catch {}
-        templateState = "applied"
+        if (upErr) {
+          templateState = `gagal apply (migrasi 021?): ${upErr.message}`
+        } else {
+          try {
+            await service.from("competitions").update({ settings: t.default_settings || {} } as any).eq("event_id", eventId)
+          } catch {}
+          templateState = "applied"
+        }
       } else {
         templateState = "template tidak ditemukan"
       }

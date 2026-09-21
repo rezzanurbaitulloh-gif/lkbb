@@ -49,6 +49,23 @@ ALTER TABLE public.event_domains ADD COLUMN IF NOT EXISTS verification_token TEX
 ALTER TABLE public.event_domains ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ;
 ALTER TABLE public.event_domains ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
+-- Kolom pelengkap bila tabel event_templates sudah terlanjur dibuat minimal
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS preview_image_url TEXT;
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'paskibra';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS theme_tokens JSONB DEFAULT '{}';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS layout_variant TEXT DEFAULT 'default';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS hero_variant TEXT DEFAULT 'default';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS component_registry JSONB DEFAULT '{}';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS cms_sections JSONB DEFAULT '[]';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS default_settings JSONB DEFAULT '{}';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS branding_assets JSONB DEFAULT '{}';
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT false;
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE public.event_templates ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 -- 6. FINANCIAL AGGREGATES (Super Admin Dashboard)
 CREATE MATERIALIZED VIEW IF NOT EXISTS public.financial_aggregates AS
 SELECT 
@@ -77,7 +94,8 @@ ADD COLUMN IF NOT EXISTS template_config JSONB DEFAULT '{}';
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS component_registry JSONB DEFAULT '{}';
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS branding JSONB DEFAULT '{}';
 
--- 8. TRANSACTION UNIQUE CONSTRAINT (per event unique external_id)
+-- 8. TRANSACTION external id per event + UNIQUE CONSTRAINT
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS external_transaction_id TEXT;
 DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.table_constraints 

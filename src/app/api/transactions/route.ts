@@ -88,6 +88,7 @@ export async function POST(req: Request) {
       status: "Pending",
       provider: "XENDIT",
       provider_ref: initialRef,
+      external_transaction_id: namespacedRef,
       source: "online",
       expires_at: expiresAt,
     } as any).select().single()

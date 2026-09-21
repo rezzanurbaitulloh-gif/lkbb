@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
-import { LayoutDashboard, Users, CreditCard, Trophy, Megaphone, Calendar, Star, Handshake, Settings, ScrollText, UserCog, Menu, FileText, Shield, Layers, ClipboardList, BookOpen } from "lucide-react"
+import { LayoutDashboard, Users, CreditCard, Trophy, Megaphone, Calendar, Star, Handshake, Settings, ScrollText, UserCog, Menu, FileText, Shield, Layers, ClipboardList, BookOpen, Globe2, LayoutTemplate } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { EventSwitcher } from "./EventSwitcher"
@@ -25,9 +25,11 @@ const ICONS: Record<AdminSectionKey, any> = {
   settings: Settings,
   "audit-log": ScrollText,
   roles: BookOpen,
+  events: Globe2,
+  templates: LayoutTemplate,
 }
 
-const GROUP_ORDER = ["RINGKASAN", "KOMPETISI", "KONTEN", "AKSES", "SISTEM"] as const
+const GROUP_ORDER = ["RINGKASAN", "KOMPETISI", "KONTEN", "AKSES", "SISTEM", "PLATFORM"] as const
 
 export function AdminNav({ children, isSuper, role, events }: {
   children: React.ReactNode

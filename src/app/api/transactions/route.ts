@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase, createServerSupabase } from "@/lib/supabase"
-import { getPaymentProvider } from "@/lib/payment"
+import { getPaymentProvider, buildEventTransactionId } from "@/lib/payment"
 import { resolveEventFromHost, isSuperAdmin, isEventAdmin } from "@/lib/event"
 
 // POST /api/transactions — server calculates price, enforces event closure, creates transaction + XENDIT Sandbox QRIS
@@ -72,7 +72,10 @@ export async function POST(req: Request) {
     const amount = quantity * onlinePrice
 
     // 4. Create transaction as PENDING with user_id + event_id — provider XENDIT Sandbox, never trust client amount
-    const initialRef = `xnd_${Date.now()}_${peletonId.slice(0,8)}`
+    // ID unik per event (tidak boleh sama antar event): {SLUG}-{ts}-{rand}
+    const eventSlug = (event.slug || "LKBB") as string
+    const namespacedRef = buildEventTransactionId(eventSlug)
+    const initialRef = namespacedRef
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
     const { data: trx, error } = await service.from("transactions").insert({
@@ -103,6 +106,7 @@ export async function POST(req: Request) {
       const provider = getPaymentProvider()
       const xenditRes = await provider.createPayment({
         transactionId: trx.id,
+        externalId: namespacedRef,
         peletonId,
         peletonSlug: slug || peleton.slug,
         userId: user.id,
@@ -119,10 +123,10 @@ export async function POST(req: Request) {
       // Persist Xendit references for webhook & status lookup
       // (kolom doku_* dipakai ulang untuk referensi provider agar tanpa migrasi DB)
       await service.from("transactions").update({
-        provider_ref: trx.id,
+        provider_ref: namespacedRef,
         doku_reference_no: xenditReferenceNo,
         qr_content: xenditQrContent,
-        metadata: { xendit_id: xenditReferenceNo, mode: "sandbox" },
+        metadata: { xendit_id: xenditReferenceNo, mode: "sandbox", external_id: namespacedRef, event_slug: eventSlug },
       } as any).eq("id", trx.id)
     } catch (xenditErr: any) {
       console.error("[xendit] createPayment failed", xenditErr)
@@ -132,7 +136,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: msg }, { status: 502 })
     }
 
-    const invoiceId = `LKBB-${trx.id.slice(0,8).toUpperCase()}`
+    const invoiceId = `${eventSlug.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 20) || "LKBB"}-${trx.id.slice(0,8).toUpperCase()}`
     return NextResponse.json({
       transactionId: trx.id,
       invoiceId,

@@ -96,6 +96,17 @@ export async function PATCH(req: Request){
     return NextResponse.json({ error:"Forbidden — di luar akses peran Anda" }, { status:403 })
   }
   const service = createServiceSupabase()
+  // Proteksi SUPER_ADMIN: tidak bisa diubah/diturunkan perannya via crud,
+  // dan tidak bisa diangkat via crud (wajib lewat /api/admin/super-admins).
+  if (table === "profiles" && (data.role !== undefined || data.email !== undefined)) {
+    const { data: target } = await service.from("platform_roles").select("user_id").eq("user_id", id).maybeSingle()
+    if (target) {
+      return NextResponse.json({ error:"Forbidden — akun SUPER_ADMIN tidak bisa diubah via sini" }, { status:403 })
+    }
+    if (data.role === "SUPER_ADMIN") {
+      return NextResponse.json({ error:"Forbidden — pengangkatan SUPER_ADMIN hanya via /api/admin/super-admins" }, { status:403 })
+    }
+  }
   // Matriks: ADMIN hanya boleh mengubah baris di event sendiri; event_id tak boleh dipindah keluar.
   if (EVENT_TABLES.includes(table) && !auth.ctx.isSuper) {
     const { data: row } = await service.from(table).select("event_id").eq("id", id).maybeSingle()
@@ -150,6 +161,13 @@ export async function DELETE(req: Request){
     return NextResponse.json({ error:"Forbidden — di luar akses peran Anda" }, { status:403 })
   }
   const service = createServiceSupabase()
+  // Proteksi SUPER_ADMIN: akun super tidak bisa dihapus via crud.
+  if (table === "profiles") {
+    const { data: target } = await service.from("platform_roles").select("user_id").eq("user_id", id).maybeSingle()
+    if (target) {
+      return NextResponse.json({ error:"Forbidden — akun SUPER_ADMIN tidak bisa dihapus" }, { status:403 })
+    }
+  }
   // Matriks: ADMIN hanya boleh menghapus baris di event sendiri.
   if (EVENT_TABLES.includes(table) && !auth.ctx.isSuper) {
     const { data: row } = await service.from(table).select("event_id").eq("id", id).maybeSingle()

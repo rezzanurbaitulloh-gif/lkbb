@@ -61,32 +61,89 @@ export async function POST(req: Request) {
   const auth = await requireSuperAdmin()
   if (!auth.ok) return NextResponse.json({ error: "SUPER_ADMIN required" }, { status: auth.status })
   const body = await req.json()
-  const { slug, name, organizer_name, description, event_date, status } = body
+  const { slug, name, organizer_name, description, event_date, status, template_id, domain_mode } = body
   if (!slug || !name) return NextResponse.json({ error: "slug and name required" }, { status: 400 })
+  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, "-")
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(cleanSlug)) return NextResponse.json({ error: "slug tidak valid (huruf/angka/strip)" }, { status: 400 })
   const service = createServiceSupabase()
   // Check slug unique
-  const { data: existing } = await service.from("events").select("id").eq("slug", slug).maybeSingle()
+  const { data: existing } = await service.from("events").select("id").eq("slug", cleanSlug).maybeSingle()
   if (existing) return NextResponse.json({ error: "Slug already exists" }, { status: 409 })
   const { data, error } = await service.from("events").insert({
-    slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    slug: cleanSlug,
     name,
     organizer_name: organizer_name || "PASKIBRA",
     description: description || "",
     event_date: event_date || null,
     status: status || "DRAFT",
     settings: {},
+    template_id: template_id || null,
   } as any).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  // Auto-create domain: slug.lkbb.vercel.app
+  const eventId = (data as any).id as string
+  // Domain: lkbb.my.id (production) atau lkbb.vercel.app (dev/preview)
+  const useCustom = (domain_mode || "myid") === "myid"
+  const domain = useCustom ? `${cleanSlug}.lkbb.my.id` : `${cleanSlug}.lkbb.vercel.app`
+  let domainState = { domain, ssl: "pending", vercel: "skipped" }
   try {
-    await service.from("event_domains").insert({ event_id: (data as any).id, domain: `${slug.toLowerCase()}.lkbb.vercel.app`, is_primary: true, is_verified: true } as any)
+    await service.from("event_domains").insert({ event_id: eventId, domain, subdomain: cleanSlug, is_primary: true, is_verified: false, ssl_status: "pending" } as any)
   } catch {}
+  // Coba daftarkan domain ke Vercel otomatis (butuh VERCEL_TOKEN + VERCEL_PROJECT_ID/NAME)
+  try {
+    const vres = await provisionVercelDomain(domain)
+    domainState = { domain, ssl: vres.ssl || "pending", vercel: vres.ok ? "added" : `gagal: ${vres.error || "unknown"}` }
+    if (vres.ok) {
+      await service.from("event_domains").update({ is_verified: true, ssl_status: "active" } as any).eq("event_id", eventId).eq("domain", domain)
+    }
+  } catch (e: any) {
+    domainState = { domain, ssl: "pending", vercel: `gagal: ${e?.message || e}` }
+  }
   // Also create a competitions row for backward compat
   try {
-    await service.from("competitions").insert({ name, tagline: description, state: status || "DRAFT", event_id: (data as any).id, settings: {} } as any)
+    await service.from("competitions").insert({ name, tagline: description, state: status || "DRAFT", event_id: eventId, settings: {} } as any)
   } catch {}
-  await service.from("audit_logs").insert({ user_id: auth.user.id, action: "event_create", target: (data as any).id, details: body, event_id: (data as any).id } as any)
-  return NextResponse.json(data)
+  // Terapkan template bila dipilih (1 klik penuh)
+  let templateState = "skipped"
+  if (template_id) {
+    try {
+      const { data: tpl } = await service.from("event_templates").select("*").eq("id", template_id).maybeSingle()
+      if (tpl) {
+        const t: any = tpl
+        await service.from("events").update({
+          template_config: { themeTokens: t.theme_tokens || {}, layoutVariant: t.layout_variant, heroVariant: t.hero_variant, componentRegistry: t.component_registry || {} },
+          component_registry: t.component_registry || {},
+          branding: t.branding_assets || {},
+          settings: t.default_settings || {},
+          updated_at: new Date().toISOString(),
+        } as any).eq("id", eventId)
+        try {
+          await service.from("competitions").update({ settings: t.default_settings || {} } as any).eq("event_id", eventId)
+        } catch {}
+        templateState = "applied"
+      } else {
+        templateState = "template tidak ditemukan"
+      }
+    } catch (e: any) {
+      templateState = `gagal: ${e?.message || e}`
+    }
+  }
+  await service.from("audit_logs").insert({ user_id: auth.user.id, action: "event_create", target: eventId, details: { ...body, domain, templateState }, event_id: eventId } as any)
+  return NextResponse.json({ ...data, provisioning: { domain: domainState, template: templateState } })
+}
+
+// Daftarkan domain ke Vercel via API. Return {ok, ssl?, error?}
+async function provisionVercelDomain(domain: string): Promise<{ ok: boolean; ssl?: string; error?: string }> {
+  const token = process.env.VERCEL_TOKEN
+  const project = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT_NAME
+  if (!token || !project) return { ok: false, error: "VERCEL_TOKEN/VERCEL_PROJECT_ID belum di-set" }
+  const res = await fetch(`https://api.vercel.com/v10/projects/${project}/domains`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name: domain }),
+  })
+  const j = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, error: (j as any)?.error?.message || `HTTP ${res.status}` }
+  return { ok: true, ssl: "pending" }
 }
 
 export async function PATCH(req: Request) {

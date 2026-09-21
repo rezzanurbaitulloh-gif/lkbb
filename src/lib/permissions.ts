@@ -15,13 +15,13 @@ export type AdminSectionKey =
   | "dashboard" | "cms" | "peleton" | "transaksi" | "klasemen" | "results"
   | "offline-recap" | "pengumuman" | "timeline" | "juri" | "sponsor"
   | "settings" | "audit-log" | "access"
-  | "users" | "roles"
+  | "users" | "roles" | "events" | "templates" | "events" | "templates"
 
 export interface SectionDef {
   key: AdminSectionKey
   label: string
   href: string
-  group: "RINGKASAN" | "KOMPETISI" | "KONTEN" | "AKSES" | "SISTEM"
+  group: "RINGKASAN" | "KOMPETISI" | "KONTEN" | "AKSES" | "SISTEM" | "PLATFORM"
   super: Scope   // selalu 'all'
   admin: Scope   // 'own' | 'none'
   note: string
@@ -45,14 +45,20 @@ export const ACCESS_MATRIX: SectionDef[] = [
   // ——— AKSES ———
   { key: "access", label: "Akses & Admin", href: "/admin/access", group: "AKSES", super: "all", admin: "own", note: "Kelola admin event sendiri (super: semua + matriks global)" },
   { key: "users", label: "Pengguna", href: "/admin/users", group: "AKSES", super: "all", admin: "none", note: "Pengguna global — super saja" },
+  // ——— PLATFORM (super saja: sewa multi-event) ———
+  { key: "events", label: "Kelola Event", href: "/admin/events", group: "PLATFORM", super: "all", admin: "none", note: "Buat & provisioning web sewa (subdomain)" },
+  { key: "templates", label: "Template", href: "/admin/templates", group: "PLATFORM", super: "all", admin: "none", note: "Template UI/UX, 1 klik terapkan ke event" },
   // ——— SISTEM ———
   { key: "settings", label: "Pengaturan", href: "/admin/settings", group: "SISTEM", super: "all", admin: "own", note: "Pengaturan, harga suara & countdown event sendiri" },
   { key: "audit-log", label: "Riwayat", href: "/admin/audit-log", group: "SISTEM", super: "all", admin: "own", note: "Log event sendiri, baca saja" },
   { key: "roles", label: "Peran", href: "/admin/roles", group: "SISTEM", super: "all", admin: "own", note: "Dokumentasi peran" },
+  // ——— PLATFORM (super saja: sewa multi-event) ———
+  { key: "events", label: "Kelola Event", href: "/admin/events", group: "PLATFORM", super: "all", admin: "none", note: "Buat & provisioning web sewa (subdomain)" },
+  { key: "templates", label: "Template", href: "/admin/templates", group: "PLATFORM", super: "all", admin: "none", note: "Template UI/UX, 1 klik terapkan ke event" },
 ]
 
 // Tabel super-only (tulis via API generik dilarang untuk ADMIN).
-export const SUPER_ONLY_TABLES = ["profiles", "permissions", "role_permissions", "user_permissions", "platform_roles", "event_domains"]
+export const SUPER_ONLY_TABLES = ["profiles", "permissions", "role_permissions", "user_permissions", "platform_roles", "event_domains", "event_templates", "events"]
 
 // Tabel event-scoped (wajib lolos cek event_id untuk ADMIN).
 export const EVENT_TABLES = [
@@ -99,6 +105,8 @@ export function sectionForPath(pathname: string): AdminSectionKey | null {
     ["/admin/access", "access"],
     ["/admin/users", "users"],
     ["/admin/roles", "roles"],
+    ["/admin/events", "events"],
+    ["/admin/templates", "templates"],
   ]
   for (const [prefix, key] of map) {
     if (p === prefix || p.startsWith(prefix + "/")) return key

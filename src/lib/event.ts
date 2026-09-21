@@ -18,6 +18,13 @@ function normalizeHost(host: string | null): string {
   return host.split(":")[0].toLowerCase().trim()
 }
 
+// Host khusus super-admin: admin.lkbb.my.id (prod) / admin.lkbb.vercel.app (dev).
+// Di host ini publik diarahkan ke dasbor super (/super); event-site biasa tidak berlaku.
+export function isAdminHost(host: string | null): boolean {
+  const h = normalizeHost(host)
+  return h === "admin.lkbb.my.id" || h === "admin.lkbb.vercel.app"
+}
+
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -44,12 +51,23 @@ export async function resolveEventFromHost(host: string | null): Promise<{ event
       return { event: ev, eventId: ev.id, slug: ev.slug }
     }
   }
-  // 2) subdomain: xxx.lkbb.vercel.app -> slug xxx
+  // 2) subdomain: xxx.lkbb.vercel.app -> slug xxx (dev/preview)
   // NOTE: Vercel Hobby tidak support wildcard *.vercel.app (akan ERR_CONNECTION_CLOSED)
   // Untuk preview di vercel.app, gunakan path /e/[slug] atau ?event_id= — subdomain hanya untuk custom domain
   const m = h.match(/^([a-z0-9-]+)\.lkbb\.vercel\.app$/)
   if (m) {
     const slug = m[1]
+    const { data: ev } = await service.from("events").select("*").eq("slug", slug).maybeSingle()
+    if (ev) {
+      c.map.set(h, { event: ev, at: Date.now() })
+      return { event: ev, eventId: ev.id, slug: ev.slug }
+    }
+  }
+  // 2b) subdomain custom: xxx.lkbb.my.id -> slug xxx (production multi-tenant)
+  // "admin" dan "www" dikecualikan — ditangani sebagai host khusus, bukan event
+  const mc = h.match(/^([a-z0-9-]+)\.lkbb\.my\.id$/)
+  if (mc && mc[1] !== "admin" && mc[1] !== "www") {
+    const slug = mc[1]
     const { data: ev } = await service.from("events").select("*").eq("slug", slug).maybeSingle()
     if (ev) {
       c.map.set(h, { event: ev, at: Date.now() })

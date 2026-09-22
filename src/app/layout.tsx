@@ -5,6 +5,7 @@ import { AppProvider } from "@/lib/store"
 import { RealtimeSupportNotification } from "@/components/realtime/RealtimeSupportNotification"
 import { ToastProvider } from "@/components/ui/toast"
 import { AppearanceProvider } from "@/components/layout/AppearanceProvider"
+import ThemeStyle from "@/components/layout/ThemeStyle"
 import { cn } from "@/lib/utils";
 
 const instrument = Instrument_Sans({
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" className={cn("h-full dark", "antialiased", instrument.variable, geist.variable)} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{__html: `(function(){try{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('lkbb-theme','dark')}catch(e){document.documentElement.classList.add('dark')}})()`}} />
+        <ThemeStyle />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/20">
         <ToastProvider>

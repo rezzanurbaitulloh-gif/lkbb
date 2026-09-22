@@ -3,25 +3,31 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/toast"
 import { BUILTIN_TEMPLATES } from "@/lib/templates"
+import { TemplatePreviewCard } from "@/components/admin/TemplatePreviewCard"
 
-// Super-only: kelola template UI/UX + terapkan 1 klik ke event
+// Super-only: kartu visual template + pratinjau + konfirmasi terapkan.
 export default function TemplatesPage() {
   const { toast } = useToast()
   const [templates, setTemplates] = useState<any[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [applying, setApplying] = useState<string | null>(null)
+  const [preview, setPreview] = useState<any>(null)
+  const [confirm, setConfirm] = useState<any>(null)
+  const [confirmEvent, setConfirmEvent] = useState("")
+  const [applying, setApplying] = useState(false)
   const [form, setForm] = useState<any>({ name: "", description: "", category: "generic", layout_variant: "default", hero_variant: "default" })
-  const [applySel, setApplySel] = useState<Record<string, string>>({})
 
   const load = async () => {
     const [tr, er] = await Promise.all([fetch("/api/admin/templates"), fetch("/api/admin/events")])
     if (tr.ok) setTemplates(await tr.json().catch(() => []))
-    if (er.ok) setEvents(await er.json().catch(() => []))
+    if (er.ok) {
+      const ev = await er.json().catch(() => [])
+      setEvents(Array.isArray(ev) ? ev : [])
+    }
   }
   useEffect(() => { load() }, [])
 
@@ -48,15 +54,21 @@ export default function TemplatesPage() {
     load()
   }
 
-  const handleApply = async (templateId: string) => {
-    const eventId = applySel[templateId]
-    if (!eventId) { toast({ title: "Pilih event dulu", variant: "error" }); return }
-    setApplying(templateId)
-    const res = await fetch("/api/admin/templates/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event_id: eventId, template_id: templateId }) })
+  const openConfirm = (t: any) => {
+    setConfirm(t)
+    setConfirmEvent("")
+  }
+
+  const handleApply = async () => {
+    if (!confirm || !confirmEvent) { toast({ title: "Pilih event dulu", variant: "error" }); return }
+    setApplying(true)
+    const res = await fetch("/api/admin/templates/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event_id: confirmEvent, template_id: confirm.id }) })
     const j = await res.json().catch(() => ({}))
-    setApplying(null)
+    setApplying(false)
     if (!res.ok) { toast({ title: "Gagal", description: j.error, variant: "error" }); return }
-    toast({ title: `Template diterapkan (${j.via})`, variant: "success" })
+    const evName = events.find((e: any) => e.id === confirmEvent)?.name || confirmEvent
+    toast({ title: `Diterapkan ke ${evName} (${j.via})`, variant: "success" })
+    setConfirm(null)
   }
 
   const toggleActive = async (t: any) => {
@@ -69,7 +81,7 @@ export default function TemplatesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[18px] font-black">Template UI/UX</h1>
-          <p className="text-xs text-muted-foreground">Pilih template → pilih event → terapkan penuh 1 klik.</p>
+          <p className="text-xs text-muted-foreground">Lihat kartu pratinjau → terapkan ke event dengan konfirmasi.</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="rounded-full" onClick={seedBuiltins} disabled={saving}>Seed Bawaan</Button>
@@ -77,26 +89,57 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      <div className="grid gap-3">
-        {templates.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Belum ada template. Klik "Seed Bawaan".</div>}
+      {templates.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">Belum ada template. Klik "Seed Bawaan".</div>}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {templates.map((t: any) => (
-          <div key={t.id} className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] p-4 space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-black truncate">{t.name} {!t.is_active && <span className="text-xs text-muted-foreground">(nonaktif)</span>}</div>
-                <div className="text-xs text-muted-foreground truncate">{t.description} • {t.category} • layout:{t.layout_variant} • hero:{t.hero_variant}</div>
-              </div>
-              <Button variant="ghost" size="sm" className="rounded-full text-xs" onClick={() => toggleActive(t)}>{t.is_active ? "Nonaktifkan" : "Aktifkan"}</Button>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={applySel[t.id] || ""} onValueChange={(v) => setApplySel({ ...applySel, [t.id]: v })} options={[{ value: "", label: "— Pilih event —" }, ...events.map((e: any) => ({ value: e.id, label: `${e.slug} — ${e.name}` }))]} />
-              <Button size="sm" className="rounded-full shrink-0" disabled={applying === t.id} onClick={() => handleApply(t.id)}>
-                {applying === t.id ? "Menerapkan..." : "Terapkan ke Event"}
+          <div key={t.id} className="space-y-2">
+            <TemplatePreviewCard template={t} onApply={(tpl) => { setPreview(tpl); }} />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="rounded-full flex-1 text-xs" onClick={() => toggleActive(t)}>
+                {t.is_active ? "Nonaktifkan" : "Aktifkan"}
+              </Button>
+              <Button size="sm" className="rounded-full flex-1 text-xs" disabled={!t.is_active} onClick={() => openConfirm(t)}>
+                Terapkan…
               </Button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Pratinjau besar */}
+      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pratinjau: {preview?.name}</DialogTitle>
+            <DialogDescription>{preview?.description} • {preview?.category} • layout {preview?.layout_variant} • hero {preview?.hero_variant}</DialogDescription>
+          </DialogHeader>
+          {preview && <TemplatePreviewCard template={preview} />}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreview(null)}>Tutup</Button>
+            <Button onClick={() => { setPreview(null); openConfirm(preview); }} disabled={preview?.is_active === false}>Terapkan…</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Konfirmasi terapkan */}
+      <Dialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Penerapan</DialogTitle>
+            <DialogDescription>
+              Template <b>{confirm?.name}</b> akan menimpa warna, layout, hero, dan pengaturan dasar event tujuan. Data tim/transaksi tidak tersentuh.
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <label className="text-xs font-bold">Terapkan ke event</label>
+            <Select value={confirmEvent} onValueChange={setConfirmEvent} options={[{ value: "", label: "— Pilih event —" }, ...events.map((e: any) => ({ value: e.id, label: `${e.slug} — ${e.name}` }))]} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirm(null)}>Batal</Button>
+            <Button onClick={handleApply} disabled={applying || !confirmEvent}>{applying ? "Menerapkan..." : "Ya, Terapkan"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[520px]">

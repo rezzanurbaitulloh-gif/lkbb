@@ -251,6 +251,10 @@ export function EventAdminManager({ showEventFilter = false }: { showEventFilter
   const [email, setEmail] = useState("")
   const [addEvent, setAddEvent] = useState<string>("")
   const [saving, setSaving] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newPass, setNewPass] = useState("")
+  const [newRole, setNewRole] = useState("ADMIN")
 
   const load = async ()=>{
     const qs = filterEvent ? `?event_id=${encodeURIComponent(filterEvent)}` : ""
@@ -281,6 +285,18 @@ export function EventAdminManager({ showEventFilter = false }: { showEventFilter
     toast({ title:"Admin event dihapus", variant:"success" })
     load()
   }
+  const handleCreate = async ()=>{
+    if(!email.trim() || !newPass || !addEvent){ toast({ title:"Email, kata sandi & event wajib", variant:"error" }); return }
+    setSaving(true)
+    const res = await fetch("/api/admin/members",{ method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ email: email.trim(), password: newPass, name: newName.trim() || undefined, event_id: addEvent, role: newRole }) })
+    const j = await res.json().catch(()=> ({}))
+    setSaving(false)
+    if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+    toast({ title: j.created ? "Akun baru dibuat + ditambahkan" : "Pengguna ditambahkan ke event", variant:"success" })
+    setEmail(""); setNewPass(""); setNewName("")
+    setShowCreate(false)
+    load()
+  }
 
   return (
     <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur overflow-hidden">
@@ -296,8 +312,20 @@ export function EventAdminManager({ showEventFilter = false }: { showEventFilter
       <div className="p-4 grid sm:grid-cols-[1fr_220px_auto] gap-2 border-b border-white/[0.06]">
         <Input value={email} onChange={e=> setEmail(e.target.value)} placeholder="Email pengguna…" />
         {eventOptions.length>0 && <Select value={addEvent} onValueChange={setAddEvent} options={eventOptions} />}
-        <Button onClick={handleAdd} disabled={saving} className="rounded-full gap-2"><UserPlus className="h-4 w-4"/>{saving ? "Menyimpan…" : "Tambah Admin"}</Button>
+        <div className="flex gap-2">
+          <Button onClick={handleAdd} disabled={saving} className="rounded-full gap-2"><UserPlus className="h-4 w-4"/>{saving ? "Menyimpan…" : "Tambah Admin"}</Button>
+          <Button variant="outline" onClick={()=> setShowCreate(!showCreate)} className="rounded-full text-xs">Akun Baru</Button>
+        </div>
       </div>
+      {showCreate && (
+        <div className="p-4 grid sm:grid-cols-2 gap-2 border-b border-white/[0.06] bg-white/[0.02]">
+          <Input value={newName} onChange={e=> setNewName(e.target.value)} placeholder="Nama tampilan" />
+          <Input value={newPass} onChange={e=> setNewPass(e.target.value)} type="password" placeholder="Kata sandi (min 6)" />
+          <Select value={newRole} onValueChange={setNewRole} options={[{value:"ADMIN",label:"ADMIN event ini"},{value:"USER",label:"USER event ini"}]} />
+          <Button onClick={handleCreate} disabled={saving} className="rounded-full">{saving ? "Memproses..." : "Buat Akun + Tambahkan"}</Button>
+          <p className="sm:col-span-2 text-[11px] text-muted-foreground">Akun baru hanya berlaku di event ini. Di event lain ia tampil sebagai user biasa.</p>
+        </div>
+      )}
       <div className="max-h-[320px] overflow-y-auto">
         {members.length===0 ? <div className="p-6 text-center text-sm text-muted-foreground">Belum ada admin event.</div> :
           members.map((m:any)=> {

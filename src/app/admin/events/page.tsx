@@ -40,6 +40,17 @@ export default function EventsPage() {
     load()
   }
 
+  const handleDelete = async (e: any) => {
+    if (e.slug === "lkbbvote") { toast({ title: "Event utama tidak boleh dihapus", variant: "error" }); return }
+    if (!confirm(`Hapus web "${e.name}" (${e.slug})?\n\nSeluruh data event + domain Vercel ikut terhapus. Tidak bisa dibatalkan.`)) return
+    const res = await fetch(`/api/admin/events?id=${e.id}`, { method: "DELETE" })
+    const j = await res.json().catch(() => ({}))
+    if (!res.ok) { toast({ title: "Gagal", description: j.error, variant: "error" }); return }
+    const failed = (j.vercel || []).filter((v: any) => !v.ok)
+    toast({ title: "Event dihapus", description: failed.length ? `Domain gagal di Vercel: ${failed.map((v: any) => v.domain).join(", ")} — hapus manual` : "Domain Vercel ikut terhapus", variant: "success" })
+    load()
+  }
+
   return (
     <div className="p-3 sm:p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -64,10 +75,17 @@ export default function EventsPage() {
         {events.map((e: any) => (
           <div key={e.id} className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-black truncate">{e.name}</div>
+              <div className="text-sm font-black truncate">{e.name} {e.slug === "lkbbvote" && <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-[10px] text-black">UTAMA</span>}</div>
               <div className="text-xs text-muted-foreground truncate">/{e.slug} • {e.status} • {e.event_domains?.map((d: any) => d.domain).join(", ")}</div>
             </div>
-            <div className="text-xs font-mono">{e.id.slice(0, 8)}</div>
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-mono">{e.id.slice(0, 8)}</div>
+              {e.slug !== "lkbbvote" ? (
+                <Button variant="ghost" size="sm" className="rounded-full h-7 text-xs text-red-500" onClick={() => handleDelete(e)}>Hapus</Button>
+              ) : (
+                <span className="text-[10px] text-muted-foreground" title="Event utama tidak boleh dihapus">🔒</span>
+              )}
+            </div>
           </div>
         ))}
       </div>

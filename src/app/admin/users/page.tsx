@@ -17,7 +17,22 @@ export default function Users(){
   const [showPass,setShowPass]=useState(false)
   const [saving,setSaving]=useState(false)
   const [selected,setSelected]=useState<Set<string>>(new Set())
-  const load = ()=>{ const s=createBrowserSupabase(); s.from("profiles").select("*").order("created_at",{ascending:false}).then(({data})=> setUsers(data||[])) }
+  const [membersByUser,setMembersByUser]=useState<Record<string,{slug:string;role:string}[]>>({})
+  const load = ()=>{
+    const s=createBrowserSupabase();
+    s.from("profiles").select("*").order("created_at",{ascending:false}).then(({data})=> setUsers(data||[]))
+    // Peran per event: admin event A tampil sebagai user di event lain
+    fetch("/api/admin/event-members").then(r=> r.json()).then(j=>{
+      const evMap: Record<string,string> = {}
+      for(const e of Object.values((j.events||{}) as Record<string,any>)) evMap[(e as any).id] = (e as any).slug
+      const m: Record<string,{slug:string;role:string}[]> = {}
+      for(const mem of (j.members||[])){
+        const mm = mem as any
+        ;(m[mm.user_id] = m[mm.user_id] || []).push({ slug: evMap[mm.event_id] || mm.event_id.slice(0,8), role: mm.role })
+      }
+      setMembersByUser(m)
+    }).catch(()=>{})
+  }
   useEffect(()=>{ load() },[])
   const toggleSelect = (id:string)=>{ const n=new Set(selected); if(n.has(id)) n.delete(id); else n.add(id); setSelected(n) }
   const toggleAll = ()=>{ if(selected.size===users.length) setSelected(new Set()); else setSelected(new Set(users.map((u:any)=>u.id))) }
@@ -53,7 +68,15 @@ export default function Users(){
               <div><input type="checkbox" checked={selected.has(u.id)} onChange={()=> toggleSelect(u.id)} /></div>
               <div className="font-bold truncate">{u.public_name || "-"}</div>
               <div className="text-muted-foreground text-xs truncate">{u.email}</div>
-              <div><span className={`rounded-full px-2 py-1 text-xs font-bold ${u.role==="SUPER_ADMIN" ? "bg-primary text-black" : u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="SUPER_ADMIN" ? "super admin" : u.role==="ADMIN" ? "admin" : "user"}</span></div>
+              <div>
+                <div><span className={`rounded-full px-2 py-1 text-xs font-bold ${u.role==="SUPER_ADMIN" ? "bg-primary text-black" : u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="SUPER_ADMIN" ? "super admin" : u.role==="ADMIN" ? "admin" : "user"}</span></div>
+                {u.role!=="SUPER_ADMIN" && (membersByUser[u.id]||[]).length>0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">{(membersByUser[u.id]||[]).map((m:any,i:number)=>(<span key={i} className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold">admin@{m.slug}</span>))}</div>
+                )}
+                {u.role!=="SUPER_ADMIN" && !(membersByUser[u.id]||[]).length && (
+                  <div className="mt-1 text-[10px] text-muted-foreground">user di semua event</div>
+                )}
+              </div>
               <div><Button variant="ghost" size="sm" className="rounded-full h-7 text-xs gap-1" onClick={()=> openEdit(u)}><Pencil className="h-3 w-3"/>Kelola</Button></div>
             </div>
           ))}
@@ -67,7 +90,7 @@ export default function Users(){
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold truncate">{u.public_name || "-"}</div>
                 <div className="text-xs text-muted-foreground truncate">{u.email}</div>
-                <div className="mt-1 flex gap-1.5"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${u.role==="SUPER_ADMIN" ? "bg-primary text-black" : u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="SUPER_ADMIN" ? "super admin" : u.role==="ADMIN" ? "admin" : "user"}</span><span className="rounded-full bg-emerald-500 text-black px-2 py-0.5 text-[11px] font-bold">Aktif</span></div>
+                <div className="mt-1 flex flex-wrap gap-1.5"><span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${u.role==="SUPER_ADMIN" ? "bg-primary text-black" : u.role==="ADMIN" ? "bg-amber-500 text-black" : "bg-secondary"}`}>{u.role==="SUPER_ADMIN" ? "super admin" : u.role==="ADMIN" ? "admin" : "user"}</span>{u.role!=="SUPER_ADMIN" && (membersByUser[u.id]||[]).map((m:any,i:number)=>(<span key={i} className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-bold">admin@{m.slug}</span>))}<span className="rounded-full bg-emerald-500 text-black px-2 py-0.5 text-[11px] font-bold">Aktif</span></div>
               </div>
               <Button variant="ghost" size="sm" className="rounded-full h-7 text-xs gap-1 shrink-0" onClick={()=> openEdit(u)}><Pencil className="h-3 w-3"/>Kelola</Button>
             </div>

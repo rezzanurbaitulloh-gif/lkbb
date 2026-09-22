@@ -49,16 +49,32 @@ function useCountdown(target: string){
 }
 
 export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?: any } = {}){
-  const cd=useCountdown("2026-10-24T00:00:00+07:00")
-  // Jika ada data real dari DB, mapping ke format card heritage (isolasi per event)
-  const dynamicPeserta = (peletons && peletons.length > 0) ? peletons.slice(0,8).map((p:any, i:number)=> ({
+  const cd=useCountdown(event?.event_date ? `${event.event_date}T00:00:00+07:00` : "2026-10-24T00:00:00+07:00")
+  // Data dinamis realtime — preview tanpa props tampilkan sampel, event real kosong tampilkan empty
+  const isPreview = peletons === undefined
+  const hasRealData = !!(peletons && peletons.length > 0)
+  const dynamicPeserta = hasRealData ? peletons!.slice(0,8).map((p:any, i:number)=> ({
     n: String(p.number || i+1).padStart(2,"0"),
     name: p.name,
-    sub: `${p.category || "Putra"} • ${p.city || "Kertosono"}`,
-    vote: p.vote || p.total_ballots || p.online_ballots || "—",
-    img: p.image_url || p.image || "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&auto=format&fit=crop&q=60",
+    sub: `${p.category || "Putra"} • ${p.city || p.school?.split(" ").pop() || "Kertosono"}`,
+    vote: p.vote ?? p.total_ballots ?? p.online_ballots ?? 0,
+    img: p.image_url || p.image || p.logo_url || "",
   })) : null
-  const displayPeserta = dynamicPeserta || peserta
+  const displayPeserta = dynamicPeserta || (isPreview ? peserta : [])
+  // Leaderboard dinamis dari data real, sort by vote desc
+  const dynamicLeaderboard = hasRealData ? [...peletons!].sort((a:any,b:any)=>{
+    const av = Number(a.total_ballots ?? a.online_ballots ?? a.vote ?? 0)
+    const bv = Number(b.total_ballots ?? b.online_ballots ?? b.vote ?? 0)
+    return bv - av
+  }).slice(0,5).map((p:any,i:number)=> ({
+    r: i+1,
+    name: p.name,
+    sub: `${p.category || "Putra"} • ${p.city || "Kertosono"}`,
+    vote: String(p.total_ballots ?? p.online_ballots ?? p.vote ?? 0),
+    pct: p.pct || `${((Number(p.total_ballots||0)/ Math.max(1, peletons!.reduce((s:any,x:any)=> s+Number(x.total_ballots||0),0)))*100).toFixed(1)}%`,
+  })) : null
+  const displayLeaderboard = dynamicLeaderboard || leaderboard
+  const topTeam = hasRealData ? peletons![0] : null
   return (
     <div className="min-h-screen bg-[#060504] text-[#FFF8E7] selection:bg-[#C9A86A]/30">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
@@ -97,19 +113,31 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
           <div className="absolute inset-0 bg-gradient-to-r from-[#0A0907] via-[#0A0907]/55 to-[#0A0907]/10" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#060504] via-transparent to-black/20" />
         </div>
-        {/* Gunungan ornament right */}
-        <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[340px] lg:block opacity-90" aria-hidden>
-          <svg viewBox="0 0 340 700" fill="none" className="h-full w-full">
-            <path d="M240 0 C 260 80 300 180 280 280 C 260 380 200 480 240 700 L340 700 L340 0 Z" fill="#0A0907" opacity="0.95"/>
-            <path d="M255 18 Q 285 90 270 180 Q 255 250 265 320 Q 245 420 255 600" stroke="#C9A86A" strokeWidth="1.2" fill="none" opacity="0.9"/>
-            <path d="M272 40 Q 295 110 280 190" stroke="#C9A86A" strokeWidth="0.8" opacity="0.6" fill="none"/>
-            <g stroke="#C9A86A" strokeWidth="0.6" opacity="0.5" fill="none">
-              <circle cx="270" cy="120" r="28"/><circle cx="270" cy="200" r="18"/><path d="M250 90 L290 90 M250 130 L290 130 M258 105 L282 105"/>
-            </g>
-          </svg>
+        {/* Gunungan ornament right - authentic wayang kulit kayon from Wikimedia Commons */}
+        <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[380px] lg:block overflow-hidden opacity-[0.92]" aria-hidden>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/COLLECTIE_TROPENMUSEUM_Wajangfiguur_voorstellende_de_berg_Gunungan_TMnr_15-954-97.jpg/800px-COLLECTIE_TROPENMUSEUM_Wajangfiguur_voorstellende_de_berg_Gunungan_TMnr_15-954-97.jpg"
+            alt=""
+            className="h-full w-full object-cover object-center"
+            style={{ filter: "sepia(1) hue-rotate(18deg) saturate(1.2) brightness(0.85) contrast(1.1)", mixBlendMode: "screen" }}
+            loading="lazy"
+            onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}}
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#0A0907]/20 to-[#0A0907]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0907] via-transparent to-transparent w-[40px]" />
         </div>
-        {/* Batik bottom */}
-        <div className="pointer-events-none absolute bottom-0 inset-x-0 h-[36px] opacity-[0.18]" style={{backgroundImage:`radial-gradient(circle at 1px 1px, #C9A86A 1px, transparent 0)`, backgroundSize:"18px 18px"}} />
+        {/* Batik bottom - authentic Mega Mendung pattern */}
+        <div className="pointer-events-none absolute bottom-0 inset-x-0 h-[42px] opacity-[0.14] overflow-hidden" aria-hidden>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Batik_Mega_Mendung.jpg/800px-Batik_Mega_Mendung.jpg"
+            alt=""
+            className="h-full w-full object-cover object-center"
+            style={{ filter: "sepia(0.6) saturate(0.7) brightness(0.6)", mixBlendMode: "soft-light" }}
+            loading="lazy"
+            onError={(e)=>{(e.target as HTMLImageElement).style.display='none'}}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#060504] to-transparent" />
+        </div>
 
         <div className="relative mx-auto grid max-w-[1280px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.9fr] lg:py-10">
           {/* Left copy */}
@@ -198,57 +226,75 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
           ))}
         </div>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {displayPeserta.map(p=> (
-            <article key={p.n} className="group overflow-hidden rounded-[14px] border border-white/10 bg-[#141210] hover:border-[#C9A86A]/30 hover:shadow-[0_0_20px_rgba(201,168,106,0.15)] transition">
-              <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
-                <span className="absolute left-2 top-2 z-10 rounded-full bg-[#0A0907]/70 px-2 py-0.5 text-[11px] font-bold text-[#C9A86A] border border-white/10"> {p.n}</span>
-                <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70 hover:text-white">♡</button>
-                <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-              </div>
-              <div className="p-3">
-                <div className="text-sm font-bold leading-tight text-[#F5E6C8]">{p.name}</div>
-                <div className="text-xs text-white/50">{p.sub}</div>
-                <div className="mt-3 flex items-center justify-between">
-                  <Link href="/dukungan" className="rounded-full bg-[#E8D9B8] px-3 py-1.5 text-xs font-bold text-black hover:bg-[#D9C08A]">Vote Sekarang</Link>
-                  <span className="text-xs text-white/50 inline-flex items-center gap-1">◎ {p.vote}</span>
+        {displayPeserta.length === 0 ? (
+          <div className="mt-6 rounded-xl border border-dashed border-white/10 p-10 text-center">
+            <p className="text-sm text-white/60">Belum ada peserta di event ini.</p>
+            <p className="mt-1 text-xs text-white/30">Admin akan menambahkan tim — data akan muncul realtime.</p>
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {displayPeserta.map(p=> (
+              <article key={p.n} className="group overflow-hidden rounded-[14px] border border-white/10 bg-[#141210] hover:border-[#C9A86A]/30 hover:shadow-[0_0_20px_rgba(201,168,106,0.15)] transition">
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
+                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#0A0907]/70 px-2 py-0.5 text-[11px] font-bold text-[#C9A86A] border border-white/10"> {p.n}</span>
+                  <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70 hover:text-white">♡</button>
+                  {p.img ? <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/> : <div className="h-full w-full grid place-items-center text-white/20 text-xs">No Image</div>}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="p-3">
+                  <div className="text-sm font-bold leading-tight text-[#F5E6C8]">{p.name}</div>
+                  <div className="text-xs text-white/50">{p.sub}</div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <Link href="/dukungan" className="rounded-full bg-[#E8D9B8] px-3 py-1.5 text-xs font-bold text-black hover:bg-[#D9C08A]">Vote Sekarang</Link>
+                    <span className="text-xs text-white/50 inline-flex items-center gap-1">◎ {typeof p.vote === 'number' ? p.vote.toLocaleString("id-ID") : p.vote}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* ── LEADERBOARD + DETAIL (two col demo) ── */}
+      {/* ── LEADERBOARD + DETAIL (two col demo) — data dinamis realtime ── */}
       <section className="mx-auto grid max-w-[1280px] gap-6 px-4 pb-8 sm:px-6 lg:grid-cols-[1.4fr_0.9fr]">
-        {/* Left: Detail placeholder */}
+        {/* Left: Detail top team */}
         <div className="rounded-[16px] border border-white/10 bg-[#141210] p-4">
-          <div className="flex gap-3">
-            <img src="https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&auto=format&fit=crop&q=60" alt="SMA N 1" className="h-24 w-24 rounded-xl object-cover border border-white/10"/>
-            <div>
-              <div className="inline-flex rounded-full bg-[#C9A86A] px-2 py-0.5 text-[11px] font-bold text-black">01</div>
-              <h3 className="mt-1 font-[Cinzel] text-lg font-bold leading-tight text-[#F5E6C8]">SMA N 1<br/>Kertosono</h3>
-              <p className="mt-2 max-w-[420px] text-xs leading-relaxed text-white/60">Dengan semangat juang dan disiplin tinggi, SMA N 1 Kertosono menampilkan penampilan terbaik di JAWASOMA 2026.</p>
+          {topTeam ? (
+            <>
+              <div className="flex gap-3">
+                <img src={topTeam.image_url || topTeam.image || displayPeserta[0]?.img} alt={topTeam.name} className="h-24 w-24 rounded-xl object-cover border border-white/10"/>
+                <div>
+                  <div className="inline-flex rounded-full bg-[#C9A86A] px-2 py-0.5 text-[11px] font-bold text-black">{String(topTeam.number || "01").padStart(2,"0")}</div>
+                  <h3 className="mt-1 font-[Cinzel] text-lg font-bold leading-tight text-[#F5E6C8]">{topTeam.name?.split(" ").slice(0,3).join(" ")}<br/>{topTeam.name?.split(" ").slice(3).join(" ") || topTeam.school?.split(" ").pop() || "Kertosono"}</h3>
+                  <p className="mt-2 max-w-[420px] text-xs leading-relaxed text-white/60">{topTeam.description || `Dengan semangat juang dan disiplin tinggi, ${topTeam.name} menampilkan penampilan terbaik di JAWASOMA 2026.`}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Total Suara</div><div className="font-bold text-[#F5E6C8]">{Number(topTeam.total_ballots ?? topTeam.online_ballots ?? topTeam.vote ?? displayLeaderboard[0]?.vote ?? 0).toLocaleString("id-ID")}</div></div>
+                <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Persentase</div><div className="font-bold text-[#C9A86A]">{displayLeaderboard[0]?.pct || "—"}</div></div>
+                <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Posisi</div><div className="font-bold text-[#F5E6C8]">#1</div></div>
+              </div>
+              <Link href={`/tim/${topTeam.slug || ""}`} className="mt-4 flex w-full justify-center rounded-full bg-[#E8D9B8] py-2.5 text-sm font-bold text-black hover:bg-[#D9C08A]">Dukung Tim Ini</Link>
+              <p className="mt-2 text-center text-xs text-white/40">Berikan suaramu untuk {topTeam.name}</p>
+            </>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-sm text-white/50">Belum ada tim terdaftar di event ini.</p>
+              <p className="mt-1 text-xs text-white/30">Data peserta akan muncul otomatis setelah admin menambahkan tim.</p>
             </div>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Total Vote</div><div className="font-bold text-[#F5E6C8]">12.430</div></div>
-            <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Persentase</div><div className="font-bold text-[#C9A86A]">18.6%</div></div>
-            <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Posisi</div><div className="font-bold text-[#F5E6C8]">#1</div></div>
-          </div>
-          <button className="mt-4 w-full rounded-full bg-[#E8D9B8] py-2.5 text-sm font-bold text-black">Dukung Tim Ini</button>
-          <p className="mt-2 text-center text-xs text-white/40">Berikan suaramu untuk SMA N 1 Kertosono</p>
+          )}
           <Link href="/dukungan" className="mt-3 flex w-full justify-center rounded-full bg-[#E8D9B8] py-2 text-xs font-bold text-black">Voting Sekarang</Link>
         </div>
 
-        {/* Right: Leaderboard */}
+        {/* Right: Leaderboard dinamis */}
         <div className="rounded-[16px] border border-white/10 bg-[#0F0D0A] p-4">
           <h3 className="font-[Cinzel] text-lg font-bold text-[#F5E6C8]">Leaderboard</h3>
-          <p className="text-xs text-white/50">Perolehan suara sementara</p>
+          <p className="text-xs text-white/50">Perolehan suara sementara {hasRealData ? "• realtime" : ""}</p>
           <div className="mt-4 space-y-2">
-            {leaderboard.map(r=> (
-              <div key={r.r} className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1A1814] px-3 py-2.5">
+            {displayLeaderboard.length === 0 ? (
+              <div className="py-8 text-center text-xs text-white/30">Belum ada suara masuk.</div>
+            ) : displayLeaderboard.map(r=> (
+              <div key={r.r} className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#1A1814] px-3 py-2.5 hover:border-[#C9A86A]/20">
                 <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${r.r===1 ? "bg-[#C9A86A] text-black" : r.r===2 ? "bg-white/10 text-white" : r.r===3 ? "bg-[#8C6522] text-white" : "bg-white/5 text-white/60"}`}>{r.r}</span>
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-[#2A2216] text-[#C9A86A] text-xs">♔</span>
                 <span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-[#F5E6C8]">{r.name}</span><span className="block truncate text-xs text-white/50">{r.sub}</span></span>
@@ -260,28 +306,32 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
         </div>
       </section>
 
-      {/* ── HASIL AKHIR + FOOTER TEASER ── */}
+      {/* ── HASIL AKHIR + FOOTER TEASER — dinamis ── */}
       <section className="mx-auto max-w-[1280px] px-4 pb-10 sm:px-6">
         <div className="rounded-[16px] border border-white/10 bg-[#0F0D0A] p-6">
           <h3 className="font-[Cinzel] text-lg font-bold text-[#F5E6C8]">Hasil Akhir</h3>
           <p className="text-xs text-white/50">Pemenang Event JAWASOMA 2026</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3 items-end">
-            <div className="rounded-xl border border-white/10 bg-[#1A1814] p-3 text-center">
-              <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300&auto=format&fit=crop&q=60" alt="Juara 2" className="mx-auto h-16 w-16 rounded-xl object-cover"/>
-              <div className="mt-2 text-sm font-bold text-[#F5E6C8]">SMA N 2 Kediri</div>
-              <div className="text-xs text-white/50">Juara 2 • 10.243 (15.3%)</div>
+          {displayLeaderboard.length >= 3 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-3 items-end">
+              <div className="rounded-xl border border-white/10 bg-[#1A1814] p-3 text-center">
+                <img src={displayPeserta[1]?.img} alt={displayLeaderboard[1]?.name} className="mx-auto h-16 w-16 rounded-xl object-cover"/>
+                <div className="mt-2 text-sm font-bold text-[#F5E6C8]">{displayLeaderboard[1]?.name}</div>
+                <div className="text-xs text-white/50">Juara 2 • {displayLeaderboard[1]?.vote} ({displayLeaderboard[1]?.pct})</div>
+              </div>
+              <div className="rounded-xl border border-[#C9A86A]/30 bg-[#1A1814] p-4 text-center shadow-[0_0_30px_rgba(201,168,106,0.15)]">
+                <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-2 border-[#C9A86A] bg-[#2A2216] text-[#C9A86A] text-xl">♔</div>
+                <div className="mt-2 text-sm font-bold text-[#F5E6C8]">{displayLeaderboard[0]?.name}</div>
+                <div className="text-xs font-bold text-[#C9A86A]">Juara 1 • {displayLeaderboard[0]?.vote} ({displayLeaderboard[0]?.pct})</div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#1A1814] p-3 text-center">
+                <img src={displayPeserta[2]?.img} alt={displayLeaderboard[2]?.name} className="mx-auto h-16 w-16 rounded-xl object-cover"/>
+                <div className="mt-2 text-sm font-bold text-[#F5E6C8]">{displayLeaderboard[2]?.name}</div>
+                <div className="text-xs text-white/50">Juara 3 • {displayLeaderboard[2]?.vote} ({displayLeaderboard[2]?.pct})</div>
+              </div>
             </div>
-            <div className="rounded-xl border border-[#C9A86A]/30 bg-[#1A1814] p-4 text-center shadow-[0_0_30px_rgba(201,168,106,0.15)]">
-              <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-2 border-[#C9A86A] bg-[#2A2216] text-[#C9A86A]">♔</div>
-              <div className="mt-2 text-sm font-bold text-[#F5E6C8]">SMA N 1 Kertosono</div>
-              <div className="text-xs font-bold text-[#C9A86A]">Juara 1 • 12.430 (18.6%)</div>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-[#1A1814] p-3 text-center">
-              <img src="https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=300&auto=format&fit=crop&q=60" alt="Juara 3" className="mx-auto h-16 w-16 rounded-xl object-cover"/>
-              <div className="mt-2 text-sm font-bold text-[#F5E6C8]">SMA N 3 Tulungagung</div>
-              <div className="text-xs text-white/50">Juara 3 • 9.876 (14.8%)</div>
-            </div>
-          </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-dashed border-white/10 p-8 text-center text-xs text-white/40">Belum ada hasil — voting masih berlangsung.</div>
+          )}
         </div>
       </section>
 

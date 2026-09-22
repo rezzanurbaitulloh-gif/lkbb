@@ -21,7 +21,14 @@ export default async function ThemeStyle() {
     const entries = Object.entries(theme.vars)
     if (entries.length > 0) {
       css = `:root{${entries.map(([k, v]) => `${k}:${v}`).join(";")}}`
+      // Konsistensi full-site untuk heritage: terapkan gold/beige ke semua halaman via data-attribute
+      // (navbar, card, footer, bottom-nav) — tidak hanya homepage
+      if (theme.layoutVariant === "heritage" || theme.heroVariant === "heritage") {
+        css += `\n[data-template="heritage"]{--color-primary:#C9A86A;--color-background:#0A0907;--color-surface:#1C1914}`
+        css += `\n.template-heritage{--color-primary:#C9A86A}`
+      }
     }
+    // Variant heritage sudah di-handle via warna di atas — layout spesifik di-handle per halaman via heroVariant prop
   } catch {}
   if (!css) return null
   return <style id="lkbb-event-theme" dangerouslySetInnerHTML={{ __html: css }} />

@@ -56,6 +56,14 @@ export default async function HomePage(){
     if (d) displayEvent = d
   } catch {}
   const ev = displayEvent || event || null
+  // Varian hero/layout dari template event (tabel events, bukan competitions).
+  let heroVariant = "default"
+  try {
+    if (eventId) {
+      const { data: erow } = await supabase.from("events").select("template_config").eq("id", eventId).maybeSingle()
+      heroVariant = (erow as any)?.template_config?.heroVariant || "default"
+    }
+  } catch {}
 
   // Dynamic CMS — fetch home sections & site settings (event-aware)
   let cmsSections: any[] = []
@@ -137,7 +145,7 @@ export default async function HomePage(){
     <div className="min-h-screen flex flex-col">
       <Navbar siteSettings={siteSettings} />
       <main className="flex-1 pb-[72px] md:pb-0">
-        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} heroVariant={(ev as any)?.template_config?.heroVariant || "default"} />
+        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} heroVariant={heroVariant} />
         {/* Extra CMS sections after hero (banner, stats, etc.) — order controlled by sort_order */}
         {extraSections.filter((s:any)=> s.sort_order < (cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 999)).map((s:any)=> (
           <CmsSections key={s.id} sections={[s]} />

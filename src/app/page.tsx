@@ -137,7 +137,7 @@ export default async function HomePage(){
     <div className="min-h-screen flex flex-col">
       <Navbar siteSettings={siteSettings} />
       <main className="flex-1 pb-[72px] md:pb-0">
-        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} />
+        <Hero event={ev} cms={heroSection || null} siteSettings={siteSettings} heroVariant={(ev as any)?.template_config?.heroVariant || "default"} />
         {/* Extra CMS sections after hero (banner, stats, etc.) — order controlled by sort_order */}
         {extraSections.filter((s:any)=> s.sort_order < (cmsSections.find((x:any)=> x.key==="featured")?.sort_order ?? 999)).map((s:any)=> (
           <CmsSections key={s.id} sections={[s]} />

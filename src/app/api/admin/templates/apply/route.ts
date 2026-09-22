@@ -5,6 +5,25 @@ import { cookies } from "next/headers"
 import { isSuperAdmin } from "@/lib/event"
 import { mergeTemplateConfig } from "@/lib/templates"
 
+// Samakan site_settings appearance milik event dengan warna template,
+// agar provider klien (AppearanceProvider) dan variabel server sejalan.
+async function syncAppearance(service: any, eventId: string, colors: Record<string, any>) {
+  const primary = colors?.primary
+  if (typeof primary !== "string" || !primary) return
+  const { data: row } = await service
+    .from("site_settings").select("id,value").eq("key", "appearance.primary_color").eq("event_id", eventId).maybeSingle()
+  const cur = (row as any)?.value
+  const shapeLike = typeof cur === "string" ? primary : { value: primary };
+  if (row) {
+    await service.from("site_settings").update({ value: (shapeLike as any), updated_at: new Date().toISOString() }).eq("id", (row as any).id)
+  } else {
+    await service.from("site_settings").insert({
+      key: "appearance.primary_color", value: primary, category: "appearance",
+      description: "Warna primer (sinkron template)", is_public: true, event_id: eventId,
+    })
+  }
+}
+
 async function requireSuperAdmin() {
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -53,6 +72,7 @@ export async function POST(req: Request) {
       p_overrides: overrides || {},
     })
     if (!error && (data as any)?.success !== false) {
+      await syncAppearance(service, event_id, (t.theme_tokens || {})?.colors || {})
       await service.from("audit_logs").insert({ user_id: auth.user.id, action: "template_apply", target: event_id, details: { template_id }, event_id } as any)
       return NextResponse.json({ ok: true, via: "rpc", data })
     }
@@ -79,6 +99,7 @@ export async function POST(req: Request) {
     await service.from("competitions").update({ settings: mergedSettings } as any).eq("event_id", event_id)
   } catch {}
 
+  await syncAppearance(service, event_id, (mergedTheme as any)?.colors || {})
   await service.from("audit_logs").insert({ user_id: auth.user.id, action: "template_apply", target: event_id, details: { template_id }, event_id } as any)
   return NextResponse.json({ ok: true, via: "manual" })
 }

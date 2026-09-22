@@ -31,8 +31,10 @@ function useCountdown(target: string | null){
   return { ...diff, isValid, targetTime: t }
 }
 
-export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; siteSettings?: Record<string, any> }){
+export function Hero({ event, cms, siteSettings, heroVariant }: { event: any; cms?: any; siteSettings?: Record<string, any>; heroVariant?: string }){
   const cmsContent = cms?.content || {}
+  // Varian hero dari template event: default/split | centered | fullscreen (+video = fullscreen)
+  const variant = heroVariant === "centered" || heroVariant === "fullscreen" || heroVariant === "video" ? heroVariant : "default"
   const state = (event?.state as string) || "NOT_STARTED"
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
   const isClosed = state === "VOTING_CLOSED"
@@ -94,36 +96,36 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A09]/90 via-transparent to-[#0A0A09]/30" />
       </div>
       {/* diagonal accents */}
-      <div className="absolute right-[38%] top-0 h-full w-px rotate-[24deg] bg-[#D9FF3F]/25" aria-hidden />
+      <div className="absolute right-[38%] top-0 h-full w-px rotate-[24deg] bg-primary/25" aria-hidden />
       <div className="absolute right-[34%] top-0 h-full w-px rotate-[24deg] bg-white/10" aria-hidden />
 
-      <div className="relative grid lg:grid-cols-[1fr_auto] lg:gap-8">
+      <div className={`relative grid ${variant === "default" ? "lg:grid-cols-[1fr_auto] lg:gap-8" : ""}`}>
         {/* LEFT — headline plek PNG */}
-        <div className="relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:min-h-[560px] lg:px-12 lg:py-14">
+        <div className={`relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:px-12 lg:py-14 ${variant === "default" ? "lg:min-h-[560px]" : "lg:min-h-[560px] items-center text-center"} ${variant === "fullscreen" ? "lg:min-h-[92vh] lg:py-24" : ""}`}>
           <h1 className="font-display font-bold leading-[0.88] tracking-[-0.03em]">
             <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">SUARAMU</span></span>
             <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">ADALAH</span></span>
-            <span className="block text-[44px] text-[#D9FF3F] sm:text-[56px] lg:text-[64px]">KEKUATAN.</span>
+            <span className="block text-[44px] text-primary sm:text-[56px] lg:text-[64px]">KEKUATAN.</span>
           </h1>
-          <p className="mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0]">
+          <p className={`mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0] ${variant !== "default" ? "mx-auto" : ""}`}>
             Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB{yearLabel ? ` ${yearLabel}` : ""}.
           </p>
 
           {dateLabel && (
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#D9FF3F]/30 bg-[#D9FF3F]/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-[#D9FF3F]">
+            <div className={`mt-6 flex flex-wrap items-center gap-3 ${variant !== "default" ? "justify-center" : ""}`}>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-primary">
                 <span className="leading-none">{dateLabel}{venueLabel && (<><br /><span className="text-[#F2F0E9]/80">{venueLabel}</span></>)}</span>
               </div>
             </div>
           )}
           <div className="mt-4">
-            <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-[#D9FF3F] px-5 py-2.5 text-[11px] font-bold tracking-wide text-black transition-transform hover:scale-[1.02]">
+            <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[11px] font-bold tracking-wide text-primary-foreground transition-transform hover:scale-[1.02]">
               LIHAT TIM PESERTA <span aria-hidden>→</span>
             </Link>
           </div>
 
-          <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-[#92918C] uppercase">
-            <span className="text-[#D9FF3F]">↓</span> GULIR KE BAWAH
+          <div className={`mt-10 flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-[#92918C] uppercase ${variant !== "default" ? "justify-center" : ""}`}>
+            <span className="text-primary">↓</span> GULIR KE BAWAH
           </div>
 
           {/* diagonal hairlines dekoratif */}
@@ -133,13 +135,13 @@ export function Hero({ event, cms, siteSettings }: { event: any; cms?: any; site
           </svg>
         </div>
 
-        {/* RIGHT — countdown + 2026 raksasa (di atas background) */}
-        <div className="relative flex flex-col items-start justify-center gap-6 px-5 pb-10 sm:px-8 lg:min-h-[560px] lg:w-[280px] lg:items-end lg:px-0 lg:py-14 lg:pr-12">
+        {/* RIGHT — countdown + tahun raksasa (di atas background) */}
+        <div className={`relative flex flex-col justify-center gap-6 px-5 pb-10 sm:px-8 ${variant === "default" ? "items-start lg:min-h-[560px] lg:w-[280px] lg:items-end lg:px-0 lg:py-14 lg:pr-12" : "items-center text-center lg:py-10"}`}>
 
-          {/* VOTING OPEN + countdown vertikal kanan — plek PNG */}
-          <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-3">
-            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#D9FF3F] animate-pulse" /> {statusLabel}
+          {/* status + countdown — plek PNG */}
+          <div className={`flex gap-4 ${variant === "default" ? "flex-row items-end lg:flex-col lg:items-end lg:gap-3" : "flex-row items-end justify-center"}`}>
+            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> {statusLabel}
             </div>
             <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-2.5">
               {showUnits && units.map(u=> (

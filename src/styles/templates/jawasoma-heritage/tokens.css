@@ -1,0 +1,134 @@
+/* 
+ * JAWASOMA HERITAGE - Design Tokens
+ * Extracted from "template tema jawa.png" @2x
+ * Layers: Primitive → Semantic → Component
+ */
+
+:root {
+  /* ── Primitive ── */
+  --color-black-950: #060504;
+  --color-black-900: #0A0907;
+  --color-black-800: #0F0D0A;
+  --color-charcoal-900: #141210;
+  --color-charcoal-800: #1C1914;
+  --color-charcoal-700: #231F18;
+  --color-charcoal-600: #2A2216;
+  --color-beige-50: #FFF8E7;
+  --color-beige-100: #F5E6C8;
+  --color-beige-200: #E8D5A3;
+  --color-beige-300: #D9C08A;
+  --color-gold-400: #C9A86A;
+  --color-gold-500: #B8944F;
+  --color-gold-600: #A67C2E;
+  --color-gold-700: #8C6522;
+  --color-brown-800: #3D2B1F;
+  --color-cream-50: #FFFBF0;
+  --color-white: #FFFFFF;
+
+  --font-display: "Cinzel", "Cormorant Garamond", serif;
+  --font-serif-display: "Playfair Display", serif;
+  --font-body: "Inter", "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+  --text-hero: 54px;
+  --text-hero-mobile: 32px;
+
+  --leading-tight: 0.95;
+  --leading-snug: 1.05;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  --tracking-hero: -0.02em;
+  --tracking-label: 0.14em;
+  --tracking-nav: 0.06em;
+  --tracking-tight: -0.01em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-gold-glow: 0 0 20px rgba(201,168,106,0.15);
+  --shadow-hero: 0 20px 60px rgba(0,0,0,0.6);
+
+  /* ── Semantic ── */
+  --color-background: var(--color-black-900);
+  --color-background-soft: var(--color-black-800);
+  --color-surface: var(--color-charcoal-800);
+  --color-surface-elevated: var(--color-charcoal-700);
+  --color-surface-card: #1A1814;
+  --color-foreground: var(--color-beige-50);
+  --color-foreground-muted: #9A9590;
+  --color-foreground-subtle: #6B6560;
+  --color-primary: var(--color-gold-400);
+  --color-primary-foreground: var(--color-black-950);
+  --color-primary-hover: var(--color-gold-500);
+  --color-border: rgba(201,168,106,0.12);
+  --color-border-strong: rgba(201,168,106,0.22);
+  --color-border-gold: var(--color-gold-400);
+  --color-ring: var(--color-gold-400);
+
+  --color-success: #4ADE80;
+  --color-warning: #F59E0B;
+
+  --text-display: var(--text-hero);
+  --text-section-title: var(--text-2xl);
+  --text-card-title: var(--text-md);
+
+  --space-section: var(--space-16);
+  --space-card-gap: var(--space-4);
+  --space-page-gutter: var(--space-6);
+
+  /* ── Component ── */
+  --button-primary-bg: var(--color-primary);
+  --button-primary-text: var(--color-primary-foreground);
+  --button-primary-radius: var(--radius-full);
+  --button-primary-padding: 10px 20px;
+
+  --card-bg: var(--color-surface-card);
+  --card-border: var(--color-border);
+  --card-radius: var(--radius-lg);
+  --card-padding: var(--space-4);
+
+  --nav-height: 64px;
+  --nav-bg: rgba(10,9,7,0.85);
+}
+
+/* Light variant inversion for white sections - not used, heritage is dark-only */
+/* Motion */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-gold: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+  }
+}

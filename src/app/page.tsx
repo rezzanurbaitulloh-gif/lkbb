@@ -7,6 +7,7 @@ import { PodiumSection } from "@/components/competition/Podium"
 import { CmsSections } from "@/components/cms/CmsSectionRenderer"
 import { ParticipantsMini, ResultsTeaser } from "@/components/home/HomeExtras"
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp"
+import { JawasomaHeritage } from "@/components/templates/JawasomaHeritage"
 import { createServerSupabase } from "@/lib/supabase"
 import { headers } from "next/headers"
 
@@ -138,6 +139,18 @@ export default async function HomePage(){
   // Featured & podium dapat di-hide via CMS visibility
   const showFeatured = !cmsSections.find((s:any)=> s.key==="featured") || cmsSections.find((s:any)=> s.key==="featured")?.is_visible !== false
   const showPodiumViaCms = !cmsSections.find((s:any)=> s.key==="podium") || cmsSections.find((s:any)=> s.key==="podium")?.is_visible !== false
+
+  // ── TEMPLATE SWITCH: Heritage Jawasoma ──
+  // Jika event memakai template heritage, render halaman heritage plek referensi (bukan layout default).
+  // Terisolasi per event — event lain tetap pakai layout default.
+  if (heroVariant === "heritage") {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <JawasomaHeritage peletons={teams} event={ev} />
+        <BottomNav />
+      </div>
+    )
+  }
 
 
 

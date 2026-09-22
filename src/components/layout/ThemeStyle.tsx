@@ -1,13 +1,22 @@
 import { headers } from "next/headers"
 import { getEventTheme } from "@/lib/theme"
+import { resolveEventFromHost } from "@/lib/event"
 
 // Suntik variabel tema milik event saat ini ke <head>.
-// Terisolasi per event: hanya membaca baris events + site_settings event itu.
+// Resolusi event mandiri dari host (tidak bergantung pada proxy matcher),
+// terisolasi per event: hanya membaca baris events + site_settings event itu.
 export default async function ThemeStyle() {
   let css = ""
   try {
     const hdrs = await headers()
-    const eventId = hdrs.get("x-event-id")
+    let eventId = hdrs.get("x-event-id")
+    if (!eventId) {
+      const host = hdrs.get("host") || hdrs.get("x-forwarded-host") || ""
+      try {
+        const r = await resolveEventFromHost(host)
+        eventId = r.eventId
+      } catch {}
+    }
     const theme = await getEventTheme(eventId)
     const entries = Object.entries(theme.vars)
     if (entries.length > 0) {

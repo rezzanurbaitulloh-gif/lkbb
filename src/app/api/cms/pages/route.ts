@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server"
 import { createStaticSupabase } from "@/lib/supabase"
+import { resolveEventFromHost } from "@/lib/event"
 
-// Public — list published pages with visible section count
+// Public — list published pages with visible section count, TERISOLASI per event.
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const includeSections = searchParams.get("include") === "sections"
 
   const supabase = createStaticSupabase()
-  const { data: pages, error } = await supabase
+  let eventId: string | null = null
+  try {
+    const host = req.headers.get("host") || req.headers.get("x-forwarded-host") || ""
+    const r = await resolveEventFromHost(host)
+    eventId = r.eventId
+  } catch {}
+  let pq: any = supabase
     .from("cms_pages")
     .select("*")
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
+  if (eventId) pq = pq.eq("event_id", eventId)
+  const { data: pages, error } = await pq
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

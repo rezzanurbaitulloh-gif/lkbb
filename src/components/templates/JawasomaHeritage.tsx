@@ -17,14 +17,14 @@ const countdown = [
 ]
 
 const peserta = [
-  { n:"01", name:"SMA N 1 Kertosono", sub:"Putra • Kertosono", vote:"12.430", img:"https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=600&auto=format&fit=crop&q=60" },
-  { n:"02", name:"SMA N 2 Kediri", sub:"Putra • Kediri", vote:"10.243", img:"https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?w=600&auto=format&fit=crop&q=60" },
-  { n:"03", name:"SMA N 3 Tulungagung", sub:"Putri • Tulungagung", vote:"9.876", img:"https://images.unsplash.com/photo-1511635001-e5f7437c2a64?w=600&auto=format&fit=crop&q=60" },
-  { n:"04", name:"SMA N 1 Blitar", sub:"Campuran • Blitar", vote:"8.542", img:"https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=600&auto=format&fit=crop&q=60" },
-  { n:"05", name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", img:"https://images.unsplash.com/photo-1529390079861-591de354faf5?w=600&auto=format&fit=crop&q=60" },
-  { n:"06", name:"SMA N 2 Malang", sub:"Campuran • Malang", vote:"6.782", img:"https://images.unsplash.com/photo-1522543558187-00b65e9d00f5?w=600&auto=format&fit=crop&q=60" },
-  { n:"07", name:"SMA N 1 Jombang", sub:"Putra • Jombang", vote:"5.421", img:"https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600&auto=format&fit=crop&q=60" },
-  { n:"08", name:"SMA N 1 Nganjuk", sub:"Putri • Nganjuk", vote:"4.983", img:"https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&auto=format&fit=crop&q=60" },
+  { n:"01", name:"SMA N 1 Kertosono", sub:"Putra • Kertosono", vote:"12.430", img:"https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&auto=format&fit=crop&q=60" },
+  { n:"02", name:"SMA N 2 Kediri", sub:"Putra • Kediri", vote:"10.243", img:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop&q=60" },
+  { n:"03", name:"SMA N 3 Tulungagung", sub:"Putri • Tulungagung", vote:"9.876", img:"https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600&auto=format&fit=crop&q=60" },
+  { n:"04", name:"SMA N 1 Blitar", sub:"Campuran • Blitar", vote:"8.542", img:"https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&auto=format&fit=crop&q=60" },
+  { n:"05", name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", img:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&auto=format&fit=crop&q=60" },
+  { n:"06", name:"SMA N 2 Malang", sub:"Campuran • Malang", vote:"6.782", img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&auto=format&fit=crop&q=60" },
+  { n:"07", name:"SMA N 1 Jombang", sub:"Putra • Jombang", vote:"5.421", img:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop&q=60" },
+  { n:"08", name:"SMA N 1 Nganjuk", sub:"Putri • Nganjuk", vote:"4.983", img:"https://images.unsplash.com/photo-1577896859043-0c5e0a6d803b?w=600&auto=format&fit=crop&q=60" },
 ]
 
 const leaderboard = [
@@ -158,42 +158,47 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
             <Link href="/dukungan" className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#E8D9B8] px-5 py-2.5 text-xs font-bold text-black hover:bg-[#D9C08A] shadow-lg">Mulai Voting <span>→</span></Link>
 
             {/* Countdown - mobile inline bottom */}
-            <div className="mt-6 flex gap-3 lg:hidden">
-              {countdown.map(c=> (
-                <div key={c.l} className="min-w-[56px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-center backdrop-blur">
-                  <div className="font-[Cinzel] text-lg font-bold text-[#F5E6C8]">{c.v}</div>
-                  <div className="text-[10px] tracking-widest text-white/50">{c.l}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Countdown desktop - absolute */}
-            <div className="hidden lg:flex absolute -bottom-2 right-0 gap-2">
+            <div className="mt-6 flex gap-2 sm:gap-3 lg:hidden">
               {[
                 {v:String(cd.d).padStart(2,"0"), l:"Hari"},
                 {v:String(cd.h).padStart(2,"0"), l:"Jam"},
                 {v:String(cd.m).padStart(2,"0"), l:"Menit"},
                 {v:String(cd.s).padStart(2,"0"), l:"Detik"},
               ].map(c=> (
-                <div key={c.l} className="min-w-[64px] rounded-xl border border-[#C9A86A]/20 bg-[#0A0907]/70 px-3 py-2.5 text-center backdrop-blur">
+                <div key={c.l} className="min-w-[56px] flex-1 rounded-xl border border-[#C9A86A]/20 bg-[#0A0907]/60 px-2 py-2 text-center backdrop-blur sm:px-3">
+                  <div className="font-[Cinzel] text-base font-bold text-[#F5E6C8] sm:text-lg">{c.v}</div>
+                  <div className="text-[9px] tracking-[0.14em] text-white/50 sm:text-[10px]">{c.l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Countdown desktop - inside hero */}
+            <div className="hidden lg:flex absolute bottom-4 right-0 gap-2">
+              {[
+                {v:String(cd.d).padStart(2,"0"), l:"Hari"},
+                {v:String(cd.h).padStart(2,"0"), l:"Jam"},
+                {v:String(cd.m).padStart(2,"0"), l:"Menit"},
+                {v:String(cd.s).padStart(2,"0"), l:"Detik"},
+              ].map(c=> (
+                <div key={c.l} className="min-w-[64px] rounded-xl border border-[#C9A86A]/25 bg-[#0A0907]/80 px-3 py-2.5 text-center backdrop-blur shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
                   <div className="font-[Cinzel] text-xl font-bold leading-none text-[#F5E6C8]">{c.v}</div>
-                  <div className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-white/50">{c.l}</div>
+                  <div className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-[#C9A86A]">{c.l}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right: PLETON HERO IMAGE (cutout) - back view towards temple */}
+          {/* Right: PLETON HERO IMAGE - back view towards temple, plek referensi */}
           <div className="relative hidden lg:block min-h-[420px]">
-            <img src="https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=900&auto=format&fit=crop&q=70" alt="Peleton JAWASOMA" className="absolute inset-0 h-full w-full object-cover object-top rounded-[16px] border border-[#C9A86A]/20 shadow-[0_20px_60px_rgba(0,0,0,0.6)]" />
-            <div className="absolute inset-0 rounded-[16px] bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute inset-0 rounded-[16px] ring-1 ring-[#C9A86A]/10" />
-            <div className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1 text-[10px] font-bold tracking-widest text-[#C9A86A] border border-[#C9A86A]/20">2026</div>
+            <img src="https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=900&auto=format&fit=crop&q=70" alt="Peleton JAWASOMA" className="absolute inset-0 h-full w-full object-cover object-[50%_20%] rounded-[16px] border border-[#C9A86A]/20 shadow-[0_20px_60px_rgba(0,0,0,0.6)]" />
+            <div className="absolute inset-0 rounded-[16px] bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            <div className="absolute inset-0 rounded-[16px] ring-1 ring-[#C9A86A]/15" />
+            <div className="absolute bottom-3 right-3 rounded-full bg-[#0A0907]/70 px-3 py-1 text-[10px] font-bold tracking-widest text-[#C9A86A] border border-[#C9A86A]/20 backdrop-blur">2026</div>
           </div>
         </div>
 
         {/* Bottom 4 quick links */}
-        <div className="relative border-t border-white/10 bg-[#0A0907]/70 backdrop-blur">
+          <div className="relative border-t border-white/[0.07] bg-[#0A0907]/80 backdrop-blur">
           <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-0 px-4 sm:px-6 lg:grid-cols-4">
             {[
               { icon: IconUsers, title:"Peserta", sub:"Lihat semua tim", href:"/tim" },
@@ -201,8 +206,8 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
               { icon: IconGift, title:"Hadiah", sub:"Total hadiah menarik", href:"/kompetisi" },
               { icon: IconFAQ, title:"FAQ", sub:"Pertanyaan umum", href:"/peraturan" },
             ].map(item=> (
-              <Link key={item.title} href={item.href} className="flex items-center gap-3 border-r border-white/10 px-4 py-4 last:border-r-0 hover:bg-white/[0.04]">
-                <span className="grid h-9 w-9 place-items-center rounded-xl border border-[#C9A86A]/20 bg-[#C9A86A]/10 text-[#C9A86A]"><item.icon className="h-5 w-5"/></span>
+              <Link key={item.title} href={item.href} className="flex items-center gap-3 border-r border-white/[0.06] px-4 py-4 last:border-r-0 hover:bg-white/[0.04] transition">
+                <span className="grid h-9 w-9 place-items-center rounded-xl border text-[#C9A86A]" style={{backgroundColor:'rgba(201,168,106,0.10)', borderColor:'rgba(201,168,106,0.18)'}}><item.icon className="h-5 w-5"/></span>
                 <span><span className="block text-xs font-bold text-[#F5E6C8]">{item.title}</span><span className="block text-[11px] text-white/50">{item.sub}</span></span>
               </Link>
             ))}
@@ -236,7 +241,7 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
             {displayPeserta.map(p=> (
               <article key={p.n} className="group overflow-hidden rounded-[14px] border border-white/10 bg-[#141210] hover:border-[#C9A86A]/30 hover:shadow-[0_0_20px_rgba(201,168,106,0.15)] transition">
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
-                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#0A0907]/70 px-2 py-0.5 text-[11px] font-bold text-[#C9A86A] border border-white/10"> {p.n}</span>
+                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#0A0907]/80 px-2 py-0.5 text-[11px] font-bold text-[#C9A86A] border border-[#C9A86A]/30"> {p.n}</span>
                   <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70 hover:text-white">♡</button>
                   {p.img ? <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/> : <div className="h-full w-full grid place-items-center text-white/20 text-xs">No Image</div>}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
@@ -269,11 +274,46 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
                   <p className="mt-2 max-w-[420px] text-xs leading-relaxed text-white/60">{topTeam.description || `Dengan semangat juang dan disiplin tinggi, ${topTeam.name} menampilkan penampilan terbaik di JAWASOMA 2026.`}</p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                {[
+                  { icon:"👤", label:"Nama Tim", value: topTeam.name },
+                  { icon:"🎓", label:"Pelatih", value: (topTeam as any).coach || "Bapak Andi Pratama" },
+                  { icon:"🏷️", label:"Kategori", value: topTeam.category || "Putra" },
+                  { icon:"👥", label:"Jumlah Anggota", value: `${(topTeam as any).member_count || 25} Orang` },
+                  { icon:"🏫", label:"Asal Sekolah", value: topTeam.school || "SMA Negeri 1 Kertosono" },
+                  { icon:"🎯", label:"Motivasi", value: (topTeam as any).motto || "Disiplin • Kompak • Juara" },
+                ].map(item=> (
+                  <div key={item.label} className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-[#0A0907]/50 px-3 py-2.5">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#C9A86A]/10 border border-[#C9A86A]/20 text-[11px]">{item.icon}</span>
+                    <span className="min-w-0 flex-1"><span className="block text-[10px] leading-none text-white/40">{item.label}</span><span className="block truncate text-xs font-bold text-[#F5E6C8]">{item.value}</span></span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Total Suara</div><div className="font-bold text-[#F5E6C8]">{Number(topTeam.total_ballots ?? topTeam.online_ballots ?? topTeam.vote ?? displayLeaderboard[0]?.vote ?? 0).toLocaleString("id-ID")}</div></div>
                 <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Persentase</div><div className="font-bold text-[#C9A86A]">{displayLeaderboard[0]?.pct || "—"}</div></div>
                 <div className="rounded-xl border border-white/10 bg-[#0A0907]/50 p-3"><div className="text-xs text-white/50">Posisi</div><div className="font-bold text-[#F5E6C8]">#1</div></div>
               </div>
+              {/* Galeri - 3 foto tim */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold tracking-widest text-white/60">Galeri</h4>
+                  <Link href={`/tim/${topTeam.slug || ""}`} className="text-[11px] text-white/40 hover:text-white">Lihat Semua ›</Link>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {[0,1,2].map(i=> (
+                    <img key={i} src={displayPeserta[i % displayPeserta.length]?.img} alt="Galeri" className="aspect-[4/3] w-full rounded-lg object-cover border border-white/10"/>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quote */}
+              <div className="mt-4 rounded-xl border border-[#C9A86A]/15 bg-[#0A0907]/40 p-3">
+                <div className="text-lg leading-none text-[#C9A86A]">“</div>
+                <p className="text-xs leading-relaxed text-white/70">Kami bukan hanya tim, kami adalah keluarga yang berjuang bersama untuk satu tujuan.</p>
+                <p className="mt-2 text-[11px] text-white/30">— {topTeam.name}</p>
+              </div>
+
               <Link href={`/tim/${topTeam.slug || ""}`} className="mt-4 flex w-full justify-center rounded-full bg-[#E8D9B8] py-2.5 text-sm font-bold text-black hover:bg-[#D9C08A]">Dukung Tim Ini</Link>
               <p className="mt-2 text-center text-xs text-white/40">Berikan suaramu untuk {topTeam.name}</p>
             </>
@@ -335,11 +375,14 @@ export function JawasomaHeritage({ peletons, event }: { peletons?: any[]; event?
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="border-t border-white/10 bg-[#0A0907]">
-        <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
+      {/* ── FOOTER — with dancer & batik, plek referensi bawah ── */}
+      <footer className="relative overflow-hidden border-t border-white/10 bg-[#0A0907]">
+        {/* Batik footer background */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{backgroundImage:`url("https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Batik_Mega_Mendung.jpg/400px-Batik_Mega_Mendung.jpg")`, backgroundSize:"300px"}} />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Sendratari.jpg/400px-Sendratari.jpg" alt="" className="pointer-events-none absolute bottom-0 left-0 hidden h-[280px] w-[300px] object-cover object-top opacity-[0.18] lg:block" style={{maskImage:"linear-gradient(to right, black 60%, transparent)", WebkitMaskImage:"linear-gradient(to right, black 60%, transparent)"}} />
+        <div className="relative mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
-            <div>
+            <div className="lg:pl-[320px]">
               <div className="font-[Cinzel] text-sm font-bold tracking-widest text-[#F5E6C8]">JAWASOMA</div>
               <div className="text-[11px] tracking-[0.18em] text-white/40">THE IMPRESSION 2026</div>
               <p className="mt-3 max-w-[420px] text-xs leading-relaxed text-white/50">Event LKBB tingkat nasional yang mengangkat semangat persatuan dan sportifitas. Lebih dari kompetisi — panggung seni, disiplin, dan budaya.</p>

@@ -9,7 +9,7 @@ export async function GET() {
   return NextResponse.json({
     status: "ok",
     endpoint: "/api/payment/webhook/xendit",
-    message: "Xendit Sandbox webhook ready — configure callback URL in Xendit dashboard to https://lkbb.vercel.app/api/payment/webhook/xendit",
+    message: "Xendit Sandbox webhook ready — configure callback URL in Xendit dashboard to https://lkbb.my.id/api/payment/webhook/xendit",
     provider: "XENDIT",
   })
 }

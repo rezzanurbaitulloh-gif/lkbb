@@ -9,7 +9,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://lkbb.vercel.app',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'https://lkbb.my.id',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'off',

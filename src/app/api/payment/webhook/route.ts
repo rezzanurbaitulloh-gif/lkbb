@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createServiceSupabase } from "@/lib/supabase"
 
-// Central webhook — PRD §26: semua provider kirim ke https://lkbb.vercel.app/api/payment/webhook
+// Central webhook — PRD §26: semua provider kirim ke https://lkbb.my.id/api/payment/webhook
 // Dispatch berdasarkan header / body shape
 export async function GET() {
   return NextResponse.json({

@@ -84,7 +84,7 @@ export async function resolveEventFromRequest(req: Request | { headers: any; url
   const urlStr = (req as any).url || ""
   // 1) Query param ?event_id= or ?event=slug (MVP for vercel.app)
   try {
-    const u = new URL(urlStr, `https://${host || "lkbb.vercel.app"}`)
+    const u = new URL(urlStr, `https://${host || "lkbb.my.id"}`)
     const qId = u.searchParams.get("event_id")
     const qSlug = u.searchParams.get("event") || u.searchParams.get("event_slug")
     const service = getServiceClient()

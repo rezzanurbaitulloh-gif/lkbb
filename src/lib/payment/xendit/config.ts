@@ -7,7 +7,7 @@ export function getXenditConfig() {
   const publicKey = process.env.NEXT_PUBLIC_XENDIT_PUBLIC_KEY || ""
   const mode = process.env.XENDIT_MODE || "test"
   const baseUrl = "https://api.xendit.co" // same host; test vs live determined by key
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://lkbb.vercel.app").replace(/\/$/, "")
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://lkbb.my.id").replace(/\/$/, "")
   const callbackUrl = `${appUrl}/api/payment/webhook/xendit`
 
   if (!secretKey) {

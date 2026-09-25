@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { TeamShareIcons } from "@/components/tim/ShareButtons"
 
 export function Featured({ peletons, showSementara, showFinal }: { peletons: any[]; showSementara?: boolean; showFinal?: boolean }){
   const sorted = [...(peletons || [])].sort((a:any,b:any)=>{
@@ -37,13 +38,18 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
                 <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
                 <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white backdrop-blur">#{String(p.number).padStart(2,"0")}</span>
               </Link>
-              <div className="flex items-center gap-3 p-4 pt-3">
-                <Link href={`/dukungan?peleton=${p.slug}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-[11px] font-bold tracking-wide hover:bg-primary/90 transition-colors">
-                  DUKUNG <ArrowRight className="h-3 w-3" />
-                </Link>
-                <Link href={`/tim/${p.slug}`} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
-                  LIHAT →
-                </Link>
+              <div className="p-4 pt-3">
+                <div className="flex items-center gap-3">
+                  <Link href={`/dukungan?peleton=${p.slug}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-[11px] font-bold tracking-wide hover:bg-primary/90 transition-colors">
+                    DUKUNG <ArrowRight className="h-3 w-3" />
+                  </Link>
+                  <Link href={`/tim/${p.slug}`} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    LIHAT →
+                  </Link>
+                </div>
+                <div className="mt-2">
+                  <TeamShareIcons slug={p.slug} name={p.name} />
+                </div>
               </div>
             </article>
           )

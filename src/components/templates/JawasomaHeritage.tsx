@@ -1,6 +1,9 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { CaraDukungDialog } from "@/components/home/CaraDukungDialog"
+import { ShareButtons } from "@/components/tim/ShareButtons"
 
 function IconSearch(p:any){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="11" cy="11" r="7"/><path d="M20 20L16.5 16.5"/></svg>}
 function IconUsers(p:any){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...p}><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>}
@@ -25,11 +28,32 @@ const fallbackBoard = [
   { r:4, name:"SMA N 1 Blitar", sub:"Campuran • Blitar", vote:"8.542", pct:"12.8%" },
   { r:5, name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", pct:"11.9%" },
 ]
+
 function useCd(target:string){
   const [d,setD]=useState({d:12,h:3,m:45,s:27})
-  useEffect(()=>{const id=setManropeval(()=>setD(p=>{let s=p.s-1,m=p.m,h=p.h,dd=p.d;if(s<0){s=59;m--}if(m<0){m=59;h--}if(h<0){h=23;dd--}if(dd<0){dd=0;h=0;m=0;s=0;clearManropeval(id)}return{d:dd,h,m,s}}),1000);return()=>clearManropeval(id)},[])
+  useEffect(()=>{
+    const calc = (t: number) => {
+      const diff = Math.max(0, t - Date.now())
+      return {
+        days: Math.floor(diff/86400000),
+        hours: Math.floor((diff%86400000)/3600000),
+        minutes: Math.floor((diff%3600000)/60000),
+        seconds: Math.floor((diff%60000)/1000),
+      }
+    }
+    const getTime = (s: string) => {
+      const ms = new Date(s).getTime()
+      return isNaN(ms) ? NaN : ms
+    }
+    const t = getTime(target)
+    if(isNaN(t)) return
+    setD(calc(t))
+    const id=setInterval(()=> setD(calc(t)),1000)
+    return()=>clearInterval(id)
+  },[target])
   return d
 }
+
 export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:any}={}){
   const cd=useCd(event?.event_date || "2026-10-24")
   const isPreview = peletons===undefined
@@ -37,11 +61,40 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
   const peserta = hasReal ? peletons!.slice(0,8).map((p:any,i:number)=>({n:String(p.number||i+1).padStart(2,"0"), name:p.name, sub:`${p.category||"Putra"} • ${p.city||p.school?.split(" ").pop()||"Kertosono"}`, vote: p.vote??p.total_ballots??p.online_ballots??0, img:p.image_url||p.image||""})) : (isPreview?fallbackPeserta:[])
   const board = hasReal ? [...peletons!].sort((a:any,b:any)=>Number(b.total_ballots??b.online_ballots??0)-Number(a.total_ballots??a.online_ballots??0)).slice(0,5).map((p:any,i:number)=>({r:i+1,name:p.name,sub:`${p.category||"Putra"} • ${p.city||"Kertosono"}`,vote:String(p.total_ballots??p.online_ballots??0),pct:`${((Number(p.total_ballots||0)/Math.max(1,peletons!.reduce((s:any,x:any)=>s+Number(x.total_ballots||0),0)))*100).toFixed(1)}%`})) : fallbackBoard
   const top = hasReal ? peletons![0] : null
+  const [caraOpen, setCaraOpen] = useState(false)
+
+  const state = (event?.state as string) || "NOT_STARTED"
+  const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
+  const isClosed = state === "VOTING_CLOSED"
+  const isPublished = state === "RESULT_PUBLISHED"
+  const isNotStarted = state === "NOT_STARTED"
+  const canonicalTarget = (() => {
+    if (isActive && event?.voting_end) return event.voting_end
+    if (isNotStarted && event?.voting_start) return event.voting_start
+    if (event?.event_date) {
+      const d = String(event.event_date).slice(0,10)
+      const tm = String(event.event_time || "08:00:00")
+      return `${d}T${tm}+07:00`
+    }
+    return event?.voting_end || "2026-10-24T23:59:59+07:00"
+  })()
+  const countdownLabel = (() => {
+    if (isActive) return "MENUJU PENUTUPAN VOTING"
+    if (isNotStarted) return "MENUJU PEMBUKAAN VOTING"
+    if (isClosed) return "VOTING DITUTUP"
+    if (isPublished) return "ACARA SELESAI"
+    return "EVENT DIMULAI DALAM"
+  })()
+  const showCountdown = (() => {
+    if (isClosed || isPublished) return false
+    return true
+  })()
+
   return (
-    <div className="min-h-screen bg-[#050403] text-[#FFF8E7] selection:bg-[#D9AA5C]/30">
+    <div className="min-h-screen bg-[#050403] text-[#F2ECE1] selection:bg-[#D9AA5C]/30">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant Garamond:wght@700;800&family=Manrope:wght@400;500;600;700&display=swap');`}</style>
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#050403]/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-[56px] max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="grid h-7 w-7 place-items-center rounded-sm bg-[#D9AA5C] text-[10px] font-black text-black">◈</span>
             <span className="hidden sm:flex flex-col leading-none"><span className="font-[Cormorant Garamond] text-[14px] font-extrabold tracking-[0.14em] text-[#F2ECE1]">JAWASOMA</span><span className="text-[9px] tracking-[0.18em] text-white/50 -mt-0.5">THE IMPRESSION 2026</span></span>
@@ -78,46 +131,72 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
           <div className="absolute inset-0 bg-gradient-to-t from-[#050403] to-transparent" />
         </div>
 
-        <div className="relative mx-auto grid max-w-[1280px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.9fr] lg:py-10">
-          <div className="relative py-2">
+        <div className="relative mx-auto grid max-w-[1280px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.9fr] lg:py-16">
+          <div className="relative py-2 flex flex-col justify-center">
             <div className="text-[10px] font-bold tracking-[0.18em] text-[#D9AA5C]">LKBB EVENT</div>
-            <h1 className="mt-1 font-[Cormorant Garamond] text-[42px] font-extrabold leading-[0.9] sm:text-[56px]">
+            <h1 className="mt-1 font-[Cormorant Garamond] text-[42px] font-extrabold leading-[0.9] sm:text-[56px] md:text-[64px] lg:text-[72px] xl:text-[84px]">
               <span className="block text-[#F2ECE1]" style={{textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}>JAWASOMA</span>
               <span className="mt-1 block h-px w-[280px] bg-gradient-to-r from-[#D9AA5C] to-transparent" />
-              <span className="mt-2 block text-[13px] font-[Manrope] font-semibold tracking-[0.28em] text-[#E9C982]">THE IMPRESSION 2026</span>
+              <span className="mt-2 block text-[13px] sm:text-[14px] font-[Manrope] font-semibold tracking-[0.28em] text-[#E9C982]">THE IMPRESSION 2026</span>
             </h1>
-            <p className="mt-4 max-w-[360px] text-[12.5px] leading-relaxed text-white/70">Langkah Tegas, Jiwa Ksatria,<br/>Untuk Negeri yang Lebih Baik</p>
-            <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-white/60">
+            <div className="mt-4 max-w-[360px] text-[12.5px] sm:text-[14px] leading-relaxed text-white/70">
+              <p>Langkah Tegas, Jiwa Ksatria,</p>
+              <p>Untuk Negeri yang Lebih Baik</p>
+            </div>
+            <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3 text-[11px] sm:text-[12px] text-white/60 items-center">
               <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#D9AA5C]"/>24 Oktober 2026</span>
               <span className="inline-flex items-center gap-1.5">◎ Kertosono, Jawa Timur</span>
             </div>
-            <Link href="/dukungan" className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#E9C982] px-5 py-2.5 text-xs font-bold text-black hover:bg-[#D9C08A] shadow-lg">Mulai Voting <span>→</span></Link>
-            <div className="mt-6 flex gap-2 lg:hidden">
-              {[{v:String(cd.d).padStart(2,"0"),l:"Hari"},{v:String(cd.h).padStart(2,"0"),l:"Jam"},{v:String(cd.m).padStart(2,"0"),l:"Menit"},{v:String(cd.s).padStart(2,"0"),l:"Detik"}].map(c=>(
-                <div key={c.l} className="flex-1 rounded-xl border bg-[#050403]/60 px-2 py-2 text-center backdrop-blur" style={{borderColor:"rgba(201,168,106,0.20)"}}>
-                  <div className="font-[Cormorant Garamond] text-base font-bold text-[#F2ECE1]">{c.v}</div><div className="text-[9px] tracking-[0.14em] text-[#D9AA5C]">{c.l}</div>
-                </div>
-              ))}
+            <div className="mt-8 xs:mt-10 flex flex-col xs:flex-row flex-wrap gap-3 justify-center items-center w-full xs:w-auto">
+              <Link href="/dukungan" className="w-full xs:w-auto">
+                <Button size="lg" className="w-full xs:w-auto rounded-full px-7 h-[44px] xs:h-[48px] text-[13px] xs:text-sm font-black tracking-wide shadow-[0_4px_16px_rgba(217,170,92,0.22)] bg-[#E9C982] text-[#050403] hover:bg-[#D9C08A]">Mulai Voting</Button>
+              </Link>
+              <Button onClick={()=> setCaraOpen(true)} variant="ghost" size="default" className="w-full xs:w-auto rounded-full px-6 h-[38px] xs:h-[40px] text-xs xs:text-[13px] font-semibold tracking-wide border border-white/10 bg-white/5 backdrop-blur text-white hover:text-white hover:bg-white/10">Cara Kerja</Button>
+            </div>
+            <CaraDukungDialog open={caraOpen} onOpenChange={setCaraOpen} />
+            <div className="mt-8 lg:hidden">
+              <div className="text-[9px] sm:text-[10px] font-bold tracking-[0.16em] text-white/60">{countdownLabel}</div>
+              <div className="mt-3 grid grid-cols-4 gap-1.5">
+                {[
+                  {v: String(cd.d).padStart(2,"0"), l:"HARI"},
+                  {v: String(cd.h).padStart(2,"0"), l:"JAM"},
+                  {v: String(cd.m).padStart(2,"0"), l:"MENIT"},
+                  {v: String(cd.s).padStart(2,"0"), l:"DETIK"},
+                ].map(item=> (
+                  <div key={item.l} className="rounded-[10px] border border-white/10 bg-[#050403]/60 backdrop-blur py-2.5 px-0.5">
+                    <div className="tabular-nums font-[Cormorant Garamond] text-[22px] sm:text-[26px] font-bold leading-none text-[#F2ECE1]">{item.v}</div>
+                    <div className="mt-1 text-[8px] tracking-[0.10em] text-[#D9AA5C]">{item.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 text-[11px] text-white/50 tabular-nums">{cd.d} hari lagi</div>
             </div>
             <div className="hidden lg:flex absolute bottom-4 right-0 gap-2">
-              {[{v:String(cd.d).padStart(2,"0"),l:"Hari"},{v:String(cd.h).padStart(2,"0"),l:"Jam"},{v:String(cd.m).padStart(2,"0"),l:"Menit"},{v:String(cd.s).padStart(2,"0"),l:"Detik"}].map(c=>(
-                <div key={c.l} className="min-w-[64px] rounded-xl border bg-[#050403]/80 px-3 py-2.5 text-center backdrop-blur" style={{borderColor:"rgba(201,168,106,0.25)"}}>
-                  <div className="font-[Cormorant Garamond] text-xl font-bold leading-none text-[#F2ECE1]">{c.v}</div><div className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-[#D9AA5C]">{c.l}</div>
+              <div className="text-[9px] font-bold tracking-[0.16em] text-white/60">{countdownLabel}</div>
+              {[
+                {v: String(cd.d).padStart(2,"0"), l:"Hari"},
+                {v: String(cd.h).padStart(2,"0"), l:"Jam"},
+                {v: String(cd.m).padStart(2,"0"), l:"Menit"},
+                {v: String(cd.s).padStart(2,"0"), l:"Detik"},
+              ].map(c=>(
+                <div key={c.l} className="min-w-[64px] rounded-xl border bg-[#050403]/80 px-3 py-2.5 text-center backdrop-blur" style={{borderColor:"rgba(217,170,92,0.25)"}}>
+                  <div className="font-[Cormorant Garamond] text-xl font-bold leading-none text-[#F2ECE1]">{c.v}</div>
+                  <div className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-[#D9AA5C]">{c.l}</div>
                 </div>
               ))}
             </div>
           </div>
           <div className="relative hidden lg:block min-h-[420px]">
-            <img src="https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=900&auto=format&fit=crop&q=70" alt="Peleton JAWASOMA" className="absolute inset-0 h-full w-full object-cover object-top rounded-[16px] border" style={{borderColor:"rgba(201,168,106,0.20)"}} />
+            <img src="https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=900&auto=format&fit=crop&q=70" alt="Peleton JAWASOMA" className="absolute inset-0 h-full w-full object-cover object-top rounded-[16px] border" style={{borderColor:"rgba(217,170,92,0.20)"}} />
             <div className="absolute inset-0 rounded-[16px] bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute bottom-3 right-3 rounded-full bg-[#050403]/70 px-3 py-1 text-[10px] font-bold tracking-widest text-[#D9AA5C] border backdrop-blur" style={{borderColor:"rgba(201,168,106,0.20)"}}>2026</div>
+            <div className="absolute bottom-3 right-3 rounded-full bg-[#050403]/70 px-3 py-1 text-[10px] font-bold tracking-widest text-[#D9AA5C] border backdrop-blur" style={{borderColor:"rgba(217,170,92,0.20)"}}>2026</div>
           </div>
         </div>
         <div className="relative border-t bg-[#050403]/80 backdrop-blur" style={{borderColor:"rgba(255,255,255,0.07)"}}>
           <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-0 px-4 sm:px-6 lg:grid-cols-4">
             {[{icon:IconUsers,title:"Peserta",sub:"Lihat semua tim",href:"/tim"},{icon:IconAward,title:"Cara Voting",sub:"Panduan pemilihan",href:"/dukungan"},{icon:IconGift,title:"Hadiah",sub:"Total hadiah menarik",href:"/kompetisi"},{icon:IconFAQ,title:"FAQ",sub:"Pertanyaan umum",href:"/peraturan"}].map(item=>(
               <Link key={item.title} href={item.href} className="flex items-center gap-3 border-r px-4 py-4 last:border-r-0 hover:bg-white/[0.04]" style={{borderColor:"rgba(255,255,255,0.06)"}}>
-                <span className="grid h-9 w-9 place-items-center rounded-xl border text-[#D9AA5C]" style={{backgroundColor:"rgba(201,168,106,0.10)",borderColor:"rgba(201,168,106,0.18)"}}><item.icon className="h-5 w-5"/></span>
+                <span className="grid h-9 w-9 place-items-center rounded-xl border text-[#D9AA5C]" style={{backgroundColor:"rgba(217,170,92,0.10)",borderColor:"rgba(217,170,92,0.18)"}}><item.icon className="h-5 w-5"/></span>
                 <span><span className="block text-xs font-bold text-[#F2ECE1]">{item.title}</span><span className="block text-[11px] text-white/50">{item.sub}</span></span>
               </Link>
             ))}
@@ -138,9 +217,9 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
         ) : (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {peserta.map(p=>(
-              <article key={p.n} className="group overflow-hidden rounded-[14px] border bg-[#141210] hover:shadow-[0_0_20px_rgba(201,168,106,0.15)] transition" style={{borderColor:"rgba(255,255,255,0.08)"}}>
+              <article key={p.n} className="group overflow-hidden rounded-[14px] border bg-[#141210] hover:shadow-[0_0_20px_rgba(217,170,92,0.15)] transition" style={{borderColor:"rgba(255,255,255,0.08)"}}>
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
-                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#050403]/80 px-2 py-0.5 text-[11px] font-bold text-[#D9AA5C] border" style={{borderColor:"rgba(201,168,106,0.30)"}}> {p.n}</span>
+                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#050403]/80 px-2 py-0.5 text-[11px] font-bold text-[#D9AA5C] border" style={{borderColor:"rgba(217,170,92,0.30)"}}> {p.n}</span>
                   <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70">♡</button>
                   {p.img ? <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/> : <div className="h-full w-full grid place-items-center text-white/20 text-xs">No Image</div>}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
@@ -181,7 +260,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
                   {icon:"🎯",label:"Motivasi",value:(top as any).motto||"Disiplin • Kompak • Juara"},
                 ].map(item=>(
                   <div key={item.label} className="flex items-center gap-2.5 rounded-xl border px-3 py-2.5" style={{borderColor:"rgba(255,255,255,0.08)", backgroundColor:"rgba(10,9,7,0.5)"}}>
-                    <span className="grid h-7 w-7 place-items-center rounded-lg border text-[11px]" style={{backgroundColor:"rgba(201,168,106,0.10)",borderColor:"rgba(201,168,106,0.18)"}}>{item.icon}</span>
+                    <span className="grid h-7 w-7 place-items-center rounded-lg border text-[11px]" style={{backgroundColor:"rgba(217,170,92,0.10)",borderColor:"rgba(217,170,92,0.18)"}}>{item.icon}</span>
                     <span className="min-w-0 flex-1"><span className="block text-[10px] leading-none text-white/40">{item.label}</span><span className="block truncate text-xs font-bold text-[#F2ECE1]">{item.value}</span></span>
                   </div>
                 ))}
@@ -197,11 +276,14 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
                   {[0,1,2].map(i=>(<img key={i} src={peserta[i % peserta.length]?.img} alt="Galeri" className="aspect-[4/3] w-full rounded-lg object-cover border" style={{borderColor:"rgba(255,255,255,0.08)"}}/>))}
                 </div>
               </div>
-              <div className="mt-4 rounded-xl border p-3" style={{borderColor:"rgba(201,168,106,0.15)", backgroundColor:"rgba(10,9,7,0.4)"}}>
+              <div className="mt-4 rounded-xl border p-3" style={{borderColor:"rgba(217,170,92,0.15)", backgroundColor:"rgba(10,9,7,0.4)"}}>
                 <div className="text-lg leading-none text-[#D9AA5C]">“</div><p className="text-xs leading-relaxed text-white/70">Kami bukan hanya tim, kami adalah keluarga yang berjuang bersama untuk satu tujuan.</p><p className="mt-2 text-[11px] text-white/30">— {top.name}</p>
               </div>
               <Link href={`/tim/${top.slug||""}`} className="mt-4 flex w-full justify-center rounded-full bg-[#E9C982] py-2.5 text-sm font-bold text-black hover:bg-[#D9C08A]">Dukung Tim Ini</Link>
               <p className="mt-2 text-center text-xs text-white/40">Berikan suaramu untuk {top.name}</p>
+              <div className="mt-6">
+                <ShareButtons profileUrl={`/tim/${top.slug||""}`} supportUrl={`/dukungan?team=${top.id||"01"}`} />
+              </div>
             </>
           ) : (
             <div className="py-12 text-center"><p className="text-sm text-white/50">Belum ada tim terdaftar di event ini.</p><p className="mt-1 text-xs text-white/30">Data peserta akan muncul otomatis setelah admin menambahkan tim.</p></div>
@@ -236,7 +318,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
                 <div className="mt-2 text-sm font-bold text-[#F2ECE1]">{board[1]?.name}</div>
                 <div className="text-xs text-white/50">Juara 2 • {board[1]?.vote} ({board[1]?.pct})</div>
               </div>
-              <div className="rounded-xl border p-4 text-center shadow-[0_0_30px_rgba(201,168,106,0.15)]" style={{borderColor:"rgba(201,168,106,0.30)", backgroundColor:"#1A1814"}}>
+              <div className="rounded-xl border p-4 text-center shadow-[0_0_30px_rgba(217,170,92,0.15)]" style={{borderColor:"rgba(217,170,92,0.30)", backgroundColor:"#1A1814"}}>
                 <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-2 bg-[#2A2216] text-[#D9AA5C]" style={{borderColor:"#D9AA5C"}}>♔</div>
                 <div className="mt-2 text-sm font-bold text-[#F2ECE1]">{board[0]?.name}</div>
                 <div className="text-xs font-bold text-[#D9AA5C]">Juara 1 • {board[0]?.vote} ({board[0]?.pct})</div>

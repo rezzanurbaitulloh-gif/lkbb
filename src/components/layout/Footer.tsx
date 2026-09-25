@@ -58,7 +58,7 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
               </div>
             </>
           ) : null}
-          <p className="mt-4 font-body text-[11px] leading-relaxed text-[#92918C]">Semarak Dirgahayu Talenta Generasi.<br />© {year} LKBB. Hak cipta dilindungi.<br /><span className="text-[10px] opacity-70">Foto peleton: Wikimedia Commons (CC0/CC BY-SA).</span></p>
+          <p className="mt-4 font-body text-[11px] leading-relaxed text-[#92918C]">© {year} portoja.</p>
         </div>
       </div>
     </footer>

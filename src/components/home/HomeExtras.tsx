@@ -50,23 +50,12 @@ export function ParticipantsMini({ teams, showCount }: { teams: any[]; showCount
 }
 
 export function ResultsTeaser(){
-  // Teks berjalan (marquee) di tengah — bukan blok kiri.
-  const row = Array.from({ length: 6 })
+  // Teks statis di tengah.
   return (
-    <section className="overflow-hidden border-y border-white/[0.06] bg-[#0A0A09] py-8" aria-label="Hasil akhir">
-      <style>{`@keyframes hasilmarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } } @media (prefers-reduced-motion: reduce) { .hasil-marquee { animation: none !important; } }`}</style>
+    <section className="border-y border-white/[0.06] bg-[#0A0A09] py-10" aria-label="Hasil akhir">
       <div className="text-center text-[10px] font-bold tracking-[0.2em] text-[#92918C]">HASIL AKHIR</div>
-      <div className="relative mt-3 overflow-hidden" aria-hidden={false}>
-        <div className="hasil-marquee flex w-max items-center gap-8 pr-8" style={{ animation: "hasilmarquee 22s linear infinite" }}>
-          {row.map((_, i) => (
-            <span key={i} className="flex items-center gap-8 whitespace-nowrap">
-              <span className="font-display text-[28px] sm:text-[36px] font-bold tracking-tight text-[#F2F0E9]">MASIH DIRAHASIAKAN.</span>
-              <span className="font-display text-[28px] sm:text-[36px] font-bold text-[#D9FF3F]">✦</span>
-            </span>
-          ))}
-        </div>
-      </div>
-      <p className="mt-3 text-center text-[12px] text-[#92918C]">Hasil final akan diumumkan setelah acara selesai.</p>
+      <h2 className="mt-2 text-center font-display text-[28px] sm:text-[36px] font-bold tracking-tight text-[#F2F0E9]">MASIH DIRAHASIAKAN.</h2>
+      <p className="mt-2 text-center text-[12px] text-[#92918C]">Hasil final akan diumumkan setelah acara selesai.</p>
     </section>
   )
 }

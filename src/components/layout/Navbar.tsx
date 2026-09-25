@@ -47,7 +47,6 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
           <Link href="/" className="flex min-w-0 items-center gap-2">
             <img src={logoUrl} alt={siteName} className="h-8 w-8 shrink-0 rounded-full object-cover" />
             <span className="truncate font-display text-[15px] font-bold tracking-tight text-[#F2F0E9]">{siteName}</span>
-            <span className="text-[11px] font-bold text-[#D9FF3F]">☀</span>
           </Link>
 
           <nav className="hidden items-center gap-6 md:flex" aria-label="Utama">
@@ -103,7 +102,7 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
           <div className="mx-auto flex h-[52px] w-full max-w-[1280px] items-center justify-between px-4 sm:px-6">
             <span className="flex items-center gap-2 font-display text-[15px] font-bold">
               <img src={logoUrl} alt={siteName} className="h-7 w-7 rounded-full object-cover" />
-              {siteName} <span className="text-[11px] text-[#D9FF3F]">☀</span>
+              {siteName}
             </span>
             <button onClick={()=> setOpen(false)} className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08]" aria-label="Tutup"><X className="h-4 w-4" /></button>
           </div>

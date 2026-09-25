@@ -65,7 +65,7 @@ function TeamCard({ p, idx }: { p: any; idx: number }){
       </Link>
       <div className="mt-2 font-body text-[9px] tracking-[0.14em] text-[#92918C]">{p.category}{(p.city ? ` • ${String(p.city).toUpperCase()}` : "")}</div>
       <Link href={supportUrl} className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.12em] text-[#D9FF3F] hover:underline">
-        ✦ DUKUNG →
+        DUKUNG →
       </Link>
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         <Button variant="outline" className="rounded-full h-10 w-full border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white hover:border-white/15" onClick={() => handleShare("profile")} aria-label={`Bagikan profil ${p.name}`}>

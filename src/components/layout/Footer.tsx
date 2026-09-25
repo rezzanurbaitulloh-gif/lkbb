@@ -22,7 +22,7 @@ export function Footer({ siteSettings }: { siteSettings?: Record<string, any> } 
     <footer className="border border-white/[0.08] bg-[#0A0A09]">
       <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
-          <div className="font-display text-[15px] font-bold tracking-tight text-[#F2F0E9]">LKBB <span className="text-[11px] text-[#D9FF3F]">☀</span></div>
+          <div className="font-display text-[15px] font-bold tracking-tight text-[#F2F0E9]">LKBB</div>
           <p className="mt-2 font-body text-[12px] text-[#92918C]">{siteDesc}</p>
           {socials.length>0 && (
             <div className="mt-4 flex gap-2">

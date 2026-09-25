@@ -23,7 +23,15 @@ export default function JuriPage(){
             {judges.map(j=> (
               <div key={j.id} className="rounded-[20px] border border-white/10 bg-white/5 backdrop-blur overflow-hidden">
                 <div className="aspect-[4/3] overflow-hidden bg-white/5 backdrop-blur">
-                  <img src={j.photo_url || j.photo} alt={j.name} className="h-full w-full object-cover" />
+                  {(j.photo_url || j.photo) ? (
+                    <img src={j.photo_url || j.photo} alt={j.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full grid place-items-center bg-gradient-to-br from-[#141412] to-[#0A0A09]" role="img" aria-label={`Foto ${j.name} menyusul`}>
+                      <div className="grid h-20 w-20 place-items-center rounded-full border border-[#D9FF3F]/40 bg-[#D9FF3F]/10">
+                        <span className="font-display text-2xl font-black text-[#D9FF3F]">{String(j.name||"?").split(" ").filter(Boolean).slice(0,2).map((w:string)=> w[0]).join("").toUpperCase()}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="p-5">
                   <div className="inline-flex rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold tracking-widest text-black">{j.role}</div>

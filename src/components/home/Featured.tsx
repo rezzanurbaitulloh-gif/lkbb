@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { TeamShareIcons } from "@/components/tim/ShareButtons"
+import { lkbbPhoto } from "@/lib/lkbbPhotos"
 
 export function Featured({ peletons, showSementara, showFinal, siteSettings }: { peletons: any[]; showSementara?: boolean; showFinal?: boolean; siteSettings?: Record<string, any> }){
   const teamsTitle = (siteSettings?.["home.teams_title"] as string) || "SIAPA YANG AKAN KAMU"
@@ -33,7 +34,7 @@ export function Featured({ peletons, showSementara, showFinal, siteSettings }: {
               {/* Gambar tim */}
               <Link href={`/tim/${p.slug}`} className="group relative block aspect-[4/3] overflow-hidden bg-black/30">
                 <img
-                  src={p.image_url || p.image || "/assets/brand/lkbb-logo.jpg"}
+                  src={p.image_url || p.image || lkbbPhoto(idx)}
                   alt={p.name}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                   loading={idx<2 ? "eager" : "lazy"}

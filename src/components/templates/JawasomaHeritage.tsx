@@ -11,6 +11,7 @@ import {
   Calendar, MapPin, ArrowRight, Crown, ChevronRight, Menu, X,
   Search, GraduationCap, User, School, Sparkles,
 } from "lucide-react"
+import { LKBB_PHOTOS } from "@/lib/lkbbPhotos"
 
 /* ============ tokens plek MASTER SPEC ============ */
 const GOLD = "#D9AA5C"
@@ -23,17 +24,17 @@ const BATIK = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Batik_M
 const DANCER = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Sendratari.jpg/800px-Sendratari.jpg"
 const TEMPLE = "https://images.unsplash.com/photo-1518544866330-95a2f0664541?w=1600&auto=format&fit=crop&q=80"
 
-/* Foto preview: dokumentasi Paskibra/marching band asli Indonesia (Wikimedia Commons, CC BY-SA 4.0).
+/* Foto preview: dokumentasi peleton LKBB asli (Wikimedia Commons, mayoritas CC0).
    Data nyata dari DB selalu diutamakan — ini hanya fallback pratinjau. */
 const fallbackPeserta = [
-  { n:"01", name:"SMA N 1 Kertosono", sub:"Putra • Kertosono", vote:"12.430", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Anggota_paskibra_gardapati.jpg/960px-Anggota_paskibra_gardapati.jpg" },
-  { n:"02", name:"SMA N 2 Kediri", sub:"Putra • Kediri", vote:"10.243", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Upacara_pengibaran_bendera_merah_putih_dan_Paskibra_SMA.jpg/960px-Upacara_pengibaran_bendera_merah_putih_dan_Paskibra_SMA.jpg" },
-  { n:"03", name:"SMA N 3 Tulungagung", sub:"Putri • Tulungagung", vote:"9.876", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Paskibra_perempuan_sekolah_menengah_atas_Indonesia.jpg/960px-Paskibra_perempuan_sekolah_menengah_atas_Indonesia.jpg" },
-  { n:"04", name:"SMA N 1 Blitar", sub:"Campuran • Blitar", vote:"8.542", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Marching_Band_SMPN_5.jpg/960px-Marching_Band_SMPN_5.jpg" },
-  { n:"05", name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Drumblek_%281%29.jpg/960px-Drumblek_%281%29.jpg" },
-  { n:"06", name:"SMA N 2 Malang", sub:"Campuran • Malang", vote:"6.782", img:"https://upload.wikimedia.org/wikipedia/commons/c/cf/Paskibra_205.jpg" },
-  { n:"07", name:"SMA N 1 Jombang", sub:"Putra • Jombang", vote:"5.421", img:"https://upload.wikimedia.org/wikipedia/commons/6/64/Pasukan_Pengawal_Paskibra_dari_Pramuka.jpg" },
-  { n:"08", name:"SMA N 1 Nganjuk", sub:"Putri • Nganjuk", vote:"4.983", img:"https://upload.wikimedia.org/wikipedia/commons/4/46/Drumblek_Majorette.jpg" },
+  { n:"01", name:"SMA N 1 Kertosono", sub:"Putra • Kertosono", vote:"12.430", img:LKBB_PHOTOS[0] },
+  { n:"02", name:"SMA N 2 Kediri", sub:"Putra • Kediri", vote:"10.243", img:LKBB_PHOTOS[1] },
+  { n:"03", name:"SMA N 3 Tulungagung", sub:"Putri • Tulungagung", vote:"9.876", img:LKBB_PHOTOS[2] },
+  { n:"04", name:"SMA N 1 Blitar", sub:"Campuran • Blitar", vote:"8.542", img:LKBB_PHOTOS[3] },
+  { n:"05", name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", img:LKBB_PHOTOS[4] },
+  { n:"06", name:"SMA N 2 Malang", sub:"Campuran • Malang", vote:"6.782", img:LKBB_PHOTOS[5] },
+  { n:"07", name:"SMA N 1 Jombang", sub:"Putra • Jombang", vote:"5.421", img:LKBB_PHOTOS[6] },
+  { n:"08", name:"SMA N 1 Nganjuk", sub:"Putri • Nganjuk", vote:"4.983", img:LKBB_PHOTOS[7] },
 ]
 const fallbackBoard = [
   { r:1, name:"SMA N 1 Kertosono", sub:"Putra • Kertosono", vote:"12.430", pct:"18.6%" },
@@ -577,7 +578,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
               <span>© 2026 JAWASOMA. All rights reserved.</span>
               <span>The Impression 2026</span>
             </div>
-            <p className="mt-1 text-[10px] text-white/25">Foto dokumentasi: kontributor Wikimedia Commons (CC BY-SA 4.0) • Ornamen: Tropenmuseum / motif Jawa</p>
+            <p className="mt-1 text-[10px] text-white/25">Foto peleton: Wikimedia Commons (CC0/CC BY-SA) • Ornamen gunungan: Tropenmuseum (CC BY-SA)</p>
           </div>
         </div>
       </footer>

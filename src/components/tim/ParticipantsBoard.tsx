@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast"
 import { ShareSheet } from "@/components/share/ShareSheet"
 import { Share2, QrCode } from "lucide-react"
+import { lkbbPhoto } from "@/lib/lkbbPhotos"
 
 // Geser horizontal dengan mouse (klik-tahan) maupun sentuhan layar.
 // Klik ditahan bila pointer bergeser (drag) agar tidak membuka tautan.
@@ -59,7 +60,7 @@ function TeamCard({ p, idx }: { p: any; idx: number }){
       </div>
       <Link href={profileUrl}
         className="group relative mt-2 block aspect-[4/5] overflow-hidden rounded-xl border border-white/[0.08] bg-[#141414]" draggable={false}>
-        <img src={p.image_url || p.image || "/assets/brand/lkbb-logo.jpg"} alt={p.name}
+                <img src={p.image_url || p.image || lkbbPhoto(idx)} alt={p.name}
           className="pointer-events-none h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" loading={idx<3?"eager":"lazy"} draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
       </Link>

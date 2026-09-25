@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   if (ctx.scope === "none") return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const service = createServiceSupabase()
   const body = await req.json()
-  const { event_id, user_id, email } = body
+  const { event_id, user_id, email, role } = body
   if (!event_id) return NextResponse.json({ error: "event_id wajib" }, { status: 400 })
   if (!ctx.isSuper && !ctx.eventIds.includes(event_id)) {
     return NextResponse.json({ error: "Forbidden — di luar event Anda" }, { status: 403 })
@@ -55,12 +55,13 @@ export async function POST(req: Request) {
     targetUserId = (prof as any).id
   }
   if (!targetUserId) return NextResponse.json({ error: "user_id atau email wajib" }, { status: 400 })
-  // Hanya peran ADMIN event yang boleh diberikan lewat sini (SUPER via platform_roles terpisah).
+  // Peran event ADMIN/USER (SUPER via platform_roles terpisah; trigger DB menolak super).
+  const memberRole = role === "USER" ? "USER" : "ADMIN"
   const { data, error } = await service.from("event_members").upsert({
-    event_id, user_id: targetUserId, role: "ADMIN", status: "active",
+    event_id, user_id: targetUserId, role: memberRole, status: "active",
   }, { onConflict: "event_id,user_id" }).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  await service.from("audit_logs").insert({ user_id: ctx.userId, action: "event_admin_add", target: targetUserId, details: { event_id }, event_id } as any)
+  await service.from("audit_logs").insert({ user_id: ctx.userId, action: memberRole === "ADMIN" ? "event_admin_add" : "event_user_set", target: targetUserId, details: { event_id, role: memberRole }, event_id } as any)
   return NextResponse.json(data)
 }
 

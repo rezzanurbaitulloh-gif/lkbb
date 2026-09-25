@@ -44,7 +44,7 @@ export const ACCESS_MATRIX: SectionDef[] = [
   { key: "sponsor", label: "Sponsor", href: "/admin/sponsor", group: "KONTEN", super: "all", admin: "own", note: "Sponsor event sendiri" },
   // ——— AKSES ———
   { key: "access", label: "Akses & Admin", href: "/admin/access", group: "AKSES", super: "all", admin: "own", note: "Kelola admin event sendiri (super: semua + matriks global)" },
-  { key: "users", label: "Pengguna", href: "/admin/users", group: "AKSES", super: "all", admin: "none", note: "Pengguna global — super saja" },
+  { key: "users", label: "Pengguna", href: "/admin/users", group: "AKSES", super: "all", admin: "own", note: "Pengguna event sendiri (super admin disembunyikan)" },
   // ——— PLATFORM (super saja: sewa multi-event) ———
   { key: "events", label: "Kelola Event", href: "/admin/events", group: "PLATFORM", super: "all", admin: "none", note: "Buat & provisioning web sewa (subdomain)" },
   { key: "templates", label: "Template", href: "/admin/templates", group: "PLATFORM", super: "all", admin: "none", note: "Template UI/UX, 1 klik terapkan ke event" },

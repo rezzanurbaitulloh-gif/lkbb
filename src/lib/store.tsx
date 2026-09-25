@@ -116,6 +116,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return { error: error.message }
     }
     await refreshUser()
+    // Asosiasi user ↔ event (domain saat ini) — fire-and-forget.
+    // Barulah user tampil di Kelola Pengguna admin event tersebut.
+    try { fetch("/api/auth/track-event", { method: "POST" }).catch(()=>{}) } catch {}
     return {}
   }
   const loginWithPassword = login

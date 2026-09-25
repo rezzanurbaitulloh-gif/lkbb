@@ -306,6 +306,9 @@ export default function SettingsPage(){
           <div><label className="text-xs font-bold">Tagline</label><Input id="site_tagline" defaultValue={getVal("site.tagline","ASTRA DHARMA HAYUNING BUDAYA")} /></div>
           <div><label className="text-xs font-bold">Penyelenggara</label><Input id="site_org" defaultValue={getVal("site.organizer","PASKIBRA SMKN 1 KERTOSONO")} /></div>
           <div><label className="text-xs font-bold">Deskripsi Footer</label><textarea id="site_desc" defaultValue={getVal("site.description","")} className="w-full min-h-[70px] rounded-xl border border-white/[0.08] px-3 py-2 text-sm" /></div>
+          <div><label className="text-xs font-bold">Judul Section Peserta</label><Input id="home_teams_title" defaultValue={getVal("home.teams_title","SIAPA YANG AKAN KAMU")} /></div>
+          <div><label className="text-xs font-bold">Judul Section Peserta (aksen lime)</label><Input id="home_teams_accent" defaultValue={getVal("home.teams_title_accent","DUKUNG?")} /></div>
+          <div><label className="text-xs font-bold">Subjudul Section Peserta</label><textarea id="home_teams_sub" defaultValue={getVal("home.teams_subtitle","Urutan nomor tampil (01, 02, 03…) — SMP & SMA terpisah. Peringkat disembunyikan saat dukungan berlangsung.")} className="w-full min-h-[70px] rounded-xl border border-white/[0.08] px-3 py-2 text-sm" /></div>
           <Button disabled={saving} className="rounded-full" onClick={()=>{
             const updates = [
               { key:"site.name", value: (document.getElementById("site_name") as HTMLInputElement).value, category:"general" },
@@ -313,6 +316,9 @@ export default function SettingsPage(){
               { key:"site.tagline", value: (document.getElementById("site_tagline") as HTMLInputElement).value, category:"general" },
               { key:"site.organizer", value: (document.getElementById("site_org") as HTMLInputElement).value, category:"general" },
               { key:"site.description", value: (document.getElementById("site_desc") as HTMLTextAreaElement).value, category:"general" },
+              { key:"home.teams_title", value: (document.getElementById("home_teams_title") as HTMLInputElement).value, category:"general" },
+              { key:"home.teams_title_accent", value: (document.getElementById("home_teams_accent") as HTMLInputElement).value, category:"general" },
+              { key:"home.teams_subtitle", value: (document.getElementById("home_teams_sub") as HTMLTextAreaElement).value, category:"general" },
             ]
             handleSaveSettings(updates)
           }}>Simpan Umum</Button>

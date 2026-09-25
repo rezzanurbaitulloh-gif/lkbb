@@ -2,7 +2,10 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { TeamShareIcons } from "@/components/tim/ShareButtons"
 
-export function Featured({ peletons, showSementara, showFinal }: { peletons: any[]; showSementara?: boolean; showFinal?: boolean }){
+export function Featured({ peletons, showSementara, showFinal, siteSettings }: { peletons: any[]; showSementara?: boolean; showFinal?: boolean; siteSettings?: Record<string, any> }){
+  const teamsTitle = (siteSettings?.["home.teams_title"] as string) || "SIAPA YANG AKAN KAMU"
+  const teamsAccent = (siteSettings?.["home.teams_title_accent"] as string) || "DUKUNG?"
+  const teamsSub = (siteSettings?.["home.teams_subtitle"] as string) || "Urutan nomor tampil (01, 02, 03…) — SMP & SMA terpisah. Peringkat disembunyikan saat dukungan berlangsung."
   const sorted = [...(peletons || [])].sort((a:any,b:any)=>{
     if(a.category!==b.category) return String(a.category).localeCompare(String(b.category))
     return parseInt(String(a.number).replace(/^0+/,"")||"0") - parseInt(String(b.number).replace(/^0+/,"")||"0")
@@ -39,14 +42,9 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
                 <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white backdrop-blur">#{String(p.number).padStart(2,"0")}</span>
               </Link>
               <div className="p-4 pt-3">
-                <div className="flex items-center gap-3">
-                  <Link href={`/dukungan?peleton=${p.slug}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-[11px] font-bold tracking-wide hover:bg-primary/90 transition-colors">
-                    DUKUNG <ArrowRight className="h-3 w-3" />
-                  </Link>
-                  <Link href={`/tim/${p.slug}`} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
-                    LIHAT →
-                  </Link>
-                </div>
+                <Link href={`/dukungan?peleton=${p.slug}`} className="flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-[11px] font-bold tracking-wide hover:bg-primary/90 transition-colors">
+                  DUKUNG <ArrowRight className="h-3 w-3" />
+                </Link>
                 <div className="mt-2">
                   <TeamShareIcons slug={p.slug} name={p.name} />
                 </div>
@@ -65,10 +63,10 @@ export function Featured({ peletons, showSementara, showFinal }: { peletons: any
           <div>
             <div className="meta-label">PESERTA</div>
             <h2 className="mt-2 font-display font-bold text-[32px] lg:text-[44px] leading-[0.9] tracking-[-0.03em] text-foreground">
-              SIAPA YANG<br />AKAN KAMU <span className="text-primary">DUKUNG?</span>
+              {teamsTitle} <span className="text-primary">{teamsAccent}</span>
             </h2>
             <p className="mt-3 max-w-[480px] text-sm leading-relaxed text-muted-foreground">
-              Urutan nomor tampil (01, 02, 03…) — SMP & SMA terpisah. Peringkat disembunyikan saat dukungan berlangsung.
+              {teamsSub}
             </p>
           </div>
           <Link href="/tim" className="hidden md:inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-bold tracking-wide hover:bg-muted transition-colors">

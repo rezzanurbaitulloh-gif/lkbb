@@ -42,11 +42,24 @@ export default async function TimPage(){
 
   // Tanpa data demo/fallback gambar stock: kalau DB kosong, tampilkan empty state jujur.
 
+  // Pengaturan situs (dinamis — judul section dll bisa diubah admin).
+  let siteSettings: Record<string, any> = {}
+  try {
+    let sq: any = supabase.from("site_settings").select("key,value").eq("is_public", true)
+    if (eventId) sq = sq.eq("event_id", eventId)
+    const { data: srows } = await sq
+    for (const r of (srows as any) || []) siteSettings[r.key] = (r as any).value
+    if (Object.keys(siteSettings).length === 0 && eventId) {
+      const { data: grows } = await supabase.from("site_settings").select("key,value").eq("is_public", true).is("event_id", null)
+      for (const r of (grows as any) || []) if (!(r.key in siteSettings)) siteSettings[r.key] = (r as any).value
+    }
+  } catch {}
+
   return (
     <div className="min-h-screen flex flex-col bg-[#0A0A09] text-[#F2F0E9]">
-      <Navbar />
+      <Navbar siteSettings={siteSettings} />
       <main className="flex-1 pb-[72px] md:pb-0">
-        <ParticipantsBoard smp={smp} sma={sma} />
+        <ParticipantsBoard smp={smp} sma={sma} siteSettings={siteSettings} />
       </main>
       <Footer />
       <BottomNav />

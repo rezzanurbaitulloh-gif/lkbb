@@ -92,8 +92,16 @@ function DukunganInner(){
         </div>
         {/* kanan: kartu pilih dukungan */}
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111110] p-6">
-          <div className="pointer-events-none absolute -right-2 -top-4 select-none font-display text-[110px] font-light leading-none text-transparent" style={{ WebkitTextStroke: "1px rgba(242,240,233,0.18)" }}>02</div>
-          <div className="text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ DUKUNGAN</div>
+          {/* header tim — sama seperti halaman detail tim */}
+          <div className="flex items-start gap-4">
+            <div className="font-display text-[52px] font-light leading-none text-transparent" style={{ WebkitTextStroke: "1px rgba(242,240,233,0.4)" }}>{String(peleton.number).padStart(2,"0")}</div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-display text-[15px] font-bold tracking-tight text-[#F2F0E9]">{peleton.name}</div>
+              <div className="mt-0.5 truncate text-[10px] tracking-[0.12em] text-[#92918C]">{(peleton.school && peleton.school !== peleton.name) ? String(peleton.school).toUpperCase() : `${peleton.category}${peleton.city ? " • " + String(peleton.city).toUpperCase() : ""}`}</div>
+            </div>
+            {(peleton.logo_url || peleton.image_url) && <img src={peleton.logo_url || peleton.image_url} alt={`Logo ${peleton.name}`} className="h-11 w-11 shrink-0 object-contain" />}
+          </div>
+          <div className="mt-4 border-t border-white/[0.06] pt-4 text-[10px] font-bold tracking-[0.14em] text-[#92918C]">→ LANGKAH 02 • DUKUNGAN</div>
           <h2 className="mt-2 font-display text-[26px] font-bold leading-[0.95] tracking-tight">TENTUKAN<br /><span className="text-[#D9FF3F]">DUKUNGANMU.</span></h2>
           <div className={`mt-5 grid gap-2 ${presets.length>3 ? "grid-cols-4" : "grid-cols-3"}`}>
             {presets.map(n=> (

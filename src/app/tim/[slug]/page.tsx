@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { createServerSupabase, createStaticSupabase } from "@/lib/supabase"
 import { SocialIcon } from "@/components/ui/SocialIcons"
+import { TeamPhotoLightbox } from "@/components/tim/TeamPhotoLightbox"
 
 export const revalidate = 0
 
@@ -60,12 +61,8 @@ export default async function PeletonDetail({ params }: { params: Promise<{slug:
             </div>
           </div>
 
-          <div className="relative mt-5 aspect-[16/8] overflow-hidden rounded-xl border border-white/[0.08] bg-black">
-            {/* Foto tim sebagai latar samar — seperti latar hero beranda/event */}
-            <img src={photo} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-[2px]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/30" />
-            <img src={photo} alt={peleton.name} className="relative h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+          <div className="mt-5">
+            <TeamPhotoLightbox src={photo} alt={peleton.name} />
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">

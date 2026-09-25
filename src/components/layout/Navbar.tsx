@@ -1,10 +1,9 @@
 "use client"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Search, Menu, X, User, Shield } from "lucide-react"
+import { Search, Menu, X, User } from "lucide-react"
 import { useState } from "react"
 import { useApp } from "@/lib/store"
-import { useCanAdmin } from "@/hooks/useCanAdmin"
 
 const nav = [
   { href: "/", label: "BERANDA" },
@@ -25,7 +24,6 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
   const [searchOpen, setSearchOpen] = useState(false)
   const [mobileSearch, setMobileSearch] = useState("")
   const { currentUser } = useApp()
-  const canAdmin = useCanAdmin()
 
   // Logo + nama dari pengaturan admin (dinamis) — fallback aset lokal.
   const siteName = (siteSettings?.["site.name"] as string) || "LKBB"
@@ -65,12 +63,6 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
           </nav>
 
           <div className="flex items-center gap-2">
-            {canAdmin && (
-              <Link href="/admin" aria-label="Dasbor Admin"
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#D9FF3F]/40 bg-[#D9FF3F]/[0.07] px-3 py-1.5 text-[10px] font-bold tracking-[0.12em] text-[#D9FF3F] hover:bg-[#D9FF3F]/15 transition-colors">
-                <Shield className="h-3 w-3" /> ADMIN
-              </Link>
-            )}
             <Link href={currentUser ? "/profile" : "/login"} aria-label="Profil"
               className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.08] text-[#F2F0E9] hover:bg-white/5 transition-colors">
               <User className="h-3.5 w-3.5" />
@@ -126,19 +118,12 @@ export function Navbar({ siteSettings }: { siteSettings?: Record<string, any> } 
                 </Link>
               )
             })}
-            {canAdmin && (
-              <Link href="/admin" onClick={()=> setOpen(false)}
-                className="flex items-baseline gap-4 border-b border-[#D9FF3F]/20 bg-[#D9FF3F]/[0.04] py-3.5">
-                <span className="font-body text-[11px] font-medium text-[#D9FF3F]">04</span>
-                <span className="font-display text-[15px] font-semibold tracking-wide text-[#D9FF3F]">DASBOR ADMIN</span>
-              </Link>
-            )}
             <div className="relative mt-6 h-[180px] overflow-hidden rounded-xl border border-white/[0.08]">
-              <img src="/assets/poster/lkbb-poster.jpg" alt="LKBB" className="h-full w-full object-cover opacity-70 grayscale" />
+              <img src="/assets/poster/lkbb-poster.jpg" alt={siteName} className="h-full w-full object-cover opacity-70 grayscale" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
-                <div className="text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">LKBB</div>
-                <div className="font-display text-sm font-bold text-white">SUARAMU ADALAH KEKUATAN.</div>
+                <div className="text-[10px] font-bold tracking-[0.14em] text-[#D9FF3F]">{siteName}</div>
+                <div className="font-display text-sm font-bold text-white">{(siteSettings?.["site.tagline"] as string) || "SUARAMU ADALAH KEKUATAN."}</div>
               </div>
             </div>
           </nav>

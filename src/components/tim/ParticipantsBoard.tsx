@@ -112,13 +112,15 @@ function TeamRow({ teams, category }: { teams: any[]; category: string }){
   )
 }
 
-export function ParticipantsBoard({ smp, sma }: { smp: any[]; sma: any[] }){
+export function ParticipantsBoard({ smp, sma, siteSettings }: { smp: any[]; sma: any[]; siteSettings?: Record<string, any> }){
+  const teamsTitle = (siteSettings?.["home.teams_title"] as string) || "SIAPA YANG AKAN KAMU"
+  const teamsAccent = (siteSettings?.["home.teams_title_accent"] as string) || "DUKUNG?"
   return (
     <section className="border border-white/[0.08] bg-[#0A0A09]">
       <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
         <div className="meta-label">PESERTA</div>
         <h1 className="mt-2 font-display text-[30px] font-bold leading-[0.9] tracking-[-0.03em] text-[#F2F0E9] sm:text-[40px]">
-          SIAPA YANG<br />AKAN KAMU<br /><span className="text-[#D9FF3F]">DUKUNG?</span>
+          {teamsTitle}<br /><span className="text-[#D9FF3F]">{teamsAccent}</span>
         </h1>
         <p className="mt-3 max-w-[420px] font-body text-[12px] leading-relaxed text-[#92918C]">
           {(smp.length + sma.length)} tim terdaftar — {smp.length} SMP & {sma.length} SMA. Geser kartu dengan mouse atau sentuhan layar.

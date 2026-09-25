@@ -1,6 +1,8 @@
 "use client"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { CaraDukungDialog } from "./CaraDukungDialog"
 
 function useCountdown(target: string | null){
   const calc = (t: number) => {
@@ -21,28 +23,27 @@ function useCountdown(target: string | null){
   }
   const t = getTime(target)
   const isValid = !isNaN(t)
-  const [diff, setDiff] = useState(() => isValid ? calc(t) : { days: 12, hours: 8, minutes: 24, seconds: 17, total: 1, expired: false })
+  const [diff, setDiff] = useState(() => isValid ? calc(t) : { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true })
   useEffect(()=>{
     if(!isValid || isNaN(t)) return
     setDiff(calc(t))
     const id=setInterval(()=> setDiff(calc(t)),1000)
     return ()=>clearInterval(id)
-  },[target])
+  },[target, t, isValid])
   return { ...diff, isValid, targetTime: t }
 }
 
 export function Hero({ event, cms, siteSettings, heroVariant }: { event: any; cms?: any; siteSettings?: Record<string, any>; heroVariant?: string }){
   const cmsContent = cms?.content || {}
-  // Varian hero dari template event: default/split | centered | fullscreen (+video = fullscreen)
-  const variant = heroVariant === "centered" || heroVariant === "fullscreen" || heroVariant === "video" ? heroVariant : "default"
   const state = (event?.state as string) || "NOT_STARTED"
   const isActive = state === "ACTIVE" || state === "VOTING_OPEN"
   const isClosed = state === "VOTING_CLOSED"
   const isPublished = state === "RESULT_PUBLISHED"
+  const isNotStarted = state === "NOT_STARTED"
 
   const canonicalTarget = (() => {
     if (isActive && event?.voting_end) return event.voting_end
-    if (state === "NOT_STARTED" && event?.voting_start) return event.voting_start
+    if (isNotStarted && event?.voting_start) return event.voting_start
     if (event?.event_date) {
       const d = String(event.event_date).slice(0,10)
       const tm = String(event.event_time || "08:00:00")
@@ -51,113 +52,106 @@ export function Hero({ event, cms, siteSettings, heroVariant }: { event: any; cm
     return event?.voting_end || cmsContent.fallbackDate || null
   })()
   const cd = useCountdown(canonicalTarget)
-  const showCountdown = true
+  const countdownLabel = (() => {
+    if (isActive) return "MENUJU PENUTUPAN VOTING"
+    if (isNotStarted) return "MENUJU PEMBUKAAN VOTING"
+    if (isClosed) return "VOTING DITUTUP"
+    if (isPublished) return "ACARA SELESAI"
+    return "EVENT DIMULAI DALAM"
+  })()
+  const showCountdown = (() => {
+    if (!cd.isValid) return false
+    if (cd.expired) return false
+    if (isClosed || isPublished) return false
+    return true
+  })()
 
-  // Visual hero: logo resmi LKBB — setting hero.logo_image → branding.logo → logo lokal.
+  const [caraOpen, setCaraOpen] = useState(false)
   const heroImage = (siteSettings?.["hero.logo_image"] as string) || (siteSettings?.["branding.logo"] as string) || cmsContent.heroLogoImage || "/assets/brand/lkbb-logo.jpg"
 
-  // Tanggal & lokasi dari event — bukan hardcode.
-  const eventDateStr = (event?.event_date as string) || null
-  const dateLabel = (()=> {
-    if(!eventDateStr) return null
-    const d = new Date(eventDateStr + "T00:00:00")
-    if(isNaN(d.getTime())) return null
-    const day = String(d.getDate()).padStart(2,"0")
-    const month = d.toLocaleString("en-US", { month: "long" }).toUpperCase()
-    return `${day} ${month} ${d.getFullYear()}`
-  })()
-  const yearLabel = eventDateStr?.slice(0,4) || ""
-  const venueLabel = (()=>{
-    const addr = (siteSettings?.["contact.address"] as string) || event?.settings?.contact?.address || ""
-    if(!addr) return ""
-    const first = addr.split(",")[0].trim()
-    const short = first.replace(/^(SMK Negeri 1|SMKN 1|SMA Negeri 1|SMAN 1|SMP Negeri 1|SMPN 1|MTs Negeri|MTsN)\s+/i, "").trim()
-    return (short || first).toUpperCase()
-  })()
+  const eyebrow = cmsContent.eyebrow || `LKBB • ${(event?.name as string) || "JAVASOMA THE IMPRESSION"}`
+  const heading1 = cmsContent.headingLine1 || "SUARAMU ADALAH"
+  const heading2 = cmsContent.headingLine2 || "KEKUATAN."
+  const subtitle = cmsContent.subtitle || "LKBB"
+  const subtitle2 = cmsContent.subtitle2 || (event?.name as string) || "JAVASOMA THE IMPRESSION"
+  const tagline = cmsContent.tagline || "DUKUNG TIM FAVORITMU"
+  const ctaPrimaryLabel = cmsContent.ctaPrimaryLabel || "LIHAT TIM PESERTA"
+  const ctaPrimaryLink = cmsContent.ctaPrimaryLink || "/tim"
+  const ctaSecondaryLabel = cmsContent.ctaSecondaryLabel || "CARA KERJA"
+  const yearLabel = (event?.event_date as string)?.slice(0,4) || ""
 
   if (cms && cms.is_visible === false) return null
 
-  const statusLabel = isActive ? "DUKUNGAN DIBUKA" : isClosed ? "DUKUNGAN DITUTUP" : isPublished ? "HASIL DIUMUMKAN" : "SEGERA DATANG"
-  const showUnits = cd.isValid && !cd.expired
-  const units = [
-    { v: String(cd.days).padStart(2,"0"), l: "HARI" },
-    { v: String(cd.hours).padStart(2,"0"), l: "JAM" },
-    { v: String(cd.minutes).padStart(2,"0"), l: "MENIT" },
-    { v: String(cd.seconds).padStart(2,"0"), l: "DETIK" },
-  ]
-
   return (
     <section className="relative overflow-hidden border border-white/[0.08] bg-[#0A0A09] text-[#F2F0E9]">
-      {/* BACKGROUND — logo LKBB full-bleed plek PNG (menyatu, bukan kotak mentah) */}
       <div className="absolute inset-0" aria-hidden>
         <img src={heroImage} alt="" className="h-full w-full object-cover object-center opacity-40" />
         <div className="absolute inset-0 bg-[#0A0A09]/55" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A09] via-[#0A0A09]/45 to-[#0A0A09]/15" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A09]/90 via-transparent to-[#0A0A09]/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A09]/30 via-[#0A0A09]/55 to-[#0A0A09]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A09] via-[#0A0A09]/80 to-transparent" />
       </div>
-      {/* diagonal accents */}
-      <div className="absolute right-[38%] top-0 h-full w-px rotate-[24deg] bg-primary/25" aria-hidden />
-      <div className="absolute right-[34%] top-0 h-full w-px rotate-[24deg] bg-white/10" aria-hidden />
 
-      <div className={`relative grid ${variant === "default" ? "lg:grid-cols-[1fr_auto] lg:gap-8" : ""}`}>
-        {/* LEFT — headline plek PNG */}
-        <div className={`relative flex flex-col justify-center px-5 pb-8 pt-10 sm:px-8 lg:px-12 lg:py-14 ${variant === "default" ? "lg:min-h-[560px]" : "lg:min-h-[560px] items-center text-center"} ${variant === "fullscreen" ? "lg:min-h-[92vh] lg:py-24" : ""}`}>
-          <h1 className="font-display font-bold leading-[0.88] tracking-[-0.03em]">
-            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">SUARAMU</span></span>
-            <span className="reveal-line block text-[44px] sm:text-[56px] lg:text-[64px]"><span className="block">ADALAH</span></span>
-            <span className="block text-[44px] text-primary sm:text-[56px] lg:text-[64px]">KEKUATAN.</span>
-          </h1>
-          <p className={`mt-4 max-w-[340px] font-body text-[12.5px] leading-relaxed text-[#B8B7B0] ${variant !== "default" ? "mx-auto" : ""}`}>
-            Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB{yearLabel ? ` ${yearLabel}` : ""}.
-          </p>
-
-          {dateLabel && (
-            <div className={`mt-6 flex flex-wrap items-center gap-3 ${variant !== "default" ? "justify-center" : ""}`}>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.06] px-3.5 py-2 text-[10px] font-bold tracking-[0.1em] text-primary">
-                <span className="leading-none">{dateLabel}{venueLabel && (<><br /><span className="text-[#F2F0E9]/80">{venueLabel}</span></>)}</span>
-              </div>
+      <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6">
+        <div className="pt-8 sm:pt-10 md:pt-14 pb-6 md:pb-8">
+          <div className="mx-auto max-w-[720px] text-center flex flex-col items-center px-1">
+            <div className="inline-flex max-w-full items-center justify-center gap-2 sm:gap-3 flex-wrap">
+              <span className="h-px w-6 sm:w-8 bg-primary shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-primary break-words text-center">{eyebrow}</span>
+              <span className="h-px w-6 sm:w-8 bg-primary shrink-0" />
             </div>
-          )}
-          <div className="mt-4">
-            <Link href="/tim" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[11px] font-bold tracking-wide text-primary-foreground transition-transform hover:scale-[1.02]">
-              LIHAT TIM PESERTA <span aria-hidden>→</span>
-            </Link>
+            <h1 className="mt-3 text-balance font-black leading-[0.84] tracking-[-0.035em] text-center max-w-full break-words animate-[fadeIn_0.7s_ease-out] px-1">
+              <span className="block text-[32px] xs:text-[36px] sm:text-[42px] md:text-[56px] lg:text-[68px] xl:text-[76px] leading-[0.88] font-display text-white">{heading1}</span>
+              <span className="block text-[32px] xs:text-[36px] sm:text-[42px] md:text-[56px] lg:text-[68px] xl:text-[76px] leading-[0.88] font-display text-primary">{heading2}</span>
+            </h1>
+            <div className="mt-3 text-center max-w-full space-y-1">
+              <div className="text-[11px] sm:text-[13px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-white break-words">{subtitle} <span className="text-primary">•</span> {subtitle2}</div>
+              <div className="text-[10px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.14em] text-primary font-bold break-words">{tagline}</div>
+              <div className="text-[11px] sm:text-[12px] font-medium tracking-wide text-white/60 break-words">Dukung tim favoritmu dan jadi bagian dari perjalanan mereka di LKBB{yearLabel ? ` ${yearLabel}` : ""}</div>
+            </div>
+            <div className="mt-5 xs:mt-6 flex flex-col xs:flex-row flex-wrap gap-2.5 sm:gap-3 justify-center items-center w-full xs:w-auto px-1 xs:px-0">
+              <Link href={ctaPrimaryLink} className="w-full xs:w-auto">
+                <Button size="lg" className="w-full xs:w-auto rounded-full px-6 xs:px-7 h-[44px] text-[13px] xs:text-sm font-black tracking-wide shadow-[0_4px_16px_rgba(217,255,63,0.22)]">{ctaPrimaryLabel}</Button>
+              </Link>
+              <Button onClick={()=> setCaraOpen(true)} variant="ghost" size="default" className="w-full xs:w-auto rounded-full px-5 h-[36px] xs:h-[38px] text-xs xs:text-[13px] font-semibold tracking-wide border border-white/10 bg-white/5 backdrop-blur text-white hover:text-white hover:bg-white/10">{ctaSecondaryLabel}</Button>
+            </div>
+            <CaraDukungDialog open={caraOpen} onOpenChange={setCaraOpen} />
           </div>
-
-          <div className={`mt-10 flex items-center gap-2 text-[10px] font-semibold tracking-[0.16em] text-[#92918C] uppercase ${variant !== "default" ? "justify-center" : ""}`}>
-            <span className="text-primary">↓</span> GULIR KE BAWAH
-          </div>
-
-          {/* diagonal hairlines dekoratif */}
-          <svg className="pointer-events-none absolute bottom-0 left-0 h-full w-full opacity-[0.14]" viewBox="0 0 400 560" fill="none" preserveAspectRatio="none">
-            <line x1="40" y1="560" x2="240" y2="80" stroke="#F2F0E9" strokeWidth="1" />
-            <line x1="90" y1="560" x2="290" y2="80" stroke="#F2F0E9" strokeWidth="0.6" />
-          </svg>
         </div>
-
-        {/* RIGHT — countdown + tahun raksasa (di atas background) */}
-        <div className={`relative flex flex-col justify-center gap-6 px-5 pb-10 sm:px-8 ${variant === "default" ? "items-start lg:min-h-[560px] lg:w-[280px] lg:items-end lg:px-0 lg:py-14 lg:pr-12" : "items-center text-center lg:py-10"}`}>
-
-          {/* status + countdown — plek PNG */}
-          <div className={`flex gap-4 ${variant === "default" ? "flex-row items-end lg:flex-col lg:items-end lg:gap-3" : "flex-row items-end justify-center"}`}>
-            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> {statusLabel}
-            </div>
-            <div className="flex flex-row items-end gap-4 lg:flex-col lg:items-end lg:gap-2.5">
-              {showUnits && units.map(u=> (
-                <div key={u.l} className="text-right">
-                  <div className="font-display text-[22px] font-bold tabular-nums leading-none text-white">{u.v}</div>
-                  <div className="mt-0.5 text-[8px] font-semibold tracking-[0.18em] text-white/50">{u.l}</div>
+        <div className="pb-6 sm:pb-8 md:pb-10">
+          <div className="mx-auto max-w-[560px] text-center px-1">
+            {showCountdown ? (
+              <>
+                <div className="text-[9px] sm:text-[10px] font-bold tracking-[0.16em] sm:tracking-[0.18em] text-white/60">{countdownLabel}</div>
+                <div className="mt-3 grid grid-cols-4 gap-1 xs:gap-1.5 sm:gap-2 md:gap-3">
+                  {[
+                    {v: cd.days, l:"HARI"},
+                    {v: cd.hours, l:"JAM"},
+                    {v: cd.minutes, l:"MENIT"},
+                    {v: cd.seconds, l:"DETIK"},
+                  ].map(item=> (
+                    <div key={item.l} className="rounded-[10px] sm:rounded-[12px] border border-white/10 bg-[#0B0C0F]/80 backdrop-blur py-2 xs:py-2.5 sm:py-3 md:py-4 px-0.5 xs:px-1">
+                      <div className="tabular-nums text-[22px] xs:text-[26px] sm:text-[28px] md:text-[32px] font-black leading-none text-white">{String(item.v).padStart(2,"0")}</div>
+                      <div className="mt-1 text-[8px] xs:text-[9px] sm:text-[10px] font-bold tracking-[0.10em] sm:tracking-[0.14em] text-white/50">{item.l}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+                <div className="mt-2 text-[11px] text-white/50 tabular-nums">{cd.days} hari lagi • {canonicalTarget ? new Date(canonicalTarget as string).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric",timeZone:"Asia/Jakarta"}) : ""}</div>
+              </>
+            ) : isClosed ? (
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 backdrop-blur px-4 py-2">
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[11px] font-black tracking-wide text-white">VOTING DITUTUP — MENUNGGU REKAP OFFLINE</span>
+              </div>
+            ) : isPublished ? (
+              <div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-4 py-2 text-center">
+                <span className="text-[11px] font-black tracking-wide text-white">HASIL TELAH DIREKAP DAN AKAN DIUMUMKAN OLEH PANITIA</span>
+              </div>
+            ) : isNotStarted ? (
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                <span className="text-[11px] font-bold tracking-wide text-white/70">SEGERA DIBUKA</span>
+              </div>
+            ) : null}
           </div>
-
-          {/* tahun event outline raksasa */}
-          {yearLabel && (
-            <div className="select-none font-display text-[90px] font-light leading-none tracking-tight text-transparent sm:text-[120px] lg:text-[150px]"
-              style={{ WebkitTextStroke: "1px rgba(242,240,233,0.22)" }}>{yearLabel}</div>
-          )}
         </div>
       </div>
     </section>

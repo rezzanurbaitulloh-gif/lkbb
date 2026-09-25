@@ -23,7 +23,7 @@ export function ShareSheet({
   useEffect(()=>{
     if(!open || !url) return
     import("qrcode").then(mod=>{
-      mod.toDataURL(url, { width: 220, margin: 1, color:{ dark:"#050403", light:"#F2ECE1"} }).then(setQr).catch(()=>{})
+      mod.toDataURL(url, { width: 220, margin: 1, color:{ dark:"#050403", light:"#FFFFFF"} }).then(setQr).catch(()=>{})
     })
   },[open, url])
 
@@ -77,10 +77,10 @@ export function ShareSheet({
               </Button>
             </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col items-center">
-            <div className="text-xs font-bold tracking-wide text-white/60">QR CODE</div>
-            {qr ? <img src={qr} alt="QR" className="mt-3 h-[180px] w-[180px] object-contain" /> : <div className="mt-3 h-[180px] w-[180px] grid place-items-center text-xs text-white/40">Memuat QR...</div>}
-            <div className="mt-2 text-[11px] text-white/40 text-center break-all px-2">{title}</div>
+          <div className="rounded-2xl border border-white/10 bg-white p-4 flex flex-col items-center">
+            <div className="text-xs font-bold tracking-wide text-black/60">QR CODE</div>
+            {qr ? <img src={qr} alt="QR" className="mt-3 h-[180px] w-[180px] object-contain" /> : <div className="mt-3 h-[180px] w-[180px] grid place-items-center text-xs text-black/40">Memuat QR...</div>}
+            <div className="mt-2 text-[11px] text-black/60 text-center break-all px-2">{title}</div>
           </div>
           <p className="text-[11px] text-white/40 text-center">Scan QR untuk membuka tautan di perangkat lain.</p>
         </div>

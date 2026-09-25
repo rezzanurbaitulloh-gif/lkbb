@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/toast"
 import { ShareSheet } from "@/components/share/ShareSheet"
 
-export function ShareButtons({ profileUrl, supportUrl }: { profileUrl: string; supportUrl: string }){
+export function ShareButtons({ profileUrl, supportUrl, teamName }: { profileUrl: string; supportUrl: string; teamName?: string }){
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
   const [url, setUrl] = useState("")
   const [title, setTitle] = useState("")
   const share = async (type: "profile"|"support")=>{
     const full = window.location.origin + (type==="profile" ? profileUrl : supportUrl)
-    const t = type==="profile" ? "Profil Tim JAWASOMA" : "Dukung Tim di JAWASOMA"
+    const t = type==="profile" ? (teamName ? `Profil ${teamName}` : "Profil Tim JAWASOMA") : (teamName ? `Dukung ${teamName} di JAWASOMA` : "Dukung Tim di JAWASOMA")
     if(navigator.share){
       try { await navigator.share({ title: t, url: full }); toast({ title: "Berhasil dibagikan", variant: "success" }); return } catch {}
     }

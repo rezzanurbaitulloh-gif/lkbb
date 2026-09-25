@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CaraDukungDialog } from "@/components/home/CaraDukungDialog"
 import { ShareButtons } from "@/components/tim/ShareButtons"
+import { ShareSheet } from "@/components/share/ShareSheet"
+import { useToast } from "@/components/ui/toast"
+import { Share2, QrCode } from "lucide-react"
 
 function IconSearch(p:any){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="11" cy="11" r="7"/><path d="M20 20L16.5 16.5"/></svg>}
 function IconUsers(p:any){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...p}><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>}
@@ -29,36 +32,86 @@ const fallbackBoard = [
   { r:5, name:"SMA N 1 Madiun", sub:"Putri • Madiun", vote:"7.921", pct:"11.9%" },
 ]
 
-function useCd(target:string){
-  const [d,setD]=useState({d:12,h:3,m:45,s:27})
+function useCountdown(target: string | null){
+  const calc = (t: number) => {
+    const d = Math.max(0, t - Date.now())
+    return {
+      days: Math.floor(d/86400000),
+      hours: Math.floor((d%86400000)/3600000),
+      minutes: Math.floor((d%3600000)/60000),
+      seconds: Math.floor((d%60000)/1000),
+      total: d,
+      expired: d <= 0,
+    }
+  }
+  const getTime = (s: string | null) => {
+    if(!s) return NaN
+    const ms = new Date(s).getTime()
+    return isNaN(ms) ? NaN : ms
+  }
+  const t = getTime(target)
+  const isValid = !isNaN(t)
+  const [diff, setDiff] = useState(() => isValid ? calc(t) : { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0, expired: true })
   useEffect(()=>{
-    const calc = (t: number) => {
-      const diff = Math.max(0, t - Date.now())
-      return {
-        days: Math.floor(diff/86400000),
-        hours: Math.floor((diff%86400000)/3600000),
-        minutes: Math.floor((diff%3600000)/60000),
-        seconds: Math.floor((diff%60000)/1000),
-      }
+    if(!isValid || isNaN(t)) return
+    setDiff(calc(t))
+    const id=setInterval(()=> setDiff(calc(t)),1000)
+    return ()=>clearInterval(id)
+  },[target, t, isValid])
+  return { ...diff, isValid, targetTime: t }
+}
+
+function PesertaCard({ p }: { p: { n:string; name:string; sub:string; vote:string|number; img:string; slug:string; id:string|number } }){
+  const { toast } = useToast()
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
+  const [shareTitle, setShareTitle] = useState("")
+  const profileUrl = `/tim/${p.slug}`
+  const supportUrl = `/dukungan?team=${p.slug}`
+  const handleShare = async (type: "profile" | "support") => {
+    const url = `${window.location.origin}${type === "profile" ? profileUrl : supportUrl}`
+    const title = type === "profile" ? `Profil ${p.name}` : `Dukung ${p.name} di JAWASOMA`
+    if (navigator.share) {
+      try { await navigator.share({ title, url }); toast({ title: "Berhasil dibagikan", variant: "success" }); return } catch {}
     }
-    const getTime = (s: string) => {
-      const ms = new Date(s).getTime()
-      return isNaN(ms) ? NaN : ms
-    }
-    const t = getTime(target)
-    if(isNaN(t)) return
-    setD(calc(t))
-    const id=setInterval(()=> setD(calc(t)),1000)
-    return()=>clearInterval(id)
-  },[target])
-  return d
+    setShareUrl(url)
+    setShareTitle(title)
+    setShareOpen(true)
+  }
+  return (
+    <article className="group overflow-hidden rounded-[14px] border bg-[#141210] hover:shadow-[0_0_20px_rgba(217,170,92,0.15)] transition" style={{borderColor:"rgba(255,255,255,0.08)"}}>
+      <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
+        <span className="absolute left-2 top-2 z-10 rounded-full bg-[#050403]/80 px-2 py-0.5 text-[11px] font-bold text-[#D9AA5C] border" style={{borderColor:"rgba(217,170,92,0.30)"}}> {p.n}</span>
+        <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70">♡</button>
+        {p.img ? <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/> : <div className="h-full w-full grid place-items-center text-white/20 text-xs">No Image</div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+      </div>
+      <div className="p-3">
+        <div className="text-sm font-bold leading-tight text-[#F2ECE1]">{p.name}</div>
+        <div className="text-xs text-white/50">{p.sub}</div>
+        <div className="mt-3 flex items-center justify-between">
+          <Link href={supportUrl} className="rounded-full bg-[#E9C982] px-3 py-1.5 text-xs font-bold text-black hover:bg-[#D9C08A]">Vote Sekarang</Link>
+          <span className="text-xs text-white/50 inline-flex items-center gap-1">◎ {typeof p.vote==='number'?p.vote.toLocaleString("id-ID"):p.vote}</span>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          <Button variant="outline" className="rounded-full h-10 w-full border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white hover:border-white/15" onClick={() => handleShare("profile")} aria-label={`Bagikan profil ${p.name}`}>
+            <Share2 className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" className="rounded-full h-10 w-full border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white hover:border-white/15" onClick={() => handleShare("support")} aria-label={`Bagikan dukungan ${p.name}`}>
+            <QrCode className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <ShareSheet open={shareOpen} onOpenChange={setShareOpen} url={shareUrl} title={shareTitle} />
+    </article>
+  )
 }
 
 export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:any}={}){
-  const cd=useCd(event?.event_date || "2026-10-24")
   const isPreview = peletons===undefined
   const hasReal = !!(peletons && peletons.length>0)
-  const peserta = hasReal ? peletons!.slice(0,8).map((p:any,i:number)=>({n:String(p.number||i+1).padStart(2,"0"), name:p.name, sub:`${p.category||"Putra"} • ${p.city||p.school?.split(" ").pop()||"Kertosono"}`, vote: p.vote??p.total_ballots??p.online_ballots??0, img:p.image_url||p.image||""})) : (isPreview?fallbackPeserta:[])
+  const toSlug = (p:any, i:number) => p.slug || String(p.id || p.number || i+1)
+  const peserta = hasReal ? peletons!.slice(0,8).map((p:any,i:number)=>({n:String(p.number||i+1).padStart(2,"0"), name:p.name, sub:`${p.category||"Putra"} • ${p.city||p.school?.split(" ").pop()||"Kertosono"}`, vote: p.vote??p.total_ballots??p.online_ballots??0, img:p.image_url||p.image||"", slug: toSlug(p,i), id: p.id ?? p.number ?? i+1})) : (isPreview?fallbackPeserta.map((p,i)=>({...p, slug: String(i+1).padStart(2,"0"), id: i+1})):[])
   const board = hasReal ? [...peletons!].sort((a:any,b:any)=>Number(b.total_ballots??b.online_ballots??0)-Number(a.total_ballots??a.online_ballots??0)).slice(0,5).map((p:any,i:number)=>({r:i+1,name:p.name,sub:`${p.category||"Putra"} • ${p.city||"Kertosono"}`,vote:String(p.total_ballots??p.online_ballots??0),pct:`${((Number(p.total_ballots||0)/Math.max(1,peletons!.reduce((s:any,x:any)=>s+Number(x.total_ballots||0),0)))*100).toFixed(1)}%`})) : fallbackBoard
   const top = hasReal ? peletons![0] : null
   const [caraOpen, setCaraOpen] = useState(false)
@@ -78,6 +131,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
     }
     return event?.voting_end || "2026-10-24T23:59:59+07:00"
   })()
+  const cd = useCountdown(canonicalTarget)
   const countdownLabel = (() => {
     if (isActive) return "MENUJU PENUTUPAN VOTING"
     if (isNotStarted) return "MENUJU PEMBUKAAN VOTING"
@@ -86,6 +140,8 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
     return "EVENT DIMULAI DALAM"
   })()
   const showCountdown = (() => {
+    if (!cd.isValid) return false
+    if (cd.expired) return false
     if (isClosed || isPublished) return false
     return true
   })()
@@ -97,8 +153,8 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
         <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="grid h-7 w-7 place-items-center rounded-sm bg-[#D9AA5C] text-[10px] font-black text-black">◈</span>
-            <span className="hidden sm:flex flex-col leading-none"><span className="font-[Cormorant Garamond] text-[14px] font-extrabold tracking-[0.14em] text-[#F2ECE1]">JAWASOMA</span><span className="text-[9px] tracking-[0.18em] text-white/50 -mt-0.5">THE IMPRESSION 2026</span></span>
-            <span className="sm:hidden font-[Cormorant Garamond] text-sm font-bold text-[#F2ECE1]">JAWASOMA</span>
+            <span className="hidden sm:flex flex-col leading-none"><span className="font-[Cormorant_Garamond] text-[14px] font-extrabold tracking-[0.14em] text-[#F2ECE1]">JAWASOMA</span><span className="text-[9px] tracking-[0.18em] text-white/50 -mt-0.5">THE IMPRESSION 2026</span></span>
+            <span className="sm:hidden font-[Cormorant_Garamond] text-sm font-bold text-[#F2ECE1]">JAWASOMA</span>
           </Link>
           <nav className="hidden lg:flex items-center gap-6 text-[11px] font-medium tracking-[0.06em] text-white/60">
             <Link href="/" className="text-[#F2ECE1] border-b border-[#D9AA5C] pb-0.5">Beranda</Link>
@@ -131,65 +187,67 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
           <div className="absolute inset-0 bg-gradient-to-t from-[#050403] to-transparent" />
         </div>
 
-        <div className="relative mx-auto grid max-w-[1280px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.9fr] lg:py-16">
-          <div className="relative py-2 flex flex-col justify-center">
-            <div className="text-[10px] font-bold tracking-[0.18em] text-[#D9AA5C]">LKBB EVENT</div>
-            <h1 className="mt-1 font-[Cormorant Garamond] text-[42px] font-extrabold leading-[0.9] sm:text-[56px] md:text-[64px] lg:text-[72px] xl:text-[84px]">
-              <span className="block text-[#F2ECE1]" style={{textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}>JAWASOMA</span>
-              <span className="mt-1 block h-px w-[280px] bg-gradient-to-r from-[#D9AA5C] to-transparent" />
-              <span className="mt-2 block text-[13px] sm:text-[14px] font-[Manrope] font-semibold tracking-[0.28em] text-[#E9C982]">THE IMPRESSION 2026</span>
-            </h1>
-            <div className="mt-4 max-w-[360px] text-[12.5px] sm:text-[14px] leading-relaxed text-white/70">
-              <p>Langkah Tegas, Jiwa Ksatria,</p>
-              <p>Untuk Negeri yang Lebih Baik</p>
-            </div>
-            <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3 text-[11px] sm:text-[12px] text-white/60 items-center">
-              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#D9AA5C]"/>24 Oktober 2026</span>
-              <span className="inline-flex items-center gap-1.5">◎ Kertosono, Jawa Timur</span>
-            </div>
-            <div className="mt-8 xs:mt-10 flex flex-col xs:flex-row flex-wrap gap-3 justify-center items-center w-full xs:w-auto">
-              <Link href="/dukungan" className="w-full xs:w-auto">
-                <Button size="lg" className="w-full xs:w-auto rounded-full px-7 h-[44px] xs:h-[48px] text-[13px] xs:text-sm font-black tracking-wide shadow-[0_4px_16px_rgba(217,170,92,0.22)] bg-[#E9C982] text-[#050403] hover:bg-[#D9C08A]">Mulai Voting</Button>
-              </Link>
-              <Button onClick={()=> setCaraOpen(true)} variant="ghost" size="default" className="w-full xs:w-auto rounded-full px-6 h-[38px] xs:h-[40px] text-xs xs:text-[13px] font-semibold tracking-wide border border-white/10 bg-white/5 backdrop-blur text-white hover:text-white hover:bg-white/10">Cara Kerja</Button>
-            </div>
-            <CaraDukungDialog open={caraOpen} onOpenChange={setCaraOpen} />
-            <div className="mt-8 lg:hidden">
-              <div className="text-[9px] sm:text-[10px] font-bold tracking-[0.16em] text-white/60">{countdownLabel}</div>
-              <div className="mt-3 grid grid-cols-4 gap-1.5">
-                {[
-                  {v: String(cd.d).padStart(2,"0"), l:"HARI"},
-                  {v: String(cd.h).padStart(2,"0"), l:"JAM"},
-                  {v: String(cd.m).padStart(2,"0"), l:"MENIT"},
-                  {v: String(cd.s).padStart(2,"0"), l:"DETIK"},
-                ].map(item=> (
-                  <div key={item.l} className="rounded-[10px] border border-white/10 bg-[#050403]/60 backdrop-blur py-2.5 px-0.5">
-                    <div className="tabular-nums font-[Cormorant Garamond] text-[22px] sm:text-[26px] font-bold leading-none text-[#F2ECE1]">{item.v}</div>
-                    <div className="mt-1 text-[8px] tracking-[0.10em] text-[#D9AA5C]">{item.l}</div>
-                  </div>
-                ))}
+        <div className="relative mx-auto max-w-[1280px] px-3 sm:px-4 md:px-6">
+          <div className="pt-8 sm:pt-10 md:pt-14 pb-6 md:pb-8">
+            <div className="mx-auto max-w-[720px] text-center flex flex-col items-center px-1">
+              <div className="inline-flex max-w-full items-center justify-center gap-2 sm:gap-3 flex-wrap">
+                <span className="h-px w-6 sm:w-8 bg-[#D9AA5C] shrink-0" />
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-[#D9AA5C] break-words text-center">LKBB EVENT</span>
+                <span className="h-px w-6 sm:w-8 bg-[#D9AA5C] shrink-0" />
               </div>
-              <div className="mt-2 text-[11px] text-white/50 tabular-nums">{cd.d} hari lagi</div>
-            </div>
-            <div className="hidden lg:flex absolute bottom-4 right-0 gap-2">
-              <div className="text-[9px] font-bold tracking-[0.16em] text-white/60">{countdownLabel}</div>
-              {[
-                {v: String(cd.d).padStart(2,"0"), l:"Hari"},
-                {v: String(cd.h).padStart(2,"0"), l:"Jam"},
-                {v: String(cd.m).padStart(2,"0"), l:"Menit"},
-                {v: String(cd.s).padStart(2,"0"), l:"Detik"},
-              ].map(c=>(
-                <div key={c.l} className="min-w-[64px] rounded-xl border bg-[#050403]/80 px-3 py-2.5 text-center backdrop-blur" style={{borderColor:"rgba(217,170,92,0.25)"}}>
-                  <div className="font-[Cormorant Garamond] text-xl font-bold leading-none text-[#F2ECE1]">{c.v}</div>
-                  <div className="mt-1 text-[10px] font-semibold tracking-[0.14em] text-[#D9AA5C]">{c.l}</div>
-                </div>
-              ))}
+              <h1 className="mt-3 font-[Cormorant_Garamond] text-balance font-extrabold leading-[0.88] tracking-[-0.02em] text-center max-w-full break-words px-1">
+                <span className="block text-[42px] xs:text-[48px] sm:text-[56px] md:text-[68px] lg:text-[76px] xl:text-[84px] leading-[0.88] text-[#F2ECE1]" style={{textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}>JAWASOMA</span>
+                <span className="mt-2 block text-[13px] xs:text-[14px] sm:text-[15px] font-[Manrope] font-semibold tracking-[0.28em] text-[#E9C982]">THE IMPRESSION 2026</span>
+              </h1>
+              <div className="mt-3 text-center max-w-full space-y-1">
+                <div className="text-[11px] sm:text-[13px] font-bold tracking-[0.14em] sm:tracking-[0.18em] text-white break-words">Langkah Tegas <span className="text-[#D9AA5C]">•</span> Jiwa Ksatria</div>
+                <div className="text-[10px] sm:text-[11px] tracking-[0.12em] sm:tracking-[0.14em] text-[#D9AA5C] font-bold break-words">UNTUK NEGERI YANG LEBIH BAIK</div>
+                <div className="text-[11px] sm:text-[12px] font-medium tracking-wide text-white/60 break-words">24 Oktober 2026 • Kertosono, Jawa Timur</div>
+              </div>
+              <div className="mt-5 xs:mt-6 flex flex-col xs:flex-row flex-wrap gap-2.5 sm:gap-3 justify-center items-center w-full xs:w-auto px-1 xs:px-0">
+                <Link href="/dukungan" className="w-full xs:w-auto">
+                  <Button size="lg" className="w-full xs:w-auto rounded-full px-6 xs:px-7 h-[44px] text-[13px] xs:text-sm font-black tracking-wide shadow-[0_4px_16px_rgba(217,170,92,0.22)] bg-[#E9C982] text-[#050403] hover:bg-[#D9C08A]">Mulai Voting</Button>
+                </Link>
+                <Button onClick={()=> setCaraOpen(true)} variant="ghost" size="default" className="w-full xs:w-auto rounded-full px-5 h-[36px] xs:h-[38px] text-xs xs:text-[13px] font-semibold tracking-wide border border-white/10 bg-white/5 backdrop-blur text-white hover:text-white hover:bg-white/10">Cara Kerja</Button>
+              </div>
+              <CaraDukungDialog open={caraOpen} onOpenChange={setCaraOpen} />
             </div>
           </div>
-          <div className="relative hidden lg:block min-h-[420px]">
-            <img src="https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=900&auto=format&fit=crop&q=70" alt="Peleton JAWASOMA" className="absolute inset-0 h-full w-full object-cover object-top rounded-[16px] border" style={{borderColor:"rgba(217,170,92,0.20)"}} />
-            <div className="absolute inset-0 rounded-[16px] bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute bottom-3 right-3 rounded-full bg-[#050403]/70 px-3 py-1 text-[10px] font-bold tracking-widest text-[#D9AA5C] border backdrop-blur" style={{borderColor:"rgba(217,170,92,0.20)"}}>2026</div>
+          <div className="pb-6 sm:pb-8 md:pb-10">
+            <div className="mx-auto max-w-[560px] text-center px-1">
+              {showCountdown ? (
+                <>
+                  <div className="text-[9px] sm:text-[10px] font-bold tracking-[0.16em] sm:tracking-[0.18em] text-white/60">{countdownLabel}</div>
+                  <div className="mt-3 grid grid-cols-4 gap-1 xs:gap-1.5 sm:gap-2 md:gap-3">
+                    {[
+                      {v: cd.days, l:"HARI"},
+                      {v: cd.hours, l:"JAM"},
+                      {v: cd.minutes, l:"MENIT"},
+                      {v: cd.seconds, l:"DETIK"},
+                    ].map(item=> (
+                      <div key={item.l} className="rounded-[10px] sm:rounded-[12px] border border-white/10 bg-[#050403]/80 backdrop-blur py-2 xs:py-2.5 sm:py-3 md:py-4 px-0.5 xs:px-1">
+                        <div className="tabular-nums font-[Cormorant_Garamond] text-[22px] xs:text-[26px] sm:text-[28px] md:text-[32px] font-bold leading-none text-[#F2ECE1]">{String(item.v).padStart(2,"0")}</div>
+                        <div className="mt-1 text-[8px] xs:text-[9px] sm:text-[10px] font-bold tracking-[0.10em] sm:tracking-[0.14em] text-[#D9AA5C]">{item.l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 text-[11px] text-white/50 tabular-nums">{cd.days} hari lagi • {canonicalTarget ? new Date(canonicalTarget as string).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric",timeZone:"Asia/Jakarta"}) : ""}</div>
+                </>
+              ) : isClosed ? (
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 backdrop-blur px-4 py-2">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="text-[11px] font-black tracking-wide text-white">VOTING DITUTUP — MENUNGGU REKAP OFFLINE</span>
+                </div>
+              ) : isPublished ? (
+                <div className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 backdrop-blur px-4 py-2 text-center">
+                  <span className="text-[11px] font-black tracking-wide text-white">HASIL TELAH DIREKAP DAN AKAN DIUMUMKAN OLEH PANITIA</span>
+                </div>
+              ) : isNotStarted ? (
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  <span className="text-[11px] font-bold tracking-wide text-white/70">SEGERA DIBUKA</span>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
         <div className="relative border-t bg-[#050403]/80 backdrop-blur" style={{borderColor:"rgba(255,255,255,0.07)"}}>
@@ -206,7 +264,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
 
       <section className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
         <div className="flex items-end justify-between gap-4">
-          <div><h2 className="font-[Cormorant Garamond] text-[22px] font-bold text-[#F2ECE1]">Peserta</h2><p className="text-xs text-white/50">Pilih tim favoritmu dan berikan dukungan terbaik!</p></div>
+          <div><h2 className="font-[Cormorant_Garamond] text-[22px] font-bold text-[#F2ECE1]">Peserta</h2><p className="text-xs text-white/50">Pilih tim favoritmu dan berikan dukungan terbaik!</p></div>
           <Link href="/tim" className="hidden sm:inline text-xs text-white/60 hover:text-white">Lihat Semua</Link>
         </div>
         <div className="mt-4 flex gap-2">
@@ -217,22 +275,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
         ) : (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {peserta.map(p=>(
-              <article key={p.n} className="group overflow-hidden rounded-[14px] border bg-[#141210] hover:shadow-[0_0_20px_rgba(217,170,92,0.15)] transition" style={{borderColor:"rgba(255,255,255,0.08)"}}>
-                <div className="relative aspect-[16/10] overflow-hidden bg-[#1C1914]">
-                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#050403]/80 px-2 py-0.5 text-[11px] font-bold text-[#D9AA5C] border" style={{borderColor:"rgba(217,170,92,0.30)"}}> {p.n}</span>
-                  <button aria-label="Favorite" className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/40 border border-white/10 text-white/70">♡</button>
-                  {p.img ? <img src={p.img} alt={p.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]" loading="lazy"/> : <div className="h-full w-full grid place-items-center text-white/20 text-xs">No Image</div>}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                </div>
-                <div className="p-3">
-                  <div className="text-sm font-bold leading-tight text-[#F2ECE1]">{p.name}</div>
-                  <div className="text-xs text-white/50">{p.sub}</div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <Link href="/dukungan" className="rounded-full bg-[#E9C982] px-3 py-1.5 text-xs font-bold text-black hover:bg-[#D9C08A]">Vote Sekarang</Link>
-                    <span className="text-xs text-white/50 inline-flex items-center gap-1">◎ {typeof p.vote==='number'?p.vote.toLocaleString("id-ID"):p.vote}</span>
-                  </div>
-                </div>
-              </article>
+              <PesertaCard key={`${p.slug}-${p.n}`} p={p} />
             ))}
           </div>
         )}
@@ -246,7 +289,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
                 <img src={top.image_url||top.image||peserta[0]?.img} alt={top.name} className="h-24 w-24 rounded-xl object-cover border" style={{borderColor:"rgba(255,255,255,0.08)"}}/>
                 <div>
                   <div className="inline-flex rounded-full bg-[#D9AA5C] px-2 py-0.5 text-[11px] font-bold text-black">{String(top.number||"01").padStart(2,"0")}</div>
-                  <h3 className="mt-1 font-[Cormorant Garamond] text-lg font-bold leading-tight text-[#F2ECE1]">{top.name?.split(" ").slice(0,3).join(" ")}<br/>{top.name?.split(" ").slice(3).join(" ")||top.school?.split(" ").pop()||"Kertosono"}</h3>
+                  <h3 className="mt-1 font-[Cormorant_Garamond] text-lg font-bold leading-tight text-[#F2ECE1]">{top.name?.split(" ").slice(0,3).join(" ")}<br/>{top.name?.split(" ").slice(3).join(" ")||top.school?.split(" ").pop()||"Kertosono"}</h3>
                   <p className="mt-2 max-w-[420px] text-xs leading-relaxed text-white/60">{top.description||`Dengan semangat juang dan disiplin tinggi, ${top.name} menampilkan penampilan terbaik di JAWASOMA 2026.`}</p>
                 </div>
               </div>
@@ -282,7 +325,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
               <Link href={`/tim/${top.slug||""}`} className="mt-4 flex w-full justify-center rounded-full bg-[#E9C982] py-2.5 text-sm font-bold text-black hover:bg-[#D9C08A]">Dukung Tim Ini</Link>
               <p className="mt-2 text-center text-xs text-white/40">Berikan suaramu untuk {top.name}</p>
               <div className="mt-6">
-                <ShareButtons profileUrl={`/tim/${top.slug||""}`} supportUrl={`/dukungan?team=${top.id||"01"}`} />
+                <ShareButtons profileUrl={`/tim/${top.slug||""}`} supportUrl={`/dukungan?team=${top.slug||top.id||"01"}`} teamName={top.name} />
               </div>
             </>
           ) : (
@@ -291,7 +334,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
           <Link href="/dukungan" className="mt-3 flex w-full justify-center rounded-full bg-[#E9C982] py-2 text-xs font-bold text-black">Voting Sekarang</Link>
         </div>
         <div className="rounded-[16px] border bg-[#0F0D0A] p-4" style={{borderColor:"rgba(255,255,255,0.08)"}}>
-          <h3 className="font-[Cormorant Garamond] text-lg font-bold text-[#F2ECE1]">Leaderboard</h3>
+          <h3 className="font-[Cormorant_Garamond] text-lg font-bold text-[#F2ECE1]">Leaderboard</h3>
           <p className="text-xs text-white/50">Perolehan suara sementara {hasReal?"• realtime":""}</p>
           <div className="mt-4 space-y-2">
             {board.length===0 ? <div className="py-8 text-center text-xs text-white/30">Belum ada suara masuk.</div> : board.map(r=>(
@@ -309,7 +352,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
 
       <section className="mx-auto max-w-[1280px] px-4 pb-10 sm:px-6">
         <div className="rounded-[16px] border bg-[#0F0D0A] p-6" style={{borderColor:"rgba(255,255,255,0.08)"}}>
-          <h3 className="font-[Cormorant Garamond] text-lg font-bold text-[#F2ECE1]">Hasil Akhir</h3>
+          <h3 className="font-[Cormorant_Garamond] text-lg font-bold text-[#F2ECE1]">Hasil Akhir</h3>
           <p className="text-xs text-white/50">Pemenang Event JAWASOMA 2026</p>
           {board.length>=3 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-3 items-end">
@@ -341,7 +384,7 @@ export function JawasomaHeritage({ peletons, event }: {peletons?:any[]; event?:a
         <div className="relative mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
             <div className="lg:pl-[320px]">
-              <div className="font-[Cormorant Garamond] text-sm font-bold tracking-widest text-[#F2ECE1]">JAWASOMA</div>
+              <div className="font-[Cormorant_Garamond] text-sm font-bold tracking-widest text-[#F2ECE1]">JAWASOMA</div>
               <div className="text-[11px] tracking-[0.18em] text-white/40">THE IMPRESSION 2026</div>
               <p className="mt-3 max-w-[420px] text-xs leading-relaxed text-white/50">Event LKBB tingkat nasional yang mengangkat semangat persatuan dan sportifitas. Lebih dari kompetisi — panggung seni, disiplin, dan budaya.</p>
             </div>

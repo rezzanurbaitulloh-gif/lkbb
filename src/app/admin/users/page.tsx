@@ -21,6 +21,11 @@ export default function Users(){
   const [showPass,setShowPass]=useState(false)
   const [saving,setSaving]=useState(false)
   const [selected,setSelected]=useState<Set<string>>(new Set())
+  const [addOpen,setAddOpen]=useState(false)
+  const [addName,setAddName]=useState("")
+  const [addPass,setAddPass]=useState("")
+  const [addRole,setAddRole]=useState("USER")
+  const [adding,setAdding]=useState(false)
   const load = ()=>{
     fetch("/api/admin/users").then(async r=> {
       const j = await r.json().catch(()=> ({}))
@@ -67,7 +72,10 @@ export default function Users(){
           <h1 className="text-[18px] font-black">Kelola Pengguna</h1>
           <p className="text-xs text-muted-foreground">Hanya pengguna event {eventInfo ? <b>{eventInfo.name || eventInfo.slug}</b> : "ini"} — user web lain & super admin disembunyikan.</p>
         </div>
-        <div className="flex items-center gap-2">{selected.size>0 && <Button variant="outline" size="sm" className="rounded-full text-red-600 gap-2" onClick={handleBulkRemove}><Trash2 className="h-3.5 w-3.5"/>Keluarkan {selected.size}</Button>}</div>
+        <div className="flex items-center gap-2">
+          <Button size="sm" className="rounded-full" onClick={()=>{ setAddName(""); setAddPass(""); setAddRole("USER"); setAddOpen(true) }}>+ Tambah Akun</Button>
+          {selected.size>0 && <Button variant="outline" size="sm" className="rounded-full text-red-600 gap-2" onClick={handleBulkRemove}><Trash2 className="h-3.5 w-3.5"/>Keluarkan {selected.size}</Button>}
+        </div>
       </div>
       <div className="rounded-[16px] border border-white/[0.06] bg-white/[0.03] backdrop-blur overflow-hidden">
         {/* Desktop */}
@@ -115,6 +123,25 @@ export default function Users(){
           </div>
         )}
       </div>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader><DialogTitle>Tambah Akun Baru</DialogTitle><DialogDescription>Akun langsung terdaftar di event {eventInfo ? <b>{eventInfo.name || eventInfo.slug}</b> : "ini"} dan bisa login dengan Nama + Kata sandi.</DialogDescription></DialogHeader>
+          <div className="grid gap-3">
+            <div><label className="text-xs font-bold">Nama Akun (unik)</label><input value={addName} onChange={e=> setAddName(e.target.value)} placeholder="cth: Budi Santoso" className="mt-1 h-10 w-full rounded-xl border border-white/[0.08] px-3 text-sm" /></div>
+            <div><label className="text-xs font-bold">Kata Sandi (min. 6 karakter)</label><input type="password" value={addPass} onChange={e=> setAddPass(e.target.value)} placeholder="••••••••" className="mt-1 h-10 w-full rounded-xl border border-white/[0.08] px-3 text-sm" /></div>
+            <div><label className="text-xs font-bold">Peran di event ini</label><Select value={addRole} onValueChange={setAddRole} options={[{value:"USER",label:"user — Pengguna event ini"},{value:"ADMIN",label:"admin — Admin event ini"}]} /></div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={()=> setAddOpen(false)}>Batal</Button><Button disabled={adding} onClick={async ()=>{
+            if(adding) return; setAdding(true)
+            const res = await fetch("/api/admin/users", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ name: addName, password: addPass, role: addRole }) })
+            const j = await res.json().catch(()=> ({}))
+            setAdding(false)
+            if(!res.ok){ toast({ title:"Gagal", description:j.error, variant:"error" }); return }
+            toast({ title:"Akun dibuat", variant:"success" }); setAddOpen(false); load()
+          }}>{adding ? "Memproses..." : "Buat Akun"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[420px]">

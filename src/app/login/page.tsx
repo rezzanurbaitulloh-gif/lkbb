@@ -64,6 +64,21 @@ export default function LoginPage(){
               </div>
               {err && <div className="border border-destructive bg-destructive/10 p-3 text-xs text-destructive">{err}</div>}
               <Button type="submit" disabled={loading} className="h-11 rounded-none w-full font-bold tracking-wide">{loading?"Memproses…":"Masuk →"}</Button>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-[10px] font-bold tracking-[0.16em] text-muted-foreground">AKUN DEMO — KLIK UNTUK ISI OTOMATIS</div>
+                <div className="mt-2 grid gap-2">
+                  {[
+                    { label:"Admin", email:"demoadminn@gmail.com" },
+                    { label:"User", email:"demouser@gmail.com" },
+                  ].map(a=> (
+                    <button key={a.email} type="button" onClick={()=>{ setName(a.email); setPassword("12345678"); setErr("") }}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-white/10 px-3 py-2 text-left text-xs hover:bg-white/5 transition-colors">
+                      <span><b>{a.label}</b> <span className="text-muted-foreground">{a.email} • 12345678</span></span>
+                      <span className="shrink-0 font-bold text-primary">Isi →</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-between text-xs">
                 <Link href="/forgot-password" className="font-semibold hover:underline">Lupa kata sandi?</Link>
                 <Link href="/register" className="font-semibold text-primary hover:underline">Daftar →</Link>
